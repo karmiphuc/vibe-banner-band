@@ -1,0 +1,3 @@
+Experimental custom battle
+Source: https://github.com/karmiphuc/vibe-banner-band/tree/4059df0f3093bded835d4dd3e9d42ff76b2337f3
+License: GNU GPL v3; see LICENSE and source dependency notices.
