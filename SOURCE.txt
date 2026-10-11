@@ -1,3 +1,4 @@
-Roman-Gallic combined-arms proof of concept 0.5
-Source: https://github.com/karmiphuc/vibe-banner-band/tree/77a5c20e7f661f92a409db59e50054d7b056707f
-License: GNU GPL v3; see LICENSE and source dependency notices.
+Source: https://github.com/karmiphuc/vibe-banner-band
+Branch: feat/roman-gaul-custom-battle
+Commit: 7dc039c7c07377140cfd8d5664f8484f85f74c29
+Version: 0.6.0
