@@ -1,0 +1,12 @@
+# Architecture decision records
+
+| ADR | Status | Decision |
+| --- | --- | --- |
+| [0001](0001-browser-engine.md) | Proposed; benchmark-gated | Three.js browser baseline, Godot alternative |
+| [0002](0002-deterministic-core.md) | Accepted architecture | Headless deterministic authoritative core |
+| [0003](0003-content-and-assets.md) | Accepted architecture | Versioned content and reproducible asset compilation |
+| [0004](0004-world-and-hosting.md) | Accepted initial scope | Campaign + tactical encounters, static hosting |
+
+Statuses describe planning commitments, not implementation completion. Add an ADR for changes to these boundaries, authoritative numeric formats, runtime animation strategy, executable mods, multiplayer, or persisted compatibility.
+
+Template: context; decision and status; considered alternatives; consequences; validation gate; conditions for revisiting; links to affected contracts. Preserve superseded decisions with a link to the replacement instead of rewriting history.

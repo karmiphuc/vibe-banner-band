@@ -1,0 +1,19 @@
+{
+  "blender": "4.3.2",
+  "canonical_manifest_match": true,
+  "triangles": 3648,
+  "glb_hashes": {
+    "build": "bada8abc201b8a9721e9d0075568385f8fa55dcd7c161f4bca4b02cf813d6d44",
+    "repeat-build": "bada8abc201b8a9721e9d0075568385f8fa55dcd7c161f4bca4b02cf813d6d44"
+  },
+  "limitations": [
+    "No humanoid model or animation generated",
+    "No engine import or Khronos validator run",
+    "Materials, UVs and exported binary equivalence not covered by canonical geometry hash",
+    "No cross-version reproducibility claim"
+  ],
+  "binary_glb_match": true,
+  "recordedDate": "2026-10-11",
+  "generatorSourceSha256": "92f94f60004f0d8bf0d575d3c0aa4d348b2b87890a0f9e1c2a2fb1e3ea700a7a",
+  "evidenceScope": "Two completed local research builds under Blender 4.3.2; no cross-version or production qualification claim."
+}
