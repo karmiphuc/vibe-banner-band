@@ -1,3 +1,5 @@
+import { BANNERS, type BannerId } from '../content/banners';
+import { createBannerModel } from './banner-model';
 import { createHorseModel, HORSE_JOINTS, createBallistaModel } from './combined-models';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -10,7 +12,13 @@ export function openWorkshop(initialType: number): void {
   const dialog = document.createElement('dialog');
   dialog.className = 'workshop';
   dialog.setAttribute('aria-label', 'Unit model workshop');
-  dialog.innerHTML = `<header><div><span class="eyebrow">THE ARMORY / EQUIPMENT STUDIES</span><h2>Model workshop</h2></div><button class="secondary" id="close-workshop" aria-label="Close model workshop">Close ×</button></header><div class="workshop-layout"><div class="workshop-stage"><div class="studio-label">DRAG TO ROTATE · SCROLL TO ZOOM</div></div><aside><label for="workshop-unit">Unit design</label><select id="workshop-unit">${UNITS.map((u, i) => `<option value="${i}">${u.name}</option>`).join('')}</select><h3 id="workshop-name"></h3><p id="workshop-description"></p><label for="workshop-pose">Pose study</label><select id="workshop-pose"><option value="idle">At ease</option><option value="march">March</option><option value="attack">Attack</option><option value="guard">Shield guard</option></select><label class="workshop-check"><input type="checkbox" id="workshop-sidearm"> Ammunition exhausted</label><label class="workshop-check"><input type="checkbox" id="workshop-broken"> Shield broken</label><label class="workshop-check"><input type="checkbox" id="workshop-lod"> Crowd geometry</label><label class="workshop-check"><input type="checkbox" id="workshop-turntable" checked> Turntable</label><h4>Equipped kit</h4><ul id="workshop-equipment"></ul><p class="workshop-metrics" id="workshop-metrics"></p><p class="workshop-footnote">Original articulated proof-of-concept models. Equipment and pose studies; no direct hero control.</p></aside></div>`;
+  dialog.innerHTML = `<header><div><span class="eyebrow">THE ARMORY / EQUIPMENT STUDIES</span><h2>Model workshop</h2></div><button class="secondary" id="close-workshop" aria-label="Close model workshop">Close ×</button></header><div class="workshop-layout"><div class="workshop-stage"><div class="studio-label">DRAG TO ROTATE · SCROLL TO ZOOM</div></div><aside><label for="workshop-unit">Unit design</label><select id="workshop-unit">${UNITS.map((u, i) => `<option value="${i}">${u.name}</option>`).join('')}</select><h3 id="workshop-name"></h3><p id="workshop-description"></p><label for="workshop-pose">Pose study</label><select id="workshop-pose"><option value="idle">At ease</option><option value="march">March</option><option value="attack">Attack</option><option value="guard">Shield guard</option></select><label class="workshop-check"><input type="checkbox" id="workshop-sidearm"> Ammunition exhausted</label><label class="workshop-check"><input type="checkbox" id="workshop-broken"> Shield broken</label><label class="workshop-check"><input type="checkbox" id="workshop-lod"> Crowd geometry</label><label class="workshop-check"><input type="checkbox" id="workshop-turntable" checked> Turntable</label><label for="workshop-banner">Banner equipment</label><select id="workshop-banner"><option value="none">None</option>${Object.entries(
+    BANNERS,
+  )
+    .map(([id, b]) => `<option value="${id}">${b.name}</option>`)
+    .join(
+      '',
+    )}</select><h4>Equipped kit</h4><ul id="workshop-equipment"></ul><p class="workshop-metrics" id="workshop-metrics"></p><p class="workshop-footnote">Original articulated proof-of-concept models. Equipment and pose studies; no direct hero control.</p></aside></div>`;
   document.body.appendChild(dialog);
   dialog.showModal();
   const find = <T extends HTMLElement>(id: string) => dialog.querySelector<T>(`#${id}`)!;
@@ -60,6 +68,9 @@ export function openWorkshop(initialType: number): void {
   scene.add(trim);
   const root = new THREE.Group();
   scene.add(root);
+  const bannerPreview = new THREE.Group();
+  root.add(bannerPreview);
+  let bannerItem: BannerId | 'none' = 'none';
   const material = new THREE.MeshStandardMaterial({
     vertexColors: true,
     roughness: 0.7,
@@ -82,13 +93,35 @@ export function openWorkshop(initialType: number): void {
     }
     const type = Number(find<HTMLSelectElement>('workshop-unit').value),
       u = UNITS[type];
+    const bannerSelect = find<HTMLSelectElement>('workshop-banner');
+    for (const option of bannerSelect.options)
+      if (option.value !== 'none')
+        option.hidden = BANNERS[option.value as BannerId].team !== u.team;
+    if (bannerSelect.value !== 'none' && BANNERS[bannerSelect.value as BannerId].team !== u.team)
+      bannerSelect.value = 'none';
+    bannerItem = bannerSelect.value as BannerId | 'none';
+    for (const child of bannerPreview.children) (child as THREE.Mesh).geometry.dispose();
+    bannerPreview.clear();
+    if (bannerItem !== 'none')
+      for (const geometry of Object.values(createBannerModel(bannerItem))) {
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.castShadow = true;
+        bannerPreview.add(mesh);
+      }
     const sidearm = find<HTMLInputElement>('workshop-sidearm');
     sidearm.disabled = u.role !== 'skirmisher' && u.role !== 'horse-archer';
     mounted = u.role === 'cavalry' || u.role === 'horse-archer';
     engineer = u.role === 'engineer';
     const model = (
       find<HTMLInputElement>('workshop-lod').checked ? createCrowdModel : createUnitModel
-    )(type, sidearm.checked, find<HTMLInputElement>('workshop-broken').checked);
+    )(
+      type,
+      sidearm.checked,
+      find<HTMLInputElement>('workshop-broken').checked,
+      bannerItem !== 'none' &&
+        find<HTMLSelectElement>('workshop-pose').value !== 'attack' &&
+        !engineer,
+    );
     for (const name of Object.keys(model.parts) as PartName[]) {
       const mesh = new THREE.Mesh(model.parts[name], material);
       mesh.position.set(...JOINTS[name]);
@@ -114,32 +147,41 @@ export function openWorkshop(initialType: number): void {
       root.add(mesh);
       extras.push(mesh);
     }
-    const large = mounted || u.role === 'engineer';
+    const large = bannerItem !== 'none' || mounted || u.role === 'engineer';
     plinth.scale.set(large ? 2.6 : 1, 1, large ? 2.6 : 1);
     trim.scale.setScalar(large ? 2.6 : 1);
     camera.position.set(
-      engineer ? 6 : large ? 4.8 : 2.9,
-      engineer ? 4.4 : large ? 3.2 : 2.15,
-      engineer ? 10 : large ? 7 : 4.6,
+      engineer ? 6 : bannerItem !== 'none' ? 5.8 : large ? 4.8 : 2.9,
+      engineer ? 4.4 : bannerItem !== 'none' ? 3.8 : large ? 3.2 : 2.15,
+      engineer ? 10 : bannerItem !== 'none' ? 8.5 : large ? 7 : 4.6,
     );
-    controls.target.set(0, mounted ? 1.4 : 1.12, 0);
+    controls.target.set(0, bannerItem !== 'none' ? (mounted ? 2.4 : 2.0) : mounted ? 1.4 : 1.12, 0);
     find('workshop-name').textContent = u.name;
     find('workshop-description').textContent = u.description;
     find('workshop-equipment').replaceChildren(
-      ...u.equipment.map((item) => {
-        const li = document.createElement('li');
-        li.textContent = item;
-        return li;
-      }),
+      ...[...u.equipment, ...(bannerItem === 'none' ? [] : [BANNERS[bannerItem].name])].map(
+        (item) => {
+          const li = document.createElement('li');
+          li.textContent = item;
+          return li;
+        },
+      ),
     );
-    const triangles = Object.values(model.parts).reduce(
-      (n, g) => n + g.getAttribute('position').count / 3,
-      0,
-    );
+    const triangles = [
+      ...Object.values(model.parts),
+      ...bannerPreview.children.map((m) => (m as THREE.Mesh).geometry),
+    ].reduce((n, g) => n + g.getAttribute('position').count / 3, 0);
     find('workshop-metrics').textContent =
-      `${(triangles + extras.reduce((n, m) => n + (m.geometry.index?.count ?? m.geometry.attributes.position.count) / 3, 0)).toLocaleString()} triangles · ${5 + extras.length} parts`;
+      `${(triangles + extras.reduce((n, m) => n + (m.geometry.index?.count ?? m.geometry.attributes.position.count) / 3, 0)).toLocaleString()} triangles · ${5 + extras.length + bannerPreview.children.length} parts`;
   };
-  for (const id of ['workshop-unit', 'workshop-sidearm', 'workshop-lod', 'workshop-broken'])
+  for (const id of [
+    'workshop-unit',
+    'workshop-sidearm',
+    'workshop-lod',
+    'workshop-broken',
+    'workshop-banner',
+    'workshop-pose',
+  ])
     find(id).addEventListener('change', rebuild);
   rebuild();
   const resize = () => {
@@ -218,6 +260,16 @@ export function openWorkshop(initialType: number): void {
         mesh.position.x -= 1.5;
         mesh.position.z -= 1.5;
       }
+    if (bannerItem !== 'none') {
+      const stowed = pose === 'attack' || engineer;
+      bannerPreview.position.set(
+        (stowed ? -0.27 : 0.31) - (engineer ? 1.5 : 0),
+        (stowed ? 0.82 : 0.77) + (mounted ? 0.68 : 0),
+        (stowed ? -0.23 : 0.18) - (engineer ? 1.5 : 0),
+      );
+      bannerPreview.rotation.z = stowed ? 0.12 : 0;
+      if (!stowed) parts.rightArm.rotation.set(0, 0, 0);
+    }
     renderer.render(scene, camera);
   };
   frame = requestAnimationFrame(animate);

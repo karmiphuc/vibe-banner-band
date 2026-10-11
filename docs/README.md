@@ -4,6 +4,7 @@ Updated 2026-10-11. All engine subsystems below are specified/planned unless a d
 
 | Document | Responsibility |
 | --- | --- |
+| [Carried banner equipment 0.7](assets/BATTLE_STANDARDS.md) | Equippable physical standards, bearer ownership, reference study and explicit limits |
 | [Mounted tactics 0.6](REFINEMENT_06.md) | Deterministic cavalry charge cycles, skein layout and horse-archer maneuvers |
 | [Combined arms 0.5](REFINEMENT_05.md) | Cavalry, mounted archers, crewed ballistae, 640 m terrain and 5,000-soldier capacity |
 | [Combat PoC 0.4](REFINEMENT_04.md) | Cohesive ranks, reserves, frontage/facing and visible flank routes |

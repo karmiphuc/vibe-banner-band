@@ -20,3 +20,5 @@ Template: context; decision and status; considered alternatives; consequences; v
 - [0008: Combined arms and expanded terrain](0008-combined-arms-and-terrain.md)
 
 - [0009: Deterministic mounted formation controllers](0009-mounted-formation-tactics.md)
+
+- [0010: Carried banner equipment](0010-carried-banner-equipment.md)

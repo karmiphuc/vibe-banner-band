@@ -87,3 +87,7 @@ Current combined-arms rules and versioned limits supersede earlier infantry-only
 ## Mounted tactics (0.6)
 
 Select cavalry formation 3 for flank-and-charge or skein charge cycles; select horse-archer formation 4 for left/right circling or feint-and-evade. Start the battle to execute them. See [controls, phases, replay compatibility and limits](REFINEMENT_06.md).
+
+## Banner equipment (0.7)
+
+Floating formation name boxes are removed. Before combat, choose **Banner equipment** for the selected formation. Actual troops carry the standards; **Model workshop → Banner equipment** provides close-up previews. See [reference study, controls and limitations](assets/BATTLE_STANDARDS.md).

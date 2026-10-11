@@ -1,7 +1,7 @@
 import { MAX_ARMY } from './constants';
 import { worldObstacles } from './world';
 export { MAX_ARMY, MAX_UNITS, SCALE, WORLD_HALF, ORDER_LIMIT, MAX_ENGINES } from './constants';
-export const SIM_VERSION = 'battle-lab-6';
+export const SIM_VERSION = 'battle-lab-7';
 export const TICK_RATE = 30;
 export type Team = 0 | 1;
 export type Doctrine = 'balanced' | 'shieldwall' | 'charge';

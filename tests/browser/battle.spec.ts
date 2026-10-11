@@ -125,7 +125,7 @@ test('worker keeps stepping when snapshot buffers are exhausted and ignores stal
             resolve({ tick: m.summary.tick, snapshots });
           }
         };
-        worker.postMessage({ kind: 'init', session: 77, protocol: 6, config });
+        worker.postMessage({ kind: 'init', session: 77, protocol: 7, config });
       });
     },
     {
@@ -291,7 +291,12 @@ test('reserve encounter exposes selectable formations, facing, frontage and repl
     idleFrames,
   );
   await expect(page.getByLabel('romans formation 3 reserve', { exact: true })).toBeChecked();
-  await page.getByRole('button', { name: 'Select Roman formation 3', exact: true }).click();
+  const standard = page.getByRole('button', { name: 'Select Roman formation 3', exact: true });
+  await expect(standard).toHaveText('');
+  await expect(standard).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await expect(standard).not.toHaveAttribute('title');
+  await standard.focus();
+  await standard.press('Enter');
   await expect(page.locator('#command-group')).toHaveValue('2');
   await page.locator('#command-facing').selectOption('2');
   await expect(page.locator('#order-ack')).toContainText('Order 1');
@@ -430,7 +435,7 @@ test('mounted formation tactics expose phases, enforce roles and replay identica
   await page.goto('./');
   await expect(page.locator('#loading')).toBeHidden();
   await expect(page.locator('[data-tactic="skein-charge"]')).toBeDisabled();
-  await page.locator('#command-group').selectOption('2');
+  await page.getByRole('button', { name: 'Select Roman formation 3', exact: true }).click();
   await page.locator('[data-tactic="flank-left"]').click();
   await expect(page.locator('#formation-status')).toContainText('forming');
   await expect(page.locator('#command-formation')).toHaveValue('skein');
@@ -449,23 +454,21 @@ test('mounted formation tactics expose phases, enforce roles and replay identica
   b.issueOrder({ team: 0, group: 3, kind: 'tactic', tactic: 'feint' });
   b.issueOrder({ team: 1, group: 3, kind: 'tactic', tactic: 'circle-right' });
   for (let i = 0; i < 720; i++) b.step();
-  await page
-    .locator('#replay-file')
-    .setInputFiles({
-      name: 'mounted-tactics.json',
-      mimeType: 'application/json',
-      buffer: Buffer.from(
-        JSON.stringify({
-          format: 'banner-band-replay',
-          version: SIM_VERSION,
-          content: CONTENT_HASH,
-          config,
-          tick: b.tick,
-          expectedHash: b.hash(),
-          orders: b.orders,
-        }),
-      ),
-    });
+  await page.locator('#replay-file').setInputFiles({
+    name: 'mounted-tactics.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(
+      JSON.stringify({
+        format: 'banner-band-replay',
+        version: SIM_VERSION,
+        content: CONTENT_HASH,
+        config,
+        tick: b.tick,
+        expectedHash: b.hash(),
+        orders: b.orders,
+      }),
+    ),
+  });
   await expect(page.locator('#battle-status')).toHaveText('REPLAY VERIFIED', { timeout: 60000 });
   const state = await page.evaluate(() => (window as unknown as LabWindow).battleLab.summary!);
   expect(state.hash).toBe(b.hash());
@@ -476,5 +479,58 @@ test('mounted formation tactics expose phases, enforce roles and replay identica
   await page.screenshot({ path: 'artifacts/local/mounted-tactics-v6.png' });
   await page.locator('[data-order="hold"]').click();
   await expect(page.locator('[data-tactic="none"]')).toHaveAttribute('aria-pressed', 'true');
+  expect(errors).toEqual([]);
+});
+
+test('physical banners equip before battle, remove name boxes, and retain replay equipment', async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('./');
+  await expect(page.locator('#loading')).toBeHidden();
+  await expect(page.locator('.formation-banner')).toHaveCount(10);
+  for (const b of await page.locator('.formation-banner').all()) await expect(b).toHaveText('');
+  await page.locator('#command-group').selectOption('0');
+  await page.locator('#command-banner').selectOption('roman-vexillum');
+  await expect(page.locator('#order-ack')).toContainText('Order 1');
+  await page.locator('#command-banner').selectOption('none');
+  await expect(
+    page.getByRole('button', { name: 'Select Roman formation 1', exact: true }),
+  ).toBeHidden();
+  await page.locator('#command-banner').selectOption('roman-aquila');
+  await expect(
+    page.getByRole('button', { name: 'Select Roman formation 1', exact: true }),
+  ).toBeVisible();
+  await page.locator('#step').click();
+  await expect(page.locator('#command-banner')).toBeDisabled();
+  const state = await page.evaluate(() => (window as unknown as LabWindow).battleLab.summary!);
+  const { SCENARIOS } = await import('../../src/content/scenarios');
+  const b = new Battle(SCENARIOS[0].config);
+  for (const o of state.orders) b.issueOrder(o.order);
+  b.step();
+  expect(state.hash).toBe(b.hash());
+  const download = page.waitForEvent('download');
+  await page.locator('#export').click();
+  await page.locator('#replay-file').setInputFiles((await (await download).path())!);
+  await expect(page.locator('#battle-status')).toHaveText('REPLAY VERIFIED');
+  await page.screenshot({ path: 'artifacts/local/equipped-banners-battlefield.png' });
+  await page.locator('#open-workshop').click();
+  await page.locator('#workshop-turntable').uncheck();
+  for (const [type, item] of [
+    ['0', 'roman-aquila'],
+    ['0', 'roman-vexillum'],
+    ['3', 'gaul-boar'],
+    ['7', 'gaul-horse'],
+  ]) {
+    await page.locator('#workshop-unit').selectOption(type);
+    await page.locator('#workshop-banner').selectOption(item);
+    await page.locator('#workshop-pose').selectOption('march');
+    await expect(page.locator('#workshop-equipment')).toContainText(/standard|banner/);
+    await page.screenshot({ path: `artifacts/local/equipment-${item}-march.png` });
+    await page.locator('#workshop-pose').selectOption('attack');
+    await page.screenshot({ path: `artifacts/local/equipment-${item}-attack.png` });
+  }
+  await page.locator('#close-workshop').click();
   expect(errors).toEqual([]);
 });

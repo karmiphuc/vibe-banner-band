@@ -1,3 +1,4 @@
+import { isBannerSlot, type BannerSlot } from '../content/banners';
 import type { TacticKind, TacticState } from './tactics';
 import { TACTICS } from './tactics';
 import { ORDER_LIMIT, type Team, type FormationRole } from '../content/catalog';
@@ -14,6 +15,7 @@ export type Movement =
   | 'brace';
 export type Order = { team: Team; group: Group } & (
   | { kind: Movement; x?: number; z?: number }
+  | { kind: 'banner'; item: BannerSlot }
   | { kind: 'tactic'; tactic: TacticKind }
   | { kind: 'formation'; formation: Formation }
   | { kind: 'fire'; enabled: boolean }
@@ -36,6 +38,8 @@ export interface FormationState {
   files: number;
   strength: number;
   tactic?: TacticState;
+  bannerItem?: BannerSlot;
+  bannerBearer?: number;
   route: { x: number; z: number }[];
   x: number;
   z: number;
@@ -62,6 +66,10 @@ export function validateOrder(input: unknown): Order {
     return d.kind === 'face'
       ? { ...base, kind: 'face', heading: Number(value) }
       : { ...base, kind: 'frontage', files: Number(value) };
+  }
+  if (d.kind === 'banner') {
+    if (!isBannerSlot(d.item)) throw Error('Unknown banner equipment.');
+    return { ...base, kind: 'banner', item: d.item };
   }
   if (d.kind === 'tactic') {
     if (!TACTICS.includes(d.tactic as TacticKind)) throw Error('Unknown tactic.');

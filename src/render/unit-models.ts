@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 /** Original, deterministic articulated prototype recipes; not skinned production assets. */
-export const ASSET_RECIPE_VERSION = 'rome-gaul-combined-5';
+export const ASSET_RECIPE_VERSION = 'rome-gaul-standards-6';
 export type PartName = 'body' | 'leftLeg' | 'rightLeg' | 'leftArm' | 'rightArm';
 export interface UnitModel {
   parts: Record<PartName, THREE.BufferGeometry>;
@@ -98,6 +98,7 @@ export function createUnitModel(
   type: number,
   meleeSidearm = false,
   brokenShield = false,
+  carryingBanner = false,
 ): UnitModel {
   const originalType = type;
   if (type >= 6) type = [0, 3, 1, 4, 1, 4][type - 6];
@@ -420,46 +421,48 @@ export function createUnitModel(
     left.push(box(iron, 0, -0.33, 0.365, 0.1, ranged ? 0.22 : 0.35, 0.02));
     left.push(sphere(iron, 0, -0.33, 0.385, 0.075, 0.075, 0.035));
   }
-  const bladeLength = ranged ? 0.38 : roman ? 0.48 : 0.73;
-  right.push(cylinder(leather, 0, -0.55, 0.18, 0.025, 0.16, Math.PI / 2));
-  right.push(box(bronze, 0, -0.55, 0.27, 0.14, 0.024, 0.027));
-  if (crew) {
-    right.push(
-      cylinder(leather, 0, -0.55, 0.2, 0.026, 0.45),
-      box(iron, 0, -0.32, 0.2, 0.17, 0.08, 0.06),
-    );
-  } else if (bow && !meleeSidearm) {
-    for (const sign of [-1, 1]) {
-      left.push(box('#b18c51', 0, -0.33 + sign * 0.22, 0.27, 0.035, 0.46, 0.035, sign * 0.3));
-      left.push(box('#694727', 0, -0.33 + sign * 0.46, 0.34, 0.038, 0.1, 0.035, -sign * 0.55));
+  if (!carryingBanner) {
+    const bladeLength = ranged ? 0.38 : roman ? 0.48 : 0.73;
+    right.push(cylinder(leather, 0, -0.55, 0.18, 0.025, 0.16, Math.PI / 2));
+    right.push(box(bronze, 0, -0.55, 0.27, 0.14, 0.024, 0.027));
+    if (crew) {
+      right.push(
+        cylinder(leather, 0, -0.55, 0.2, 0.026, 0.45),
+        box(iron, 0, -0.32, 0.2, 0.17, 0.08, 0.06),
+      );
+    } else if (bow && !meleeSidearm) {
+      for (const sign of [-1, 1]) {
+        left.push(box('#b18c51', 0, -0.33 + sign * 0.22, 0.27, 0.035, 0.46, 0.035, sign * 0.3));
+        left.push(box('#694727', 0, -0.33 + sign * 0.46, 0.34, 0.038, 0.1, 0.035, -sign * 0.55));
+      }
+      left.push(box('#ddd0a9', 0, -0.33, 0.4, 0.009, 1.02, 0.009));
+      right.push(cylinder('#9e8254', 0, -0.55, 0.5, 0.009, 0.7, Math.PI / 2));
+    } else if (mounted && !bow) {
+      right.push(
+        cylinder('#8b633a', 0, -0.55, 0.85, 0.025, 2.7, Math.PI / 2),
+        colored(new THREE.ConeGeometry(0.045, 0.27, 4), iron, 0, -0.55, 2.33, 1, 1, 1, Math.PI / 2),
+      );
+    } else if (ranged && !meleeSidearm) {
+      right.push(cylinder('#86734d', 0, -0.55, 0.51, 0.018, 1.25, Math.PI / 2));
+      right.push(
+        colored(new THREE.ConeGeometry(0.03, 0.2, 4), iron, 0, -0.55, 1.22, 1, 1, 1, Math.PI / 2),
+      );
+    } else {
+      right.push(box(iron, 0, -0.55, 0.27 + bladeLength / 2, 0.045, 0.015, bladeLength));
+      right.push(
+        colored(
+          new THREE.ConeGeometry(0.028, 0.13, 4),
+          iron,
+          0,
+          -0.55,
+          0.27 + bladeLength + 0.06,
+          1,
+          1,
+          1,
+          Math.PI / 2,
+        ),
+      );
     }
-    left.push(box('#ddd0a9', 0, -0.33, 0.4, 0.009, 1.02, 0.009));
-    right.push(cylinder('#9e8254', 0, -0.55, 0.5, 0.009, 0.7, Math.PI / 2));
-  } else if (mounted && !bow) {
-    right.push(
-      cylinder('#8b633a', 0, -0.55, 0.85, 0.025, 2.7, Math.PI / 2),
-      colored(new THREE.ConeGeometry(0.045, 0.27, 4), iron, 0, -0.55, 2.33, 1, 1, 1, Math.PI / 2),
-    );
-  } else if (ranged && !meleeSidearm) {
-    right.push(cylinder('#86734d', 0, -0.55, 0.51, 0.018, 1.25, Math.PI / 2));
-    right.push(
-      colored(new THREE.ConeGeometry(0.03, 0.2, 4), iron, 0, -0.55, 1.22, 1, 1, 1, Math.PI / 2),
-    );
-  } else {
-    right.push(box(iron, 0, -0.55, 0.27 + bladeLength / 2, 0.045, 0.015, bladeLength));
-    right.push(
-      colored(
-        new THREE.ConeGeometry(0.028, 0.13, 4),
-        iron,
-        0,
-        -0.55,
-        0.27 + bladeLength + 0.06,
-        1,
-        1,
-        1,
-        Math.PI / 2,
-      ),
-    );
   }
   return {
     parts: {
@@ -486,6 +489,7 @@ export function createCrowdModel(
   type: number,
   meleeSidearm = false,
   brokenShield = false,
+  carryingBanner = false,
 ): UnitModel {
   const originalType = type;
   if (type >= 6) type = [0, 3, 1, 4, 1, 4][type - 6];
@@ -553,27 +557,28 @@ export function createCrowdModel(
       box('#b18c51', 0, -0.33, 0.3, 0.035, 1.05, 0.08),
       box('#ddd0a9', 0, -0.33, 0.4, 0.01, 1.0, 0.01),
     );
-  right.push(
-    box(
-      ranged && !meleeSidearm ? '#8e7953' : iron,
-      0,
-      -0.55,
-      0.55,
-      0.035,
-      0.025,
-      mounted && !bow
-        ? 2.7
-        : bow
-          ? 0.65
-          : crew
-            ? 0.3
-            : ranged && !meleeSidearm
-              ? 1.3
-              : roman
-                ? 0.5
-                : 0.75,
-    ),
-  );
+  if (!carryingBanner)
+    right.push(
+      box(
+        ranged && !meleeSidearm ? '#8e7953' : iron,
+        0,
+        -0.55,
+        0.55,
+        0.035,
+        0.025,
+        mounted && !bow
+          ? 2.7
+          : bow
+            ? 0.65
+            : crew
+              ? 0.3
+              : ranged && !meleeSidearm
+                ? 1.3
+                : roman
+                  ? 0.5
+                  : 0.75,
+      ),
+    );
   return {
     parts: {
       body: merge(body),

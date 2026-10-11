@@ -27,3 +27,7 @@ Follow the [production pipeline](PIPELINE.md): formal recipe inputs/schema, asse
 ## Combined arms in 0.5
 
 [Combined models](../../src/render/combined-models.ts) add original horse and ballista geometry. Twelve humanoid designs share five-part joints, with dedicated spear, bow, sidearm and crew-tool variants. The horse seat is approximately 1.45 m high; rider roots are offset by 0.68 m, with legs spread outside the saddle. Horse bodies and four legs are instanced separately. Engines are a single merged batch per battle. [Repeat-build report](../evidence/model-recipes-v5.json) includes equipment and near/crowd variants. Horse crowd geometry uses low-poly body volumes and omits bit rings; leg and tack silhouettes remain. No production animation or grip-fit qualification is implied.
+
+## Carried standards (0.7)
+
+The runtime character recipe `rome-gaul-standards-6` adds a weapon-free carrying hand variant. Original `carried-standards-1` equipment attaches to that grip or a back sling; see [equipment designs, source references and limits](BATTLE_STANDARDS.md).

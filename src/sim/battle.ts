@@ -1,3 +1,4 @@
+import { BANNERS, bannerAllowed } from '../content/banners';
 import { supportsTactic, startTactic, updateTactic } from './tactics';
 import {
   CONTENT_VERSION,
@@ -156,7 +157,12 @@ export interface Checkpoint {
   engines: SiegeEngine[];
 }
 export const CONTENT_HASH = hashText(
-  JSON.stringify({ version: CONTENT_VERSION, world: WORLD_VERSION, units: UNITS }),
+  JSON.stringify({
+    version: CONTENT_VERSION,
+    world: WORLD_VERSION,
+    units: UNITS,
+    banners: BANNERS,
+  }),
 );
 
 export class Battle {
@@ -355,6 +361,27 @@ export class Battle {
     }
     this.deployFormations();
     this.initializeEngines();
+    this.formations.forEach((f, index) => {
+      f.bannerItem =
+        f.team === 0
+          ? f.id === 0
+            ? 'roman-aquila'
+            : 'roman-vexillum'
+          : f.role === 'cavalry' || f.role === 'horse-archer'
+            ? 'gaul-horse'
+            : 'gaul-boar';
+      f.bannerBearer = -1;
+      let nearest = Infinity;
+      for (let id = 0; id < this.count; id++)
+        if (this.formationId[id] === index && UNITS[this.type[id]].role !== 'commander') {
+          const distance = this.slotX[id] ** 2 + this.slotZ[id] ** 2;
+          if (distance < nearest) {
+            nearest = distance;
+            f.bannerBearer = id;
+          }
+        }
+      if (f.bannerBearer < 0) f.bannerItem = 'none';
+    });
     this.log('Armies deployed. Commanders will lead autonomously.', -1);
     this.rebuildGrid();
   }
@@ -802,6 +829,13 @@ export class Battle {
       (f) => f.team === order.team && (order.group === 'all' || f.id === order.group),
     );
     if (!selected.length) throw Error('That formation is not deployed.');
+    if (order.kind === 'banner') {
+      if (this.tick !== 0) throw Error('Equip banners before the battle starts.');
+      if (!bannerAllowed(order.item, order.team))
+        throw Error('That banner belongs to the other faction.');
+      if (order.item !== 'none' && selected.some((f) => (f.bannerBearer ?? -1) < 0))
+        throw Error('This formation has no banner bearer.');
+    }
     if (order.kind === 'tactic' && selected.some((f) => !supportsTactic(order.tactic, f.role)))
       throw Error('Select cavalry for charges or horse archers for mounted skirmish tactics.');
     if (
@@ -815,6 +849,10 @@ export class Battle {
     for (let index = 0; index < this.formations.length; index++) {
       const f = this.formations[index];
       if (f.team !== order.team || (order.group !== 'all' && order.group !== f.id)) continue;
+      if (order.kind === 'banner') {
+        f.bannerItem = order.item;
+        continue;
+      }
       if (order.kind !== 'fire' && order.kind !== 'tactic') delete f.tactic;
       if (order.kind === 'tactic') {
         f.route = [];

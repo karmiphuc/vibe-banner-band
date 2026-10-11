@@ -45,3 +45,7 @@ The current experiment has a three-buffer pool. Packed Int32 header: tick, actor
 ## Mounted tactics compatibility (0.6)
 
 The current experiment uses protocol **6**, simulation **battle-lab-6**. Formation summaries include optional authoritative tactical phase state. Validated `tactic` orders select mounted behaviors or cancel them; incompatible role selections reject atomically. Packed soldier/projectile/engine strides remain unchanged. See [mounted tactics](../REFINEMENT_06.md).
+
+## Equipment compatibility (0.7)
+
+Current protocol **7**, simulation **battle-lab-7**. Formation summaries carry stable banner item and bearer IDs; equipment commands are valid only before the first simulation tick. Packed snapshots retain their existing strides. See [carried banner equipment](../assets/BATTLE_STANDARDS.md).

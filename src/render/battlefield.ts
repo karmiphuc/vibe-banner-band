@@ -1,3 +1,4 @@
+import { BannerView } from './banner-view';
 import { CombinedView } from './combined-view';
 import { terrainHeight } from '../content/world';
 import { MAX_UNITS, type Terrain } from '../content/catalog';
@@ -26,6 +27,7 @@ export class Battlefield {
   private combined?: CombinedView;
   private terrainType: Terrain = 'meadow';
   private formationOverlay: FormationOverlay;
+  private banners: BannerView;
   onFormation: (team: Team, id: number) => void = () => {};
   private terrain = new THREE.Group();
   private material = new THREE.MeshStandardMaterial({
@@ -101,6 +103,7 @@ export class Battlefield {
       'Isometric battlefield. Drag to pan, scroll to zoom, click a soldier to inspect.',
     );
     this.container.appendChild(this.renderer.domElement);
+    this.banners = new BannerView(this.scene);
     this.formationOverlay = new FormationOverlay(this.scene, container, (team, id) =>
       this.onFormation(team, id),
     );
@@ -419,7 +422,12 @@ export class Battlefield {
       const melee = this.current[b + 19] === 0,
         broken = this.current[b + 17] === 0,
         detail = this.detailMode || i === this.selected;
-      const key = `${type}:${melee}:${broken}:${detail}`;
+      const carryingBanner =
+        this.banners.carries(i) &&
+        this.current[b + 4] !== State.Windup &&
+        this.current[b + 4] !== State.Recovery &&
+        type < 10;
+      const key = `${type}:${melee}:${broken}:${detail}:${carryingBanner}`;
       let kit = this.kitKeys.get(key);
       if (!kit) {
         const capacity = Array.from(
@@ -427,11 +435,15 @@ export class Battlefield {
           (_, id) => this.current[3 + id * UNIT_STRIDE + 8],
         ).filter((t) => t === type).length;
         const model = detail
-          ? createUnitModel(type, melee, broken)
-          : createCrowdModel(type, melee, broken);
+          ? createUnitModel(type, melee, broken, carryingBanner)
+          : createCrowdModel(type, melee, broken, carryingBanner);
         const meshes = {} as Kit['meshes'];
         for (const name of Object.keys(model.parts) as PartName[]) {
-          const mesh = new THREE.InstancedMesh(model.parts[name], this.material, capacity);
+          const mesh = new THREE.InstancedMesh(
+            model.parts[name],
+            this.material,
+            carryingBanner ? Math.min(10, capacity) : capacity,
+          );
           mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
           mesh.frustumCulled = false;
           mesh.count = 0;
@@ -468,6 +480,7 @@ export class Battlefield {
   }
   setFormations(forms: BattleSummary['formations']): void {
     this.formationOverlay.setFormations(forms);
+    if (this.banners.setFormations(forms)) this.assignKits();
     this.dirty = true;
   }
   setCommandSelection(team: Team, group: Group): void {
@@ -639,6 +652,7 @@ export class Battlefield {
         sparkCount = 0,
         markerCount = 0,
         rallyCount = 0;
+      this.banners.beginFrame();
       for (const kit of this.kits) {
         let index = 0;
         for (const id of kit.ids) {
@@ -651,6 +665,7 @@ export class Battlefield {
             terrainHeight(this.terrainType, Math.round(x * SCALE), Math.round(z * SCALE)) / SCALE;
           const mounted = this.current[b + 21] > 0;
           this.bounds.center.set(x, groundY + 1.5, z);
+          this.bounds.radius = this.banners.carries(id) ? 4 : 2.5;
           if (!this.frustum.intersectsSphere(this.bounds)) continue;
           const moving =
             Math.abs(this.current[b] - this.previous[b]) +
@@ -677,6 +692,9 @@ export class Battlefield {
           );
           this.quaternion.setFromEuler(this.rotation);
           this.root.compose(this.position, this.quaternion, this.scale);
+          const bannerStowed =
+            state === State.Windup || state === State.Recovery || this.current[b + 8] >= 10;
+          this.banners.update(id, this.root, bannerStowed, state);
           this.scale.set(1, 1, 1);
           const gait = moving && !dead ? Math.sin(phaseTick * 0.48 + id * 1.7) * 0.5 : 0;
           const windup =
@@ -738,6 +756,8 @@ export class Battlefield {
                 : Math.sin(phaseTick * 0.07 + id) * 0.006;
               this.rotation.y = state === State.Windup ? -0.12 * windup : 0;
             }
+            if (name === 'rightArm' && this.banners.carries(id) && !bannerStowed)
+              this.rotation.set(0, 0, 0);
             this.quaternion.setFromEuler(this.rotation);
             this.local.compose(this.position, this.quaternion, this.scale);
             this.matrix.multiplyMatrices(this.root, this.local);
@@ -866,6 +886,7 @@ export class Battlefield {
   };
   dispose(): void {
     this.combined?.dispose();
+    this.banners.dispose();
     cancelAnimationFrame(this.frame);
     this.observer.disconnect();
     this.controls.dispose();

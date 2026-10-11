@@ -72,6 +72,8 @@ export class FormationOverlay {
         b.className = `formation-banner ${f.team === 0 ? 'roman' : 'gaul'}`;
         b.dataset.formation = String(f.id);
         b.dataset.team = String(f.team);
+        b.dataset.role = f.role;
+
         this.root.appendChild(b);
         this.banners.set(key, b);
         const geometry = new THREE.BufferGeometry();
@@ -93,8 +95,10 @@ export class FormationOverlay {
         this.outlines.set(key, line);
       }
       const b = this.banners.get(key)!;
-      b.textContent = `${f.id + 1} ${ROLE_LABELS[f.role]} · ${f.standing}${f.tactic ? ` / ${f.tactic.phase}` : ''}`;
-      b.title = `${f.team === 0 ? 'Roman' : 'Gallic'} formation ${f.id + 1}: ${f.movement}; ${f.files} files`;
+      b.setAttribute(
+        'aria-description',
+        `${ROLE_LABELS[f.role]}, ${f.standing} standing, ${f.tactic?.phase ?? f.movement}.`,
+      );
       b.setAttribute(
         'aria-label',
         `Select ${f.team === 0 ? 'Roman' : 'Gallic'} formation ${f.id + 1}`,
@@ -188,6 +192,7 @@ export class FormationOverlay {
         button = this.banners.get(key)!;
       const active = f.team === this.team && (this.group === 'all' || this.group === f.id);
       button.classList.toggle('selected', active);
+      button.classList.toggle('command-focus', active && this.group !== 'all');
       button.setAttribute('aria-pressed', String(active));
       const line = this.outlines.get(key)!;
       line.visible = !!c && active && (f.movement !== 'charge' || !!f.tactic);
@@ -213,15 +218,31 @@ export class FormationOverlay {
         line.geometry.attributes.position.needsUpdate = true;
         line.geometry.setDrawRange(0, 14 + vertices.length / 3);
       }
-      if (!c) {
+      const bearer = f.bannerBearer ?? -1;
+      const base = 3 + bearer * UNIT_STRIDE;
+      if (
+        !c ||
+        f.bannerItem === 'none' ||
+        bearer < 0 ||
+        bearer >= data[1] ||
+        data[base + 4] >= State.Routing
+      ) {
         button.hidden = true;
         continue;
       }
       this.point
-        .set(c.x / c.n, this.height((c.x / c.n) * SCALE, (c.z / c.n) * SCALE) + 3.2, c.z / c.n)
+        .set(
+          data[base] / SCALE,
+          data[base + 27] / SCALE + (data[base + 21] > 0 ? 3.9 : 3.2),
+          data[base + 1] / SCALE,
+        )
         .project(camera);
-      button.hidden = Math.abs(this.point.x) > 1 || Math.abs(this.point.y) > 1 || this.point.z > 1;
-      button.style.transform = `translate(${((this.point.x + 1) * width) / 2}px,${((1 - this.point.y) * height) / 2}px) translate(-50%,-100%)`;
+      button.hidden =
+        Math.abs(this.point.x) > 1 ||
+        Math.abs(this.point.y) > 1 ||
+        this.point.z > 1 ||
+        this.point.z < -1;
+      button.style.transform = `translate(${((this.point.x + 1) * width) / 2}px,${((1 - this.point.y) * height) / 2}px) translate(-50%,-50%)`;
     }
   }
   dispose(): void {
