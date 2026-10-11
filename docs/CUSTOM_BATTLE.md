@@ -4,7 +4,7 @@ Status: implemented experimental vertical slice, 2026-10-11. It tests architectu
 
 [Play on GitHub Pages](https://karmiphuc.github.io/vibe-banner-band/). Static build is published from the repository `gh-pages` branch; see [deployment details](engineering/DEPLOYMENT.md).
 
-See [proof of concept 0.2](REFINEMENT_02.md) for the newest controls, combat rules, model workshop and verification.
+See [combat proof of concept 0.3](REFINEMENT_03.md) for the newest controls, combat rules, model workshop and verification.
 
 ## Run and test
 
@@ -34,7 +34,7 @@ To use an existing Chromium installation: `CHROMIUM_PATH=/usr/bin/chromium npm r
 6. Export a replay at a coherent worker tick. Import it to re-simulate and compare the saved state fingerprint. Reset cancels a long replay.
 7. Increase to 300, 500 (numeric input) or 1,000 per side. Watch Diagnostics; these are experimental capacity options, not certified device tiers.
 
-Default troops are intentionally asymmetric and unbalanced for testing. Doctrine now affects speed, file/target preference, nearby shield support and charge impact; it is not a completed formation order system. Both sides advance automatically; no hero input or tactical command log is needed for this slice's config-and-tick replays.
+Default troops are intentionally asymmetric and unbalanced for testing. Doctrine now affects speed, file/target preference, nearby shield support and charge impact; it is not a completed formation order system. Both sides can fight automatically. Up to five independent formations per army can divide infantry and javelineers by integer shares. Tactical orders are optional, and their acknowledged history is recorded in replay files.
 
 ## Unit and commander templates
 
@@ -57,7 +57,7 @@ These are fictional gameplay archetypes with historically inspired equipment, no
 - Windup/recovery, stamina regeneration/cost, armor, facing-dependent shield chance, simultaneous damage and lethal trades.
 - Swept javelin contacts, finite ammo, commander loss penalty, routing and victory/draw. Initial ranged friendly fire is off.
 - One worker, three transferable snapshot buffers, snapshot backpressure, separate status replies, stale-session rejection and hidden-tab pause.
-- Canonical state fingerprint including arrays, config, RNG, projectiles and authoritative counters; config-and-tick replay export/import with version and input limits.
+- Canonical state fingerprint including arrays, config, RNG, projectiles and authoritative counters; config/order/tick replay export/import with version and input limits.
 - Trusted in-memory checkpoints for tests; this is not a hardened public save/checkpoint import API.
 
 ## Implemented presentation
@@ -68,11 +68,11 @@ The core uses `src/sim` and `src/content`; renderer and browser ownership stay i
 
 ## Known limits and next gates
 
-- No hierarchical navigation, shared flow-field implementation, formal formation slots, cavalry, siege, campaigning or production data-pack compiler yet.
+- No hierarchical navigation, shared flow-field implementation, general formation pathfinding, cavalry, siege, campaigning or production data-pack compiler yet.
 - Local steering handles only the two defined outcrops; it is not a general pathfinder. Two separation passes are approximate and can leave residual overlap in dense contacts. No collision-free crowd guarantee is made.
 - Models are explicit early procedural studies: no deforming skin rig, authored motion capture, detailed baked material set, animation-texture crowd path, or production LOD compiler. A tested near/crowd geometry tier is implemented. No production-asset qualification is claimed.
 - Battle ends when a side has no non-routing combatants, or at 180 simulation seconds. Corpses remain until reset.
-- Replay captures immutable setup and a target tick; live tactical orders are not implemented. FNV state fingerprints aid reproducibility, not tamper resistance. Format/rule changes require version bumps.
+- Replay captures immutable setup, a bounded tactical order history and a target tick. FNV state fingerprints aid reproducibility, not tamper resistance. Format/rule changes require version bumps.
 - Browser validation currently covers Chromium in the execution environment; Firefox/Safari and real-device GPU capacity remain unqualified.
 - Pause/step/replay work is implemented; worker-crash checkpoint recovery, public save migration and robust WebGL recovery require further testing/implementation. Context loss pauses the battle but is not a certified recovery feature.
 

@@ -1,4 +1,5 @@
 import './style.css';
+import { CommandPanel } from './ui/command-panel';
 import { SCENARIOS } from './content/scenarios';
 import { drawMinimap } from './render/minimap';
 import {
@@ -7,6 +8,10 @@ import {
   TICK_RATE,
   UNITS,
   validateConfig,
+  shieldDurability,
+  formationRoster,
+  DEFAULT_FORMATIONS,
+  type FormationRole,
   type BattleConfig,
   type Doctrine,
 } from './content/catalog';
@@ -45,12 +50,13 @@ const armyForm = (
   <div class="mix-label"><label for="${team}-mix">Javelineers</label><output id="${team}-mix-value">${DEFAULT_CONFIG[team].skirmishers}%</output></div>
   <input id="${team}-mix" type="range" min="0" max="80" step="5" value="${DEFAULT_CONFIG[team].skirmishers}" />
   <div class="roster-breakdown"><span id="${team}-infantry-count"></span><span id="${team}-ranged-count"></span></div>
+  <div id="${team}-formations" class="formation-builder"></div>
   <label class="select-label" for="${team}-doctrine">Doctrine</label><select id="${team}-doctrine"><option value="balanced">Balanced advance</option><option value="shieldwall" ${team === 'romans' ? 'selected' : ''}>Shield discipline</option><option value="charge" ${team === 'gauls' ? 'selected' : ''}>Aggressive charge</option></select>
   <div class="commander-template"><span class="commander-icon">${icon('flag')}</span><div><strong>${team === 'romans' ? 'Roman legate' : 'Gallic warlord'}</strong><span>${team === 'romans' ? 'Rally the line · Morale & stamina' : 'War cry · Morale & attack'}</span></div><span class="ai-tag">AI</span></div>
 </section>`;
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-<header class="topbar"><a class="brand" href="./" aria-label="Banner Band home"><span class="brand-symbol">${icon('flag')}</span><span>BANNER<span class="brand-slash">/</span>BAND</span></a><div class="page-title">CUSTOM BATTLE <span class="title-divider">/</span> <span>THE GALLIC FRONTIER</span></div><a class="build-tag" href="https://github.com/karmiphuc/vibe-banner-band" target="_blank" rel="noopener" title="Source code and project documentation"><i></i> PROOF OF CONCEPT <b>0.2 ↗</b></a></header>
+<header class="topbar"><a class="brand" href="./" aria-label="Banner Band home"><span class="brand-symbol">${icon('flag')}</span><span>BANNER<span class="brand-slash">/</span>BAND</span></a><div class="page-title">CUSTOM BATTLE <span class="title-divider">/</span> <span>THE GALLIC FRONTIER</span></div><a class="build-tag" href="https://github.com/karmiphuc/vibe-banner-band" target="_blank" rel="noopener" title="Source code and project documentation"><i></i> PROOF OF CONCEPT <b>0.3 ↗</b></a></header>
 <main class="workspace">
   <aside class="setup-panel"><div class="panel-intro"><span class="eyebrow">01 / BATTLE SETUP</span><h1>Set the field.</h1><p>Build two armies. Watch their commanders lead.</p></div>
   <form id="battle-form"><fieldset id="setup-fields"><legend class="sr-only">Battle configuration</legend>
@@ -76,6 +82,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <div class="camera-hint">DRAG TO PAN <span>·</span> SCROLL TO ZOOM <span>·</span> CLICK TO INSPECT</div>
       <div id="loading" class="loading">Preparing the battlefield…</div>
     </div>
+    <section id="command-panel" class="command-panel" aria-label="Tactical formation commands"></section>
     <div class="field-bottom"><div class="battle-log"><span class="log-label">FIELD REPORT</span><span id="latest-event">Commanders await deployment.</span></div><div class="replay-actions"><button id="export" title="Export this configuration and exact battle state for replay">${icon('download')}<span>Export replay</span></button><button id="import">${icon('upload')}<span>Import</span></button><input id="replay-file" type="file" accept=".json,application/json" hidden /></div></div>
   </section>
   <aside class="inspect-panel"><div class="inspect-heading"><span class="eyebrow">03 / INSPECT</span><span class="small-label">AI OBSERVER</span></div>
@@ -87,6 +94,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <div class="unit-stat"><div><span>Morale</span><strong id="unit-morale"></strong></div><div class="meter morale"><i id="morale-meter"></i></div></div>
     <div class="unit-stat"><div><span>Stamina</span><strong id="unit-stamina"></strong></div><div class="meter stamina"><i id="stamina-meter"></i></div></div>
     <div class="unit-facts"><div><span>Armor</span><strong id="unit-armor"></strong></div><div><span>Damage</span><strong id="unit-damage"></strong></div><div><span>Ammo</span><strong id="unit-ammo"></strong></div><div><span>Kills</span><strong id="unit-kills"></strong></div></div>
+    <div class="unit-stat"><div><span>Shield integrity</span><strong id="unit-shield"></strong></div><div class="meter shield"><i id="shield-meter"></i></div></div>
     <div class="combat-readout"><div><span>Shield support</span><b id="unit-support">—</b></div><div><span>Charge impact</span><b id="unit-impact">—</b></div><div><span>Shield blocks</span><b id="unit-blocks">0</b></div></div>
     <section class="equipment"><h3>EQUIPMENT</h3><ul id="unit-equipment"></ul></section>
     <section class="ability"><span>${icon('flag')}</span><div><h3 id="unit-ability"></h3><p id="ability-detail"></p></div></section>
@@ -114,6 +122,11 @@ const worker = new Worker(new URL('./platform/battle.worker.ts', import.meta.url
   type: 'module',
 });
 const send = (message: ToWorker) => worker.postMessage(message);
+const commands = new CommandPanel(
+  $('command-panel'),
+  (order) => send({ kind: 'order', session, order }),
+  (active) => renderer?.setPlacement(active),
+);
 function toast(text: string): void {
   $('toast').textContent = text;
   $('toast').hidden = false;
@@ -125,6 +138,13 @@ function readConfig(): BattleConfig {
     count: Number($<HTMLInputElement>(`${team}-count`).value),
     skirmishers: Number($<HTMLInputElement>(`${team}-mix`).value),
     doctrine: $<HTMLSelectElement>(`${team}-doctrine`).value as Doctrine,
+    formations: Array.from(
+      $(`${team}-formations`).querySelectorAll<HTMLElement>('[data-formation-id]'),
+    ).map((row) => ({
+      id: Number(row.dataset.formationId),
+      role: row.querySelector<HTMLSelectElement>('select')!.value as FormationRole,
+      weight: Number(row.querySelector<HTMLInputElement>('input')!.value),
+    })),
   });
   return validateConfig({
     seed: Number($<HTMLInputElement>('seed').value),
@@ -138,10 +158,15 @@ function writeConfig(): void {
     $<HTMLInputElement>(`${team}-count`).value = String(config[team].count);
     $<HTMLInputElement>(`${team}-mix`).value = String(config[team].skirmishers);
     $<HTMLSelectElement>(`${team}-doctrine`).value = config[team].doctrine;
+    const roster = formationRoster(config[team]);
+    $(`${team}-formations`).innerHTML =
+      `<div class="formation-builder-heading">Formations <small>${roster.length}/5</small></div>${roster.map((f) => `<div class="formation-row" data-formation-id="${f.id}"><b>${f.id + 1}</b><select aria-label="${team} formation ${f.id + 1} role"><option value="infantry" ${f.role === 'infantry' ? 'selected' : ''}>Infantry</option><option value="ranged" ${f.role === 'ranged' ? 'selected' : ''}>Javelineers</option></select><input aria-label="${team} formation ${f.id + 1} share" title="Relative share within this troop role" type="number" min="1" max="100" value="${f.weight}" /><output title="Assigned soldiers, including commander">${f.count}</output><button type="button" data-remove-formation="${f.id}" data-team="${team}" aria-label="Remove ${team} formation ${f.id + 1}">×</button></div>`).join('')}<button type="button" data-add-formation="${team}" ${roster.length === 5 ? 'disabled' : ''}>+ Add formation</button><small>Share divides troops of the same role. Right number: soldiers. Leader joins the first infantry formation.</small>`;
   }
   $<HTMLInputElement>('seed').value = String(config.seed);
   $<HTMLSelectElement>('terrain').value = config.terrain;
-  const preset = SCENARIOS.find((s) => JSON.stringify(s.config) === JSON.stringify(config));
+  const preset = SCENARIOS.find(
+    (s) => JSON.stringify(validateConfig(s.config)) === JSON.stringify(config),
+  );
   $<HTMLSelectElement>('scenario').value = preset?.id ?? 'custom';
   $('scenario-detail').textContent =
     preset?.description ?? 'Your army sizes, doctrines, terrain and seed.';
@@ -176,6 +201,7 @@ function deploy(newConfig: BattleConfig = config): void {
   selected = config.romans.count - 1;
   writeConfig();
   $('viewport').classList.remove('inspecting');
+  commands.cancelPlacement();
   renderer?.configure(config);
   renderer?.select(selected);
   $('result').hidden = true;
@@ -214,6 +240,7 @@ function updateControls(): void {
       : 'Changes redeploy the armies. Both commanders are autonomous.';
   $('viewport-note').hidden = (summary?.tick ?? 0) > 0;
   renderer?.setRunning(running);
+  commands.update(summary, replaying);
   $('follow').setAttribute('aria-pressed', String(renderer?.isFollowing ?? false));
 }
 function updateSummary(s: BattleSummary): void {
@@ -252,7 +279,7 @@ function updateSummary(s: BattleSummary): void {
   if (lastData.length) {
     let fighting = 0;
     for (let i = 0; i < lastData[1]; i++)
-      if (lastData[3 + i * UNIT_STRIDE + 4] === 1 && lastData[3 + i * UNIT_STRIDE + 9] === 0)
+      if (lastData[3 + i * UNIT_STRIDE + 4] === 1 && lastData[3 + i * UNIT_STRIDE + 19] === 0)
         fighting++;
     const routed = s.romans.routing + s.gauls.routing;
     const phase =
@@ -278,7 +305,7 @@ function updateSummary(s: BattleSummary): void {
             : phase === 'ADVANCING'
               ? 'Disciplined files against a gathering charge.'
               : 'Inspect the commanders. Choose your experiment.';
-    drawMinimap($<HTMLCanvasElement>('minimap'), lastData, config, selected);
+    drawMinimap($<HTMLCanvasElement>('minimap'), lastData, config, selected, s.formations);
   }
   $('event-list').replaceChildren(
     ...s.events
@@ -311,7 +338,11 @@ function updateInspector(): void {
   $('unit-description').textContent = design.description;
   $('unit-role').textContent = design.role.toUpperCase();
   $('unit-emblem').className = `unit-emblem ${design.team === 0 ? 'roman' : 'gaul'}`;
-  $('unit-state').textContent = STATE_NAMES[lastData[b + 4]];
+  $('unit-state').textContent =
+    lastData[b + 2] > 0 && lastData[b + 18] > 0 ? 'Staggered' : STATE_NAMES[lastData[b + 4]];
+  $('unit-shield').textContent =
+    lastData[b + 17] > 0 ? `${lastData[b + 17]} / ${shieldDurability(type)}` : 'BROKEN';
+  $('shield-meter').style.width = `${(lastData[b + 17] / shieldDurability(type)) * 100}%`;
   $('unit-id').textContent = `UNIT #${selected + 1}`;
   $('unit-health').textContent = `${lastData[b + 2]} / ${design.hp}`;
   $('health-meter').style.width = `${(lastData[b + 2] / design.hp) * 100}%`;
@@ -329,7 +360,8 @@ function updateInspector(): void {
   $('unit-equipment').replaceChildren(
     ...design.equipment.map((name) => {
       const li = document.createElement('li');
-      li.textContent = name;
+      li.textContent =
+        lastData[b + 17] === 0 && /shield|scutum|buckler/i.test(name) ? `${name} (broken)` : name;
       return li;
     }),
   );
@@ -404,6 +436,7 @@ worker.onerror = () => {
 try {
   renderer = new Battlefield($('viewport'));
   renderer.onSelect = selectUnit;
+  renderer.onPlace = (x, z) => commands.place(x, z);
   renderer.onContext = (lost) => {
     if (lost) {
       send({ kind: 'pause', session });
@@ -416,6 +449,27 @@ try {
   toast(error instanceof Error ? error.message : 'Renderer unavailable.');
 }
 
+$('battle-form').addEventListener('click', (event) => {
+  const button = (event.target as HTMLElement).closest<HTMLButtonElement>(
+    '[data-add-formation],[data-remove-formation]',
+  );
+  if (!button || button.disabled) return;
+  try {
+    const next = readConfig();
+    const team = (button.dataset.addFormation ?? button.dataset.team) as 'romans' | 'gauls';
+    const list = next[team].formations ?? structuredClone(DEFAULT_FORMATIONS);
+    if (button.dataset.addFormation) {
+      if (list.length >= 5) return;
+      const id = [0, 1, 2, 3, 4].find((id) => !list.some((f) => f.id === id))!;
+      list.push({ id, role: 'infantry', weight: 1 });
+      next[team].formations = list;
+    } else
+      next[team].formations = list.filter((f) => f.id !== Number(button.dataset.removeFormation));
+    deploy(validateConfig(next));
+  } catch (error) {
+    toast((error as Error).message);
+  }
+});
 $('battle-form').addEventListener('submit', (e) => e.preventDefault());
 $('battle-form').addEventListener('change', (event) => {
   try {
@@ -559,6 +613,10 @@ $('replay-file').addEventListener('change', async () => {
   }
 });
 document.addEventListener('keydown', (e) => {
+  if (commands.handleKey(e)) {
+    e.preventDefault();
+    return;
+  }
   if (
     e.code === 'Space' &&
     !['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON', 'SUMMARY'].includes(

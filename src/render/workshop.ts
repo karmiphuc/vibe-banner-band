@@ -9,7 +9,7 @@ export function openWorkshop(initialType: number): void {
   const dialog = document.createElement('dialog');
   dialog.className = 'workshop';
   dialog.setAttribute('aria-label', 'Unit model workshop');
-  dialog.innerHTML = `<header><div><span class="eyebrow">THE ARMORY / EQUIPMENT STUDIES</span><h2>Model workshop</h2></div><button class="secondary" id="close-workshop" aria-label="Close model workshop">Close ×</button></header><div class="workshop-layout"><div class="workshop-stage"><div class="studio-label">DRAG TO ROTATE · SCROLL TO ZOOM</div></div><aside><label for="workshop-unit">Unit design</label><select id="workshop-unit">${UNITS.map((u, i) => `<option value="${i}">${u.name}</option>`).join('')}</select><h3 id="workshop-name"></h3><p id="workshop-description"></p><label for="workshop-pose">Pose study</label><select id="workshop-pose"><option value="idle">At ease</option><option value="march">March</option><option value="attack">Attack</option><option value="guard">Shield guard</option></select><label class="workshop-check"><input type="checkbox" id="workshop-sidearm"> Ammunition exhausted</label><label class="workshop-check"><input type="checkbox" id="workshop-lod"> Crowd geometry</label><label class="workshop-check"><input type="checkbox" id="workshop-turntable" checked> Turntable</label><h4>Equipped kit</h4><ul id="workshop-equipment"></ul><p class="workshop-metrics" id="workshop-metrics"></p><p class="workshop-footnote">Original articulated proof-of-concept models. Equipment and pose studies; no direct hero control.</p></aside></div>`;
+  dialog.innerHTML = `<header><div><span class="eyebrow">THE ARMORY / EQUIPMENT STUDIES</span><h2>Model workshop</h2></div><button class="secondary" id="close-workshop" aria-label="Close model workshop">Close ×</button></header><div class="workshop-layout"><div class="workshop-stage"><div class="studio-label">DRAG TO ROTATE · SCROLL TO ZOOM</div></div><aside><label for="workshop-unit">Unit design</label><select id="workshop-unit">${UNITS.map((u, i) => `<option value="${i}">${u.name}</option>`).join('')}</select><h3 id="workshop-name"></h3><p id="workshop-description"></p><label for="workshop-pose">Pose study</label><select id="workshop-pose"><option value="idle">At ease</option><option value="march">March</option><option value="attack">Attack</option><option value="guard">Shield guard</option></select><label class="workshop-check"><input type="checkbox" id="workshop-sidearm"> Ammunition exhausted</label><label class="workshop-check"><input type="checkbox" id="workshop-broken"> Shield broken</label><label class="workshop-check"><input type="checkbox" id="workshop-lod"> Crowd geometry</label><label class="workshop-check"><input type="checkbox" id="workshop-turntable" checked> Turntable</label><h4>Equipped kit</h4><ul id="workshop-equipment"></ul><p class="workshop-metrics" id="workshop-metrics"></p><p class="workshop-footnote">Original articulated proof-of-concept models. Equipment and pose studies; no direct hero control.</p></aside></div>`;
   document.body.appendChild(dialog);
   dialog.showModal();
   const find = <T extends HTMLElement>(id: string) => dialog.querySelector<T>(`#${id}`)!;
@@ -77,7 +77,7 @@ export function openWorkshop(initialType: number): void {
     sidearm.disabled = u.role !== 'skirmisher';
     const model = (
       find<HTMLInputElement>('workshop-lod').checked ? createCrowdModel : createUnitModel
-    )(type, sidearm.checked);
+    )(type, sidearm.checked, find<HTMLInputElement>('workshop-broken').checked);
     for (const name of Object.keys(model.parts) as PartName[]) {
       const mesh = new THREE.Mesh(model.parts[name], material);
       mesh.position.set(...JOINTS[name]);
@@ -102,7 +102,7 @@ export function openWorkshop(initialType: number): void {
     find('workshop-metrics').textContent =
       `${triangles.toLocaleString()} triangles · 5 articulated parts`;
   };
-  for (const id of ['workshop-unit', 'workshop-sidearm', 'workshop-lod'])
+  for (const id of ['workshop-unit', 'workshop-sidearm', 'workshop-lod', 'workshop-broken'])
     find(id).addEventListener('change', rebuild);
   rebuild();
   const resize = () => {
@@ -147,6 +147,10 @@ export function openWorkshop(initialType: number): void {
       parts.rightArm.rotation.set(-0.55 * swing, -1.1 + 2 * swing, 0);
       parts.body.rotation.y = (swing - 0.5) * 0.2;
       parts.leftArm.rotation.x = -0.3;
+    }
+    if (pose === 'attack' && Number(find<HTMLSelectElement>('workshop-unit').value) < 3) {
+      parts.rightArm.rotation.set(-0.45, 0, 0);
+      parts.rightArm.position.z = (Math.sin(phase * 3) + 1) * 0.15 - 0.1;
     }
     if (pose === 'guard') {
       parts.leftArm.rotation.set(-0.5, 0.15, 0);

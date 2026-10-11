@@ -6,10 +6,20 @@ import {
   UNITS,
   obstaclesFor,
   validateConfig,
+  shieldDurability,
+  formationRoster,
   type BattleConfig,
   type Team,
 } from '../content/catalog';
 import { clamp, distance2, hashText, hashWords, isqrt, normalize, Random } from './math';
+import { turnToward, inFront } from './combat-math';
+import {
+  MAX_ORDERS,
+  validateOrder,
+  type Order,
+  type RecordedOrder,
+  type FormationState,
+} from './orders';
 import { SpatialGrid } from './grid';
 
 export const enum State {
@@ -21,7 +31,7 @@ export const enum State {
   Escaped,
 }
 export const STATE_NAMES = ['Ready', 'Attacking', 'Recovering', 'Routing', 'Fallen', 'Escaped'];
-export const UNIT_STRIDE = 17;
+export const UNIT_STRIDE = 20;
 export const PROJECTILE_STRIDE = 7;
 export const MAX_PROJECTILES = 2048;
 export const MAX_TICKS = TICK_RATE * 180;
@@ -48,6 +58,11 @@ const FIELDS = [
   'momentum',
   'support',
   'blocks',
+  'shieldHp',
+  'stagger',
+  'slotX',
+  'slotZ',
+  'formationId',
 ] as const;
 type Field = (typeof FIELDS)[number];
 export interface BattleEvent {
@@ -86,6 +101,8 @@ export interface BattleSummary {
   maxCell: number;
   rallies: [number, number];
   events: BattleEvent[];
+  formations: (FormationState & { standing: number; total: number })[];
+  orders: RecordedOrder[];
 }
 export interface Checkpoint {
   version: string;
@@ -101,6 +118,8 @@ export interface Checkpoint {
   commanderLost: [boolean, boolean];
   winner: Team | -1 | null;
   events: BattleEvent[];
+  formations: FormationState[];
+  orders: RecordedOrder[];
 }
 export const CONTENT_HASH = hashText(JSON.stringify({ version: CONTENT_VERSION, units: UNITS }));
 
@@ -127,6 +146,13 @@ export class Battle {
   readonly momentum: Int32Array;
   readonly support: Int32Array;
   readonly blocks: Int32Array;
+  readonly shieldHp: Int32Array;
+  readonly stagger: Int32Array;
+  readonly slotX: Int32Array;
+  readonly slotZ: Int32Array;
+  readonly formationId: Int32Array;
+  formations: FormationState[] = [];
+  orders: RecordedOrder[] = [];
   tick = 0;
   winner: Team | -1 | null = null;
   projectiles: Projectile[] = [];
@@ -138,6 +164,8 @@ export class Battle {
   private projectileId = 0;
   private pending: Int32Array;
   private credit: Int32Array;
+  private pendingShield: Int32Array;
+  private pendingStagger: Int32Array;
   private startX: Int32Array;
   private startZ: Int32Array;
   private damage: [number, number] = [0, 0];
@@ -168,6 +196,13 @@ export class Battle {
     this.momentum = new Int32Array(this.count);
     this.support = new Int32Array(this.count);
     this.blocks = new Int32Array(this.count);
+    this.shieldHp = new Int32Array(this.count);
+    this.stagger = new Int32Array(this.count);
+    this.slotX = new Int32Array(this.count);
+    this.slotZ = new Int32Array(this.count);
+    this.formationId = new Int32Array(this.count);
+    this.pendingShield = new Int32Array(this.count);
+    this.pendingStagger = new Int32Array(this.count);
     this.pending = new Int32Array(this.count);
     this.credit = new Int32Array(this.count);
     this.startX = new Int32Array(this.count);
@@ -186,6 +221,7 @@ export class Battle {
           team * 3 + (k === army.count - 1 ? 2 : k >= army.count - 1 - ranged ? 1 : 0);
         const design = UNITS[this.type[id]];
         this.hp[id] = design.hp;
+        this.shieldHp[id] = shieldDurability(this.type[id]);
         this.morale[id] = design.morale;
         this.stamina[id] = 100;
         this.ammo[id] = design.ammo;
@@ -207,8 +243,162 @@ export class Battle {
         (team === 0 ? -1 : 1) * (13 * SCALE + Math.ceil(army.count / columns) * 1420 + 1000);
       offset += army.count;
     }
+    for (const team of [0, 1] as const) {
+      const army = team === 0 ? this.config.romans : this.config.gauls;
+      const roster = formationRoster(army);
+      for (const entry of roster)
+        this.formations.push({
+          team,
+          id: entry.id,
+          role: entry.role,
+          movement: entry.role === 'infantry' && army.doctrine === 'charge' ? 'charge' : 'advance',
+          formation:
+            entry.role === 'ranged'
+              ? 'loose'
+              : army.doctrine === 'shieldwall'
+                ? 'shieldwall'
+                : 'line',
+          fireAtWill: true,
+          x: 0,
+          z: 0,
+        });
+      for (const role of ['infantry', 'ranged'] as const) {
+        const ids = Array.from({ length: this.count }, (_, i) => i).filter(
+          (i) =>
+            this.team(i) === team &&
+            UNITS[this.type[i]].role === (role === 'ranged' ? 'skirmisher' : 'infantry'),
+        );
+        // Adjacent files become wings; stable ID breaks equal-position ties.
+        ids.sort((a, b) => this.z[a] - this.z[b] || this.x[a] - this.x[b] || a - b);
+        let cursor = 0;
+        const entries = roster.filter((f) => f.role === role);
+        for (const entry of entries) {
+          const index = this.formations.findIndex((f) => f.team === team && f.id === entry.id);
+          const carriesLeader = role === 'infantry' && entry === entries[0];
+          for (let k = 0; k < entry.count - (carriesLeader ? 1 : 0); k++)
+            this.formationId[ids[cursor++]] = index;
+          if (carriesLeader) this.formationId[this.leaders[team]] = index;
+        }
+      }
+    }
+    for (let i = 0; i < this.formations.length; i++) this.arrange(i);
     this.log('Armies deployed. Commanders will lead autonomously.', -1);
     this.rebuildGrid();
+  }
+
+  formationOf(id: number): FormationState {
+    return this.formations[this.formationId[id]];
+  }
+
+  private arrange(index: number, x?: number, z?: number): void {
+    const f = this.formations[index];
+    const ids: number[] = [];
+    let cx = 0,
+      cz = 0;
+    for (let i = 0; i < this.count; i++)
+      if (this.active(i) && this.state[i] !== State.Routing && this.formationOf(i) === f) {
+        ids.push(i);
+        cx += this.x[i];
+        cz += this.z[i];
+      }
+    f.x = x ?? (ids.length ? Math.trunc(cx / ids.length) : f.x);
+    f.z = z ?? (ids.length ? Math.trunc(cz / ids.length) : f.z);
+    const columns = Math.max(2, isqrt(ids.length * 2)),
+      rows = Math.ceil(ids.length / columns),
+      spacing = f.formation === 'loose' ? 2300 : f.formation === 'shieldwall' ? 1100 : 1450;
+    for (let k = 0; k < ids.length; k++) {
+      const id = ids[k];
+      this.slotX[id] =
+        (f.team === 0 ? -1 : 1) *
+        (Math.floor(k / columns) * spacing - Math.trunc(((rows - 1) * spacing) / 2));
+      this.slotZ[id] = (k % columns) * spacing - Math.trunc(((columns - 1) * spacing) / 2);
+      if (UNITS[this.type[id]].role === 'commander') {
+        this.slotZ[id] = 0;
+        this.slotX[id] =
+          (f.team === 0 ? -1 : 1) * (Math.trunc(((rows - 1) * spacing) / 2) + 2 * spacing);
+      }
+    }
+  }
+  private fitFormation(index: number): void {
+    const f = this.formations[index];
+    let minX = 0,
+      maxX = 0,
+      minZ = 0,
+      maxZ = 0;
+    for (let i = 0; i < this.count; i++)
+      if (this.active(i) && this.formationOf(i) === f) {
+        minX = Math.min(minX, this.slotX[i]);
+        maxX = Math.max(maxX, this.slotX[i]);
+        minZ = Math.min(minZ, this.slotZ[i]);
+        maxZ = Math.max(maxZ, this.slotZ[i]);
+      }
+    f.x = clamp(f.x, -LIMIT + RADIUS - minX, LIMIT - RADIUS - maxX);
+    f.z = clamp(f.z, -LIMIT + RADIUS - minZ, LIMIT - RADIUS - maxZ);
+  }
+  /** Applied at a worker tick boundary; records the exact boundary for replay. */
+  issueOrder(input: unknown): RecordedOrder {
+    if (this.winner !== null) throw Error('The battle has concluded.');
+    if (this.orders.length >= MAX_ORDERS)
+      throw Error('This battle has reached its 256-order limit.');
+    const order: Order = validateOrder(input);
+    if (
+      order.kind === 'hold' &&
+      order.x !== undefined &&
+      this.obstacles.some((o) => distance2(order.x!, order.z!, o.x, o.z) < (o.radius + SCALE) ** 2)
+    )
+      throw Error('Formation anchor cannot be inside a rock.');
+    const selected = this.formations.filter(
+      (f) => f.team === order.team && (order.group === 'all' || f.id === order.group),
+    );
+    if (!selected.length) throw Error('That formation is not deployed.');
+    const originX = Math.trunc(selected.reduce((sum, f) => sum + f.x, 0) / selected.length);
+    const originZ = Math.trunc(selected.reduce((sum, f) => sum + f.z, 0) / selected.length);
+    for (let index = 0; index < this.formations.length; index++) {
+      const f = this.formations[index];
+      if (f.team !== order.team || (order.group !== 'all' && order.group !== f.id)) continue;
+      if (order.kind === 'fire') f.fireAtWill = order.enabled;
+      else if (order.kind === 'formation') {
+        f.formation = order.formation;
+        this.arrange(index, f.x, f.z);
+      } else {
+        f.movement = order.kind;
+        this.arrange(
+          index,
+          order.x === undefined ? undefined : order.x + f.x - originX,
+          order.z === undefined ? undefined : order.z + f.z - originZ,
+        );
+        if (order.kind === 'fallback')
+          f.x = clamp(f.x + (f.team === 0 ? -8 : 8) * SCALE, -50 * SCALE, 50 * SCALE);
+      }
+      if (order.kind !== 'fire') this.fitFormation(index);
+      for (let i = 0; i < this.count; i++)
+        if (this.formationOf(i) === f) {
+          if (order.kind !== 'fire') {
+            this.momentum[i] = 0;
+            this.homeZ[i] = f.z + this.slotZ[i];
+          }
+          // Changing fire discipline cancels the unreleased action; ammo is retained.
+          if (order.kind === 'fire' && this.ammo[i] > 0 && this.state[i] === State.Windup) {
+            this.state[i] = State.Recovery;
+            this.timer[i] = 8;
+          }
+        }
+    }
+    const record = { tick: this.tick, sequence: this.orders.length + 1, order };
+    this.orders.push(record);
+    const label =
+      order.kind === 'formation'
+        ? order.formation
+        : order.kind === 'fire'
+          ? order.enabled
+            ? 'fire at will'
+            : 'hold fire'
+          : order.kind;
+    this.log(
+      `${order.team === 0 ? 'Roman' : 'Gallic'} ${order.group === 'all' ? 'all formations' : `formation ${order.group + 1}`}: ${label}.`,
+      order.team,
+    );
+    return structuredClone(record);
   }
 
   team(id: number): Team {
@@ -244,7 +434,7 @@ export class Battle {
     let found = -1,
       best = Number.MAX_SAFE_INTEGER;
     const team = this.team(id);
-    const army = team === 0 ? this.config.romans : this.config.gauls;
+    const formation = this.formationOf(id);
     const radius = this.ammo[id] > 0 ? 22 * SCALE : 8 * SCALE;
     this.grid.query(this.startX[id], this.startZ[id], radius, (other) => {
       this.candidates++;
@@ -260,7 +450,9 @@ export class Battle {
       const lateral = this.startZ[other] - this.homeZ[id];
       const d =
         distance +
-        (distance > (3 * SCALE) ** 2 && army.doctrine !== 'charge' ? lateral * lateral * 2 : 0);
+        (distance > (3 * SCALE) ** 2 && formation.movement !== 'charge'
+          ? lateral * lateral * 2
+          : 0);
       if (d < best || (d === best && other < found)) {
         best = d;
         found = other;
@@ -273,6 +465,8 @@ export class Battle {
     if (this.winner !== null) return;
     this.candidates = 0;
     this.pending.fill(0);
+    this.pendingShield.fill(0);
+    this.pendingStagger.fill(0);
     this.credit.fill(-1);
     this.rebuildGrid();
     this.startX.set(this.x);
@@ -298,7 +492,8 @@ export class Battle {
       if (
         !this.active(i) ||
         this.state[i] === State.Routing ||
-        UNITS[this.type[i]].role === 'skirmisher'
+        UNITS[this.type[i]].role === 'skirmisher' ||
+        this.shieldHp[i] === 0
       )
         continue;
       this.grid.query(this.x[i], this.z[i], 1900, (j) => {
@@ -307,6 +502,7 @@ export class Battle {
           this.team(i) === this.team(j) &&
           this.state[j] !== State.Routing &&
           UNITS[this.type[j]].role !== 'skirmisher' &&
+          this.shieldHp[j] > 0 &&
           distance2(this.x[i], this.z[i], this.x[j], this.z[j]) <= 1900 ** 2
         )
           this.support[i] = Math.min(2, this.support[i] + 1);
@@ -316,6 +512,10 @@ export class Battle {
     for (let i = 0; i < this.count; i++) {
       if (!this.active(i)) continue;
       if (this.buff[i] > 0) this.buff[i]--;
+      if (this.stagger[i] > 0) {
+        this.stagger[i]--;
+        continue;
+      }
       const team = this.team(i),
         enemy = 1 - team,
         design = UNITS[this.type[i]];
@@ -344,29 +544,42 @@ export class Battle {
           ? this.startZ[target] - this.startZ[i]
           : Math.trunc((centerZ[enemy] - this.startZ[i]) / 3);
       const dist = isqrt(dx * dx + dz * dz);
-      const ranged = design.role === 'skirmisher' && this.ammo[i] > 0;
+      const ranged =
+        design.role === 'skirmisher' && this.ammo[i] > 0 && this.formationOf(i).fireAtWill;
       const reach = ranged ? design.reach : design.role === 'skirmisher' ? 1500 : design.reach;
-      const [fx, fz] = normalize(dx, dz, SCALE);
-      if (fx || fz) {
+      const [fx, fz] = turnToward(this.facingX[i], this.facingZ[i], dx, dz);
+      if ((fx || fz) && this.state[i] !== State.Windup) {
         this.facingX[i] = fx;
         this.facingZ[i] = fz;
       }
       if (this.state[i] === State.Windup) continue;
-      const army = team === 0 ? this.config.romans : this.config.gauls;
-      const speed = Math.trunc(
+      const formation = this.formationOf(i);
+      let speed = Math.trunc(
         (design.speed *
-          (army.doctrine === 'charge' ? 115 : army.doctrine === 'shieldwall' ? 83 : 100)) /
+          (formation.movement === 'charge'
+            ? 115
+            : formation.formation === 'shieldwall'
+              ? 83
+              : 100)) /
           100,
       );
-      if (ranged && target >= 0 && dist < 6 * SCALE && Math.abs(this.x[i]) < 50 * SCALE) {
+      const holding = formation.movement === 'hold' || formation.movement === 'fallback';
+      if (holding) {
+        dx = formation.x + this.slotX[i] - this.x[i];
+        dz = formation.z + this.slotZ[i] - this.z[i];
+        const slotDistance = isqrt(dx * dx + dz * dz);
+        if (slotDistance < 120) continue;
+        speed = Math.min(speed, slotDistance);
+        if (formation.movement === 'fallback') speed = Math.trunc((speed * 3) / 4);
+      } else if (ranged && target >= 0 && dist < 6 * SCALE && Math.abs(this.x[i]) < 50 * SCALE) {
         dx = -dx;
         dz = -dz;
       } else if (target >= 0 && dist <= reach - (ranged ? 1000 : 90)) continue;
-      if (Math.abs(dx) > (army.doctrine === 'charge' ? 8 : 4) * SCALE)
+      if (!holding && formation.movement !== 'charge' && Math.abs(dx) > 4 * SCALE)
         dz = Math.trunc((this.homeZ[i] - this.z[i]) * 2);
       // A charge needs a sustained advance; retreating skirmishers never earn impact damage.
       if (
-        army.doctrine === 'charge' &&
+        formation.movement === 'charge' &&
         !ranged &&
         this.state[i] === State.Ready &&
         (team === 0 ? dx > 0 : dx < 0)
@@ -416,14 +629,15 @@ export class Battle {
     this.rebuildGrid();
 
     for (let i = 0; i < this.count; i++) {
-      if (!this.active(i) || this.state[i] === State.Routing) continue;
+      if (!this.active(i) || this.state[i] === State.Routing || this.stagger[i] > 0) continue;
       const design = UNITS[this.type[i]],
         target = this.target[i];
       if (this.timer[i] > 0) this.timer[i]--;
       if (this.state[i] === State.Windup && this.timer[i] === 0) {
         if (target >= 0 && this.active(target)) {
-          const ranged = design.role === 'skirmisher' && this.ammo[i] > 0;
-          if (ranged) {
+          const ranged =
+            design.role === 'skirmisher' && this.ammo[i] > 0 && this.formationOf(i).fireAtWill;
+          if (ranged && this.formationOf(i).fireAtWill) {
             if (this.projectiles.length < MAX_PROJECTILES) {
               const [vx, vz] = normalize(
                 this.x[target] - this.x[i],
@@ -444,8 +658,16 @@ export class Battle {
               this.ammo[i]--;
             } // At capacity the shot is deferred to the next action; ammo is retained.
           } else if (
+            !ranged &&
+            inFront(
+              this.facingX[i],
+              this.facingZ[i],
+              this.x[target] - this.x[i],
+              this.z[target] - this.z[i],
+              this.type[i] === 3 || this.type[i] === 5 ? 512 : 887,
+            ) &&
             distance2(this.x[i], this.z[i], this.x[target], this.z[target]) <=
-            (design.role === 'skirmisher' ? 1650 : design.reach + 200) ** 2
+              (design.role === 'skirmisher' ? 1650 : design.reach + 200) ** 2
           )
             this.hit(i, target, design.damage + Math.trunc(this.momentum[i] / 6));
         }
@@ -459,10 +681,17 @@ export class Battle {
         this.timer[i] === 0 &&
         target >= 0 &&
         this.active(target) &&
-        this.stamina[i] >= 10
+        this.stamina[i] >= 10 &&
+        inFront(
+          this.facingX[i],
+          this.facingZ[i],
+          this.x[target] - this.x[i],
+          this.z[target] - this.z[i],
+          this.type[i] === 3 || this.type[i] === 5 ? 512 : 887,
+        )
       ) {
         const reach =
-          design.role === 'skirmisher' && this.ammo[i] > 0
+          design.role === 'skirmisher' && this.ammo[i] > 0 && this.formationOf(i).fireAtWill
             ? design.reach
             : design.role === 'skirmisher'
               ? 1500
@@ -477,6 +706,21 @@ export class Battle {
     }
     this.advanceProjectiles();
 
+    for (let i = 0; i < this.count; i++)
+      if (this.active(i)) {
+        const previous = this.shieldHp[i];
+        this.shieldHp[i] = Math.max(0, previous - this.pendingShield[i]);
+        if (previous > 0 && this.shieldHp[i] === 0) {
+          this.pendingStagger[i] = Math.max(this.pendingStagger[i], 15);
+          this.log(`${UNITS[this.type[i]].name} #${i + 1}: shield broken.`, this.team(i));
+        }
+        if (this.pendingStagger[i] > 0 && this.state[i] !== State.Routing) {
+          this.stagger[i] = Math.max(this.stagger[i], this.pendingStagger[i]);
+          this.state[i] = State.Recovery;
+          this.timer[i] = Math.max(8, this.timer[i]);
+          this.momentum[i] = 0;
+        }
+      }
     // Simultaneous damage allows lethal trades regardless of iteration order.
     for (let i = 0; i < this.count; i++)
       if (this.pending[i] && this.active(i)) {
@@ -519,25 +763,36 @@ export class Battle {
   ): void {
     const design = UNITS[this.type[target]],
       team = this.team(target);
-    const doctrine = (team === 0 ? this.config.romans : this.config.gauls).doctrine;
+    void team;
+    const formation = this.formationOf(target);
     const dx = originX - this.x[target],
       dz = originZ - this.z[target];
-    const front = dx * this.facingX[target] + dz * this.facingZ[target] > 0;
+    const front = inFront(this.facingX[target], this.facingZ[target], dx, dz);
     let damage = Math.max(
       2,
       base + this.rng.below(7) - 3 + (this.buff[source] ? 5 : 0) - design.armor,
     );
     if (
       front &&
-      this.stamina[target] >= 5 &&
+      this.stamina[target] >= 8 &&
+      this.shieldHp[target] > 0 &&
+      this.stagger[target] === 0 &&
       this.state[target] !== State.Routing &&
       this.rng.below(100) <
-        design.shield + (doctrine === 'shieldwall' ? this.support[target] * 10 : 0)
+        Math.min(
+          90,
+          design.shield +
+            (this.state[target] === State.Windup ? 0 : 30) +
+            (formation.formation === 'shieldwall' ? this.support[target] * 10 : 0),
+        )
     ) {
-      damage = Math.max(1, Math.trunc(damage / 4));
-      this.stamina[target] -= 5;
+      this.pendingShield[target] += Math.max(4, Math.trunc(base / 3));
+      damage = Math.max(1, Math.trunc(damage / 8));
+      this.stamina[target] -= 8;
       this.blocks[target]++;
-    }
+      if (this.stamina[target] < 8)
+        this.pendingStagger[target] = Math.max(this.pendingStagger[target], 10);
+    } else if (damage >= 20) this.pendingStagger[target] = Math.max(this.pendingStagger[target], 8);
     this.pending[target] += damage;
     if (this.credit[target] < 0) this.credit[target] = source;
     this.hits[source]++;
@@ -679,6 +934,13 @@ export class Battle {
       ],
       parseInt(hashText(JSON.stringify(this.config) + SIM_VERSION + CONTENT_HASH), 16),
     );
+    h = hashWords(
+      [
+        parseInt(hashText(JSON.stringify(this.formations)), 16),
+        parseInt(hashText(JSON.stringify(this.orders)), 16),
+      ],
+      h,
+    );
     for (const field of FIELDS) h = hashWords(this[field], h);
     for (const p of this.projectiles)
       h = hashWords([p.id, p.x, p.z, p.vx, p.vz, p.age, p.team, p.source, p.damage], h);
@@ -686,6 +948,12 @@ export class Battle {
   }
   summary(): BattleSummary {
     const [romans, gauls] = this.stats();
+    const formations = this.formations.map((f) => ({ ...f, standing: 0, total: 0 }));
+    for (let i = 0; i < this.count; i++) {
+      const f = formations[this.formationId[i]];
+      f.total++;
+      if (this.active(i) && this.state[i] !== State.Routing) f.standing++;
+    }
     return {
       tick: this.tick,
       hash: this.hash(),
@@ -697,6 +965,8 @@ export class Battle {
       maxCell: this.grid.maxOccupancy,
       rallies: [...this.rallies],
       events: this.events.map((e) => ({ ...e })),
+      formations,
+      orders: structuredClone(this.orders),
     };
   }
   writeSnapshot(buffer: ArrayBuffer): number {
@@ -725,6 +995,9 @@ export class Battle {
           this.support[i],
           this.blocks[i],
           this.actionSerial[i],
+          this.shieldHp[i],
+          this.stagger[i],
+          Number(this.ammo[i] > 0 && this.formationOf(i).fireAtWill),
         ],
         base,
       );
@@ -754,6 +1027,8 @@ export class Battle {
       commanderLost: [...this.commanderLost],
       winner: this.winner,
       events: this.events.map((e) => ({ ...e })),
+      formations: this.formations.map((f) => ({ ...f })),
+      orders: structuredClone(this.orders),
     };
   }
   static restore(checkpoint: Checkpoint): Battle {
@@ -775,6 +1050,8 @@ export class Battle {
     battle.commanderLost = [...checkpoint.commanderLost];
     battle.winner = checkpoint.winner;
     battle.events = checkpoint.events.map((e) => ({ ...e }));
+    battle.formations = checkpoint.formations.map((f) => ({ ...f }));
+    battle.orders = structuredClone(checkpoint.orders);
     battle.rebuildGrid();
     return battle;
   }

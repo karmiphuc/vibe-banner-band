@@ -58,16 +58,29 @@ scope.onmessage = (event: MessageEvent<ToWorker>) => {
         initialize(replay.config);
         replaying = true;
         const replaySession = session;
+        let orderIndex = 0;
+        const applyOrders = () => {
+          while (
+            orderIndex < (replay.orders?.length ?? 0) &&
+            replay.orders![orderIndex].tick === battle!.tick
+          ) {
+            battle!.issueOrder(replay.orders![orderIndex].order);
+            orderIndex++;
+          }
+        };
         const advance = () => {
           if (session !== replaySession || !battle || !replaying) return;
           try {
+            applyOrders();
             const started = performance.now();
             while (
               battle.tick < replay.tick &&
               battle.winner === null &&
               performance.now() - started < 12
-            )
+            ) {
               battle.step();
+              applyOrders();
+            }
             post({ kind: 'progress', session, tick: battle.tick, total: replay.tick });
             if (battle.tick < replay.tick && battle.winner === null) setTimeout(advance, 0);
             else {
@@ -109,6 +122,11 @@ scope.onmessage = (event: MessageEvent<ToWorker>) => {
     }
     if (replaying) return;
     switch (data.kind) {
+      case 'order':
+        battle.issueOrder(data.order);
+        snapshot();
+        status();
+        break;
       case 'play':
         if (battle.winner === null) running = true;
         status();
@@ -140,6 +158,7 @@ scope.onmessage = (event: MessageEvent<ToWorker>) => {
             config: battle.config,
             tick: battle.tick,
             expectedHash: battle.hash(),
+            orders: structuredClone(battle.orders),
           },
         });
         break;

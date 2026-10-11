@@ -1,4 +1,5 @@
 import { SCALE, obstaclesFor, type BattleConfig } from '../content/catalog';
+import type { FormationState } from '../sim/orders';
 import { State, UNIT_STRIDE } from '../sim/battle';
 /** Snapshot-only view. Painting and camera navigation never issue combat commands. */
 export function drawMinimap(
@@ -6,6 +7,7 @@ export function drawMinimap(
   data: Int32Array,
   config: BattleConfig,
   selected: number,
+  formations: FormationState[] = [],
 ): void {
   const c = canvas.getContext('2d');
   if (!c || !data.length) return;
@@ -38,6 +40,16 @@ export function drawMinimap(
     c.fillStyle = state === State.Routing ? '#cfbf8f' : data[b + 8] < 3 ? '#de8167' : '#86c9b0';
     c.fillRect(project(data[b], w) - 1, project(data[b + 1], h) - 1, 2.4, 2.4);
   }
+  for (const f of formations)
+    if (f.movement === 'hold' || f.movement === 'fallback') {
+      c.strokeStyle = f.team === 0 ? '#eab08d' : '#94d9c1';
+      c.setLineDash([2, 2]);
+      c.strokeRect(project(f.x, w) - 5, project(f.z, h) - 5, 10, 10);
+      c.setLineDash([]);
+      c.font = 'bold 10px sans-serif';
+      c.fillStyle = c.strokeStyle;
+      c.fillText(String(f.id + 1), project(f.x, w) + 7, project(f.z, h) + 3);
+    }
   if (selected >= 0) {
     const b = 3 + selected * UNIT_STRIDE;
     c.strokeStyle = '#fff3c2';

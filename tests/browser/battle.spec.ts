@@ -117,7 +117,7 @@ test('worker keeps stepping when snapshot buffers are exhausted and ignores stal
             resolve({ tick: m.summary.tick, snapshots });
           }
         };
-        worker.postMessage({ kind: 'init', session: 77, protocol: 2, config });
+        worker.postMessage({ kind: 'init', session: 77, protocol: 3, config });
       });
     },
     {
@@ -173,4 +173,86 @@ test('scenario presets, observer tools and isolated equipment workshop', async (
   await page.locator('#open-workshop').click();
   await page.getByRole('button', { name: 'Close model workshop' }).click();
   expect(errors).toEqual([]);
+});
+
+test('orders issued paused and in battle survive export/import with their exact state', async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('./');
+  await expect(page.locator('#loading')).toBeHidden();
+  await page.locator('#command-group').selectOption('all');
+  await page.locator('[data-order="hold"]').click();
+  await expect(page.locator('#order-ack')).toContainText('Order 1');
+  await page.locator('#command-formation').selectOption('shieldwall');
+  await expect(page.locator('#order-ack')).toContainText('Order 2');
+  await page.locator('#command-group').selectOption('1');
+  await page.locator('#fire-order').click();
+  await expect(page.locator('#fire-order')).toHaveText('Fire at will');
+  await page.locator('#place-order').click();
+  const canvas = page.locator('#viewport > canvas');
+  await canvas.click({ position: { x: 370, y: 260 } });
+  await expect(page.locator('#order-ack')).toContainText('Order 4');
+  await page.screenshot({ path: 'artifacts/local/command-deployment.png' });
+  await page.getByRole('button', { name: 'Begin battle' }).click();
+  await expect
+    .poll(() => page.evaluate(() => (window as unknown as LabWindow).battleLab.summary?.tick ?? 0))
+    .toBeGreaterThan(20);
+  await page.getByRole('button', { name: 'Pause battle' }).click();
+  await expect
+    .poll(() => page.evaluate(() => (window as unknown as LabWindow).battleLab.running))
+    .toBe(false);
+  await page.locator('#command-group').selectOption('0');
+  await page.locator('[data-order="charge"]').click();
+  await expect(page.locator('#order-ack')).toContainText('Order 5');
+  const expected = await page.evaluate(
+    () => (window as unknown as LabWindow).battleLab.summary!.hash,
+  );
+  const download = page.waitForEvent('download');
+  await page.locator('#export').click();
+  const file = await (await download).path();
+  await page.locator('#replay-file').setInputFiles(file!);
+  await expect(page.locator('#battle-status')).toHaveText('REPLAY VERIFIED', { timeout: 60000 });
+  const after = await page.evaluate(() => (window as unknown as LabWindow).battleLab.summary!);
+  expect(after.hash).toBe(expected);
+  expect(after.orders.length).toBe(5);
+  expect(after.formations[0].movement).toBe('charge');
+  expect(after.formations[1].fireAtWill).toBe(false);
+  expect(errors).toEqual([]);
+});
+
+test('five editable formations command independently and round-trip their deployment', async ({
+  page,
+}) => {
+  await page.goto('./');
+  await expect(page.locator('#loading')).toBeHidden();
+  for (let i = 0; i < 3; i++) {
+    await page.locator('[data-add-formation="romans"]').click();
+    await expect(page.locator('#romans-formations [data-formation-id]')).toHaveCount(3 + i);
+  }
+  await expect(page.locator('[data-add-formation="romans"]')).toBeDisabled();
+  await page.getByLabel('romans formation 5 share', { exact: true }).fill('3');
+  await page.getByLabel('romans formation 5 share', { exact: true }).press('Tab');
+  await expect(page.locator('#loading')).toBeHidden();
+  await page.locator('#command-group').selectOption('4');
+  await page.locator('[data-order="hold"]').click();
+  await expect(page.locator('#order-ack')).toContainText('formation 5');
+  const state = await page.evaluate(() => (window as unknown as LabWindow).battleLab.summary!);
+  expect(state.formations.filter((f) => f.team === 0)).toHaveLength(5);
+  expect(state.formations.find((f) => f.team === 0 && f.id === 4)?.movement).toBe('hold');
+  expect(state.formations.find((f) => f.team === 0 && f.id === 0)?.movement).toBe('advance');
+  expect(state.formations.filter((f) => f.team === 0).reduce((sum, f) => sum + f.total, 0)).toBe(
+    state.romans.standing,
+  );
+  await page.screenshot({ path: 'artifacts/local/five-formations.png', fullPage: true });
+  const download = page.waitForEvent('download');
+  await page.locator('#export').click();
+  await page.locator('#replay-file').setInputFiles((await (await download).path())!);
+  await expect(page.locator('#battle-status')).toHaveText('REPLAY VERIFIED');
+  await expect(page.locator('#romans-formations [data-formation-id]')).toHaveCount(5);
+  await expect(page.getByLabel('romans formation 5 share', { exact: true })).toHaveValue('3');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: 'artifacts/local/five-formations-mobile.png', fullPage: true });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });

@@ -22,8 +22,12 @@ export class Battlefield {
     metalness: 0.1,
     side: THREE.DoubleSide,
   });
+  private placing = false;
+  private destination: THREE.Mesh;
+  onPlace: (x: number, z: number) => void = () => {};
   private groundMap = groundTexture();
   private lastHits = new Float32Array(0);
+  private deaths = new Float32Array(0);
   private lastBlocks = new Float32Array(0);
   private detailMode = false;
   private follow = false;
@@ -183,6 +187,28 @@ export class Battlefield {
     this.selection.position.y = 0.06;
     this.selection.visible = false;
     this.scene.add(this.selection);
+    this.destination = new THREE.Mesh(
+      new THREE.RingGeometry(1.5, 1.65, 48),
+      new THREE.MeshBasicMaterial({
+        color: '#ffe3a1',
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.9,
+        depthWrite: false,
+      }),
+    );
+    this.destination.rotation.x = -Math.PI / 2;
+    this.destination.position.y = 0.07;
+    this.destination.visible = false;
+    this.scene.add(this.destination);
+    this.renderer.domElement.addEventListener('pointermove', (e) => {
+      if (!this.placing) return;
+      const p = this.groundPoint(e);
+      if (p) {
+        this.destination.visible = true;
+        this.destination.position.set(p.x, 0.07, p.z);
+      }
+    });
     this.aura = new THREE.Mesh(
       new THREE.RingGeometry(13.9, 14, 64),
       new THREE.MeshBasicMaterial({
@@ -241,6 +267,7 @@ export class Battlefield {
     this.count = config.romans.count + config.gauls.count;
     this.current = new Int32Array(0);
     this.lastHits = new Float32Array(this.count).fill(-100);
+    this.deaths = new Float32Array(this.count).fill(-100);
     this.lastBlocks = new Float32Array(this.count).fill(-100);
     this.follow = false;
     this.sun.castShadow = this.count <= 600;
@@ -252,22 +279,26 @@ export class Battlefield {
         mesh.geometry.dispose();
         mesh.dispose();
       }
-    this.kits = [0, 1, 2, 3, 4, 5, 1, 4, 0, 1, 2, 3, 4, 5, 1, 4].map((type, index) => {
-      const model =
-        index < 8 ? createUnitModel(type, index % 8 >= 6) : createCrowdModel(type, index % 8 >= 6);
-      const meshes = {} as Kit['meshes'];
-      for (const name of Object.keys(model.parts) as PartName[]) {
-        const mesh = new THREE.InstancedMesh(model.parts[name], this.material, this.count);
-        mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-        mesh.frustumCulled = false;
-        mesh.count = 0;
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        this.scene.add(mesh);
-        meshes[name] = mesh;
-      }
-      return { meshes, ids: [] };
-    });
+    this.kits = Array.from({ length: 32 }, (_, i) => [0, 1, 2, 3, 4, 5, 1, 4][i % 8]).map(
+      (type, index) => {
+        const model =
+          index < 16
+            ? createUnitModel(type, index % 8 >= 6, index % 16 >= 8)
+            : createCrowdModel(type, index % 8 >= 6, index % 16 >= 8);
+        const meshes = {} as Kit['meshes'];
+        for (const name of Object.keys(model.parts) as PartName[]) {
+          const mesh = new THREE.InstancedMesh(model.parts[name], this.material, this.count);
+          mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+          mesh.frustumCulled = false;
+          mesh.count = 0;
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+          this.scene.add(mesh);
+          meshes[name] = mesh;
+        }
+        return { meshes, ids: [] };
+      },
+    );
     this.clearTerrain();
     (this.ground.material as THREE.MeshStandardMaterial).color.set(
       config.terrain === 'rocky-pass' ? '#d0c9b4' : '#c8cfb8',
@@ -350,6 +381,7 @@ export class Battlefield {
     this.current = new Int32Array(data);
     for (let i = 0; i < this.count; i++) {
       const b = 3 + i * UNIT_STRIDE;
+      if (this.current[b + 2] === 0 && this.previous[b + 2] > 0) this.deaths[i] = data[0];
       if (this.current[b + 2] < this.previous[b + 2]) this.lastHits[i] = data[0];
       if (this.current[b + 15] > this.previous[b + 15]) this.lastBlocks[i] = data[0];
     }
@@ -363,12 +395,16 @@ export class Battlefield {
       const b = 3 + i * UNIT_STRIDE,
         type = this.current[b + 8];
       const kit =
-        type === 1 && this.current[b + 9] === 0
+        type === 1 && this.current[b + 19] === 0
           ? 6
-          : type === 4 && this.current[b + 9] === 0
+          : type === 4 && this.current[b + 19] === 0
             ? 7
             : type;
-      this.kits[kit + (this.detailMode || i === this.selected ? 0 : 8)].ids.push(i);
+      this.kits[
+        kit +
+          (this.current[b + 17] === 0 ? 8 : 0) +
+          (this.detailMode || i === this.selected ? 0 : 16)
+      ].ids.push(i);
     }
   }
   setTactical(value: boolean): void {
@@ -424,8 +460,12 @@ export class Battlefield {
     this.camera.zoom = THREE.MathUtils.clamp(this.camera.zoom * factor, 0.55, 7);
     this.camera.updateProjectionMatrix();
   }
-  private pick(event: PointerEvent): void {
-    if (!this.current.length) return;
+  setPlacement(active: boolean): void {
+    this.placing = active;
+    this.destination.visible = false;
+    this.renderer.domElement.style.cursor = active ? 'crosshair' : '';
+  }
+  private groundPoint(event: PointerEvent, height = 0): THREE.Vector3 | null {
     const rect = this.renderer.domElement.getBoundingClientRect();
     const ray = new THREE.Raycaster();
     ray.setFromCamera(
@@ -436,7 +476,20 @@ export class Battlefield {
       this.camera,
     );
     const hit = new THREE.Vector3();
-    if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.8), hit)) return;
+    if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -height), hit))
+      return null;
+    hit.x = THREE.MathUtils.clamp(hit.x, -50, 50);
+    hit.z = THREE.MathUtils.clamp(hit.z, -50, 50);
+    return hit;
+  }
+  private pick(event: PointerEvent): void {
+    if (!this.current.length) return;
+    const hit = this.groundPoint(event, this.placing ? 0 : 0.8);
+    if (!hit) return;
+    if (this.placing) {
+      this.onPlace(Math.round(hit.x * SCALE), Math.round(hit.z * SCALE));
+      return;
+    }
     let best = -1,
       distance = 3 / this.camera.zoom;
     for (let i = 0; i < this.count; i++) {
@@ -505,12 +558,18 @@ export class Battlefield {
           const dead = state === State.Dead;
           const hitAge = phaseTick - this.lastHits[id],
             blockAge = phaseTick - this.lastBlocks[id];
-          const hitReact = hitAge >= 0 && hitAge < 8 ? Math.sin((hitAge / 8) * Math.PI) * 0.2 : 0;
+          const hitReact =
+            !dead && this.current[b + 18] > 0
+              ? 0.18
+              : hitAge >= 0 && hitAge < 8
+                ? Math.sin((hitAge / 8) * Math.PI) * 0.2
+                : 0;
           const variation = 0.96 + ((id * 17) % 11) * 0.008;
           this.scale.set(variation, variation, variation);
-          this.position.set(x, dead ? 0.16 : 0, z);
+          const fall = dead ? THREE.MathUtils.smoothstep(phaseTick - this.deaths[id], 0, 14) : 0;
+          this.position.set(x, dead ? 0.16 * fall : 0, z);
           this.rotation.set(
-            dead ? Math.PI / 2 : this.current[b + 13] > 30 ? 0.12 - hitReact : -hitReact,
+            dead ? (Math.PI / 2) * fall : this.current[b + 13] > 30 ? 0.12 - hitReact : -hitReact,
             angle,
             0,
           );
@@ -533,7 +592,7 @@ export class Battlefield {
                 ? Math.max(0, 1 - this.current[b + 5] / UNITS[this.current[b + 8]].recovery)
                 : 0;
             const throwing =
-              UNITS[this.current[b + 8]].role === 'skirmisher' && this.current[b + 9] > 0;
+              UNITS[this.current[b + 8]].role === 'skirmisher' && this.current[b + 19] > 0;
             if (name === 'rightArm') {
               if (state === State.Windup) {
                 this.rotation.x = throwing ? -1.4 * windup : -0.55 * windup;
@@ -544,6 +603,16 @@ export class Battlefield {
               } else {
                 this.rotation.x = gait * 0.4;
                 this.rotation.z = -0.08;
+              }
+            }
+            if (name === 'rightArm' && ![3, 5].includes(this.current[b + 8]) && !throwing) {
+              this.rotation.y = 0;
+              if (state === State.Windup) {
+                this.rotation.x = -0.3;
+                this.position.z = -windup * 0.13;
+              } else if (state === State.Recovery) {
+                this.rotation.x = -0.5;
+                this.position.z = (1 - recovery) * 0.3;
               }
             }
             if (name === 'leftArm') {
@@ -696,7 +765,7 @@ export class Battlefield {
     this.projectiles.geometry.dispose();
     (this.projectiles.material as THREE.Material).dispose();
     this.projectiles.dispose();
-    for (const mesh of [this.selection, this.aura, this.ground]) {
+    for (const mesh of [this.selection, this.aura, this.ground, this.destination]) {
       mesh.geometry.dispose();
       (mesh.material as THREE.Material).dispose();
     }

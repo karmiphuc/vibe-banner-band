@@ -1,4 +1,5 @@
 import { SIM_VERSION, validateConfig, type BattleConfig } from '../content/catalog';
+import { validateOrderLog, type RecordedOrder } from './orders';
 import { CONTENT_HASH, MAX_TICKS } from './battle';
 
 export interface Replay {
@@ -8,6 +9,7 @@ export interface Replay {
   config: BattleConfig;
   tick: number;
   expectedHash: string;
+  orders?: RecordedOrder[];
 }
 export function validateReplay(input: unknown): Replay {
   if (!input || typeof input !== 'object') throw new Error('Invalid replay file.');
@@ -34,5 +36,6 @@ export function validateReplay(input: unknown): Replay {
     config: validateConfig(data.config),
     tick: data.tick,
     expectedHash: data.expectedHash,
+    orders: validateOrderLog(data.orders, data.tick),
   };
 }

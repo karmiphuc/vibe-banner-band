@@ -9,6 +9,8 @@
 
 | [0005](0005-custom-battle-slice.md) | Accepted experiment | Roman–Gallic battle slice and explicit limits |
 
+| [0006](0006-recorded-tactical-orders.md) | Accepted experiment | Tick-boundary tactical commands and replay history |
+
 Statuses describe planning commitments, not implementation completion. Add an ADR for changes to these boundaries, authoritative numeric formats, runtime animation strategy, executable mods, multiplayer, or persisted compatibility.
 
 Template: context; decision and status; considered alternatives; consequences; validation gate; conditions for revisiting; links to affected contracts. Preserve superseded decisions with a link to the replacement instead of rewriting history.

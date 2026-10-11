@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 /** Original, deterministic articulated prototype recipes; not skinned production assets. */
-export const ASSET_RECIPE_VERSION = 'rome-gaul-articulated-2';
+export const ASSET_RECIPE_VERSION = 'rome-gaul-articulated-3';
 export type PartName = 'body' | 'leftLeg' | 'rightLeg' | 'leftArm' | 'rightArm';
 export interface UnitModel {
   parts: Record<PartName, THREE.BufferGeometry>;
@@ -94,7 +94,11 @@ const merge = (parts: THREE.BufferGeometry[]) => {
   return geometry;
 };
 
-export function createUnitModel(type: number, meleeSidearm = false): UnitModel {
+export function createUnitModel(
+  type: number,
+  meleeSidearm = false,
+  brokenShield = false,
+): UnitModel {
   const roman = type < 3,
     leader = type % 3 === 2,
     ranged = type % 3 === 1;
@@ -300,75 +304,98 @@ export function createUnitModel(type: number, meleeSidearm = false): UnitModel {
   const left = arm(),
     right = arm();
   const shieldColor = roman ? '#9e3a2f' : leader ? '#22544c' : '#3c6b62';
-  if (roman && !ranged) {
-    // Continuous convex hide face; separate rim and boss preserve silhouette.
-    const arc = Math.asin(0.27 / 0.48);
-    left.push(
-      colored(
-        new THREE.CylinderGeometry(0.48, 0.48, 0.79, 18, 1, true, -arc, arc * 2),
-        shieldColor,
-        0,
-        -0.33,
-        -0.11,
-      ),
-    );
-    left.push(
-      colored(
-        new THREE.CylinderGeometry(0.486, 0.486, 0.025, 18, 1, true, -arc, arc * 2),
-        bronze,
-        0,
-        0.073,
-        -0.11,
-      ),
-      colored(
-        new THREE.CylinderGeometry(0.486, 0.486, 0.025, 18, 1, true, -arc, arc * 2),
-        bronze,
-        0,
-        -0.733,
-        -0.11,
-      ),
-    );
-    for (const x of [-0.266, 0.266]) left.push(box(bronze, x, -0.33, 0.28, 0.024, 0.8, 0.04));
-    for (const sign of [-1, 1]) {
-      left.push(box('#d4b969', sign * 0.14, -0.2, 0.38, 0.19, 0.025, 0.01, 0, 0, sign * 0.65));
-      left.push(box('#d4b969', sign * 0.14, -0.47, 0.38, 0.19, 0.025, 0.01, 0, 0, -sign * 0.65));
-    }
-  } else {
-    const shield = new THREE.Shape();
-    shield.absellipse(0, 0, ranged ? 0.225 : 0.28, ranged ? 0.29 : 0.43, 0, Math.PI * 2, false, 0);
-    left.push(
-      colored(
-        new THREE.ExtrudeGeometry(shield, { depth: 0.045, bevelEnabled: false, curveSegments: 16 }),
-        shieldColor,
-        0,
-        -0.32,
-        0.29,
-      ),
-    );
-    left.push(
-      colored(
-        new THREE.TorusGeometry(1, 0.035, 4, 24),
-        bronze,
-        0,
-        -0.32,
-        0.316,
-        ranged ? 0.23 : 0.285,
-        ranged ? 0.295 : 0.435,
-        0.5,
-      ),
-    );
-    left.push(
-      box('#d1bc83', 0, -0.32, 0.345, 0.035, ranged ? 0.46 : 0.73, 0.012),
-      box('#d1bc83', 0, -0.32, 0.345, ranged ? 0.33 : 0.4, 0.03, 0.012),
-    );
-  }
-  for (const side of [-1, 1])
-    for (let i = 0; i < 5; i++)
+  if (!brokenShield) {
+    if (roman && !ranged) {
+      // Continuous convex hide face; separate rim and boss preserve silhouette.
+      const arc = Math.asin(0.27 / 0.48);
       left.push(
-        sphere(bronze, side * (ranged ? 0.17 : 0.24), -0.6 + i * 0.13, 0.347, 0.011, 0.011, 0.012),
+        colored(
+          new THREE.CylinderGeometry(0.48, 0.48, 0.79, 18, 1, true, -arc, arc * 2),
+          shieldColor,
+          0,
+          -0.33,
+          -0.11,
+        ),
       );
-  left.push(box(iron, 0, -0.33, 0.365, 0.1, ranged ? 0.22 : 0.35, 0.02));
-  left.push(sphere(iron, 0, -0.33, 0.385, 0.075, 0.075, 0.035));
+      left.push(
+        colored(
+          new THREE.CylinderGeometry(0.486, 0.486, 0.025, 18, 1, true, -arc, arc * 2),
+          bronze,
+          0,
+          0.073,
+          -0.11,
+        ),
+        colored(
+          new THREE.CylinderGeometry(0.486, 0.486, 0.025, 18, 1, true, -arc, arc * 2),
+          bronze,
+          0,
+          -0.733,
+          -0.11,
+        ),
+      );
+      for (const x of [-0.266, 0.266]) left.push(box(bronze, x, -0.33, 0.28, 0.024, 0.8, 0.04));
+      for (const sign of [-1, 1]) {
+        left.push(box('#d4b969', sign * 0.14, -0.2, 0.38, 0.19, 0.025, 0.01, 0, 0, sign * 0.65));
+        left.push(box('#d4b969', sign * 0.14, -0.47, 0.38, 0.19, 0.025, 0.01, 0, 0, -sign * 0.65));
+      }
+    } else {
+      const shield = new THREE.Shape();
+      shield.absellipse(
+        0,
+        0,
+        ranged ? 0.225 : 0.28,
+        ranged ? 0.29 : 0.43,
+        0,
+        Math.PI * 2,
+        false,
+        0,
+      );
+      left.push(
+        colored(
+          new THREE.ExtrudeGeometry(shield, {
+            depth: 0.045,
+            bevelEnabled: false,
+            curveSegments: 16,
+          }),
+          shieldColor,
+          0,
+          -0.32,
+          0.29,
+        ),
+      );
+      left.push(
+        colored(
+          new THREE.TorusGeometry(1, 0.035, 4, 24),
+          bronze,
+          0,
+          -0.32,
+          0.316,
+          ranged ? 0.23 : 0.285,
+          ranged ? 0.295 : 0.435,
+          0.5,
+        ),
+      );
+      left.push(
+        box('#d1bc83', 0, -0.32, 0.345, 0.035, ranged ? 0.46 : 0.73, 0.012),
+        box('#d1bc83', 0, -0.32, 0.345, ranged ? 0.33 : 0.4, 0.03, 0.012),
+      );
+    }
+    for (const side of [-1, 1])
+      for (let i = 0; i < 5; i++)
+        left.push(
+          sphere(
+            bronze,
+            side * (ranged ? 0.17 : 0.24),
+            -0.6 + i * 0.13,
+            0.347,
+            0.011,
+            0.011,
+            0.012,
+          ),
+        );
+    left.push(box(iron, 0, -0.33, 0.365, 0.1, ranged ? 0.22 : 0.35, 0.02));
+    left.push(sphere(iron, 0, -0.33, 0.385, 0.075, 0.075, 0.035));
+  }
   const bladeLength = ranged ? 0.38 : roman ? 0.48 : 0.73;
   right.push(cylinder(leather, 0, -0.55, 0.18, 0.025, 0.16, Math.PI / 2));
   right.push(box(bronze, 0, -0.55, 0.27, 0.14, 0.024, 0.027));
@@ -414,7 +441,11 @@ export const JOINTS: Record<PartName, [number, number, number]> = {
 };
 
 /** Silhouette LOD: same joints/equipment classes, no fine mail, hardware or facial details. */
-export function createCrowdModel(type: number, meleeSidearm = false): UnitModel {
+export function createCrowdModel(
+  type: number,
+  meleeSidearm = false,
+  brokenShield = false,
+): UnitModel {
   const roman = type < 3,
     leader = type % 3 === 2,
     ranged = type % 3 === 1;
@@ -448,25 +479,27 @@ export function createCrowdModel(type: number, meleeSidearm = false): UnitModel 
       box(leather, 0, -0.73, 0.04, 0.14, 0.1, 0.22),
     ]);
   const left = [box(cloth, 0, -0.22, 0.03, 0.13, 0.45, 0.14)];
-  left.push(
-    roman && !ranged
-      ? box('#9e3a2f', 0, -0.33, 0.33, 0.54, 0.8, 0.055)
-      : colored(
-          new THREE.CylinderGeometry(1, 1, 0.045, 8),
-          '#3c6b62',
-          0,
-          -0.33,
-          0.33,
-          ranged ? 0.23 : 0.28,
-          0.9,
-          ranged ? 0.29 : 0.43,
-          Math.PI / 2,
-        ),
-  );
-  left.push(
-    box(bronze, 0, -0.33, 0.37, 0.045, ranged ? 0.4 : 0.68, 0.02),
-    sphere(iron, 0, -0.33, 0.39, 0.06, 0.06, 0.03),
-  );
+  if (!brokenShield) {
+    left.push(
+      roman && !ranged
+        ? box('#9e3a2f', 0, -0.33, 0.33, 0.54, 0.8, 0.055)
+        : colored(
+            new THREE.CylinderGeometry(1, 1, 0.045, 8),
+            '#3c6b62',
+            0,
+            -0.33,
+            0.33,
+            ranged ? 0.23 : 0.28,
+            0.9,
+            ranged ? 0.29 : 0.43,
+            Math.PI / 2,
+          ),
+    );
+    left.push(
+      box(bronze, 0, -0.33, 0.37, 0.045, ranged ? 0.4 : 0.68, 0.02),
+      sphere(iron, 0, -0.33, 0.39, 0.06, 0.06, 0.03),
+    );
+  }
   const right = [box(skin, 0, -0.29, 0.08, 0.12, 0.54, 0.13)];
   right.push(
     box(

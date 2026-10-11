@@ -1,11 +1,22 @@
-export const SIM_VERSION = 'battle-lab-2';
+export const SIM_VERSION = 'battle-lab-3';
 export const TICK_RATE = 30;
 export const SCALE = 1024;
 export const MAX_ARMY = 1000;
 export type Team = 0 | 1;
 export type Doctrine = 'balanced' | 'shieldwall' | 'charge';
 export type Terrain = 'meadow' | 'crossroads' | 'rocky-pass';
+export type FormationRole = 'infantry' | 'ranged';
+export interface FormationSpec {
+  id: number;
+  role: FormationRole;
+  weight: number;
+}
+export const DEFAULT_FORMATIONS: FormationSpec[] = [
+  { id: 0, role: 'infantry', weight: 1 },
+  { id: 1, role: 'ranged', weight: 1 },
+];
 export interface ArmyConfig {
+  formations?: FormationSpec[];
   count: number;
   skirmishers: number;
   doctrine: Doctrine;
@@ -194,7 +205,30 @@ export function validateConfig(input: unknown): BattleConfig {
     const a = data as Record<string, unknown>;
     if (!['balanced', 'shieldwall', 'charge'].includes(a.doctrine as string))
       throw new Error('Unknown army doctrine.');
+    const raw = a.formations ?? DEFAULT_FORMATIONS;
+    if (!Array.isArray(raw) || raw.length < 1 || raw.length > 5)
+      throw Error('Use one to five formations per army.');
+    const formations = raw
+      .map((f: unknown): FormationSpec => {
+        if (!f || typeof f !== 'object') throw Error('Invalid formation.');
+        const v = f as Record<string, unknown>;
+        if (v.role !== 'infantry' && v.role !== 'ranged')
+          throw Error('Unsupported formation role.');
+        return {
+          id: integer(v.id, 0, 4, 'Formation ID'),
+          role: v.role,
+          weight: integer(v.weight, 1, 100, 'Formation share'),
+        };
+      })
+      .sort((a, b) => a.id - b.id);
+    if (new Set(formations.map((f) => f.id)).size !== formations.length)
+      throw Error('Duplicate formation ID.');
+    if (!formations.some((f) => f.role === 'infantry'))
+      throw Error('An infantry formation must carry the commander.');
+    if (Number(a.skirmishers) > 0 && !formations.some((f) => f.role === 'ranged'))
+      throw Error('Javelineers need a ranged formation.');
     return {
+      formations,
       count: integer(a.count, 2, MAX_ARMY, `${name} size`),
       skirmishers: integer(a.skirmishers, 0, 80, `${name} skirmishers`),
       doctrine: a.doctrine as Doctrine,
@@ -210,3 +244,34 @@ export function validateConfig(input: unknown): BattleConfig {
 
 // Includes authoritative values, equipment/ability identities and terrain generation.
 export const CONTENT_VERSION = 'rome-gaul-1';
+
+export function shieldDurability(type: number): number {
+  return UNITS[type].role === 'commander'
+    ? 200
+    : UNITS[type].role === 'skirmisher'
+      ? 60
+      : type < 3
+        ? 160
+        : 120;
+}
+
+/** Integer largest-remainder allocation; IDs break ties. Commander is reserved separately. */
+export function formationRoster(army: ArmyConfig): (FormationSpec & { count: number })[] {
+  const list = (army.formations ?? DEFAULT_FORMATIONS)
+    .map((f) => ({ ...f, count: 0 }))
+    .sort((a, b) => a.id - b.id);
+  const ranged = Math.floor(((army.count - 1) * army.skirmishers) / 100);
+  for (const role of ['infantry', 'ranged'] as const) {
+    const entries = list.filter((f) => f.role === role),
+      pool = role === 'ranged' ? ranged : army.count - 1 - ranged;
+    const total = entries.reduce((sum, f) => sum + f.weight, 0);
+    for (const f of entries) f.count = Math.floor((pool * f.weight) / total);
+    let left = pool - entries.reduce((sum, f) => sum + f.count, 0);
+    entries.sort(
+      (a, b) => ((pool * b.weight) % total) - ((pool * a.weight) % total) || a.id - b.id,
+    );
+    for (const f of entries) if (left-- > 0) f.count++;
+  }
+  list.find((f) => f.role === 'infantry')!.count++;
+  return list;
+}

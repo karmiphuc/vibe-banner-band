@@ -1,11 +1,13 @@
 import type { BattleConfig } from '../content/catalog';
 import type { BattleSummary } from '../sim/battle';
+import type { Order } from '../sim/orders';
 import type { Replay } from '../sim/replay';
 
-export const PROTOCOL_VERSION = 2;
+export const PROTOCOL_VERSION = 3;
 export type ToWorker =
   | { kind: 'init'; session: number; protocol: number; config: BattleConfig }
   | { kind: 'play' | 'pause' | 'step' | 'export'; session: number }
+  | { kind: 'order'; session: number; order: Order }
   | { kind: 'speed'; session: number; speed: number }
   | { kind: 'recycle'; session: number; buffer: ArrayBuffer }
   | { kind: 'replay'; session: number; protocol: number; replay: Replay };

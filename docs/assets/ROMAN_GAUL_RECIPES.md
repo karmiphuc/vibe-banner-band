@@ -1,8 +1,10 @@
 # Early Roman–Gallic unit recipes
 
-Status: original runtime-generated articulated prototype models. Implemented in [unit-models.ts](../../src/render/unit-models.ts), consumed by [battlefield.ts](../../src/render/battlefield.ts). Recipe version `rome-gaul-articulated-2`.
+Status: original runtime-generated articulated prototype models. Implemented in [unit-models.ts](../../src/render/unit-models.ts), consumed by [battlefield.ts](../../src/render/battlefield.ts). Recipe version `rome-gaul-articulated-3`.
 
 The [0.2 refinement](../REFINEMENT_02.md) adds a disposable model workshop, detailed near recipes and a simpler crowd tier. [Recipe evidence](../evidence/model-recipes-v2.json) reports both builds, variant hashes and triangle counts.
+
+PoC 0.3 adds broken-shield variants that preserve the articulated arm. [Current recipe report](../evidence/model-recipes-v3.json) includes every intact/broken near/crowd kit and relevant sidearm.
 
 ## Provenance
 

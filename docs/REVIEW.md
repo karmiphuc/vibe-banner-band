@@ -30,3 +30,7 @@ Performance evidence is explicitly a one-run headless diagnostic under a recorde
 ## Proof-of-concept refinement review
 
 See [0.2 refinement](REFINEMENT_02.md). Added a regression fixture for rear-rank commander overlap, corrected that deployment defect, committed targets during windup, made shield support spatial, and exposed actual geometry tiers in a disposable inspection workshop. New simulation fields are included in replay/checkpoint identity; old rule versions are rejected.
+
+## Tactical combat review
+
+[PoC 0.3](REFINEMENT_03.md) introduces command/replay semantics and directional defense. Regression fixtures protect endpoint orders, atomic validation, formation footprints, fire discipline without charge resets, stagger and permanent shield loss. Tests also cover the broken-shield visual variants. Browser tests issue paused/live orders, export them, and verify their exact replay result.

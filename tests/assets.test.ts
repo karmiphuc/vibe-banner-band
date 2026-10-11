@@ -51,3 +51,22 @@ test('crowd LOD reduces geometry while keeping every articulated equipment part'
         geometry.dispose();
     }
 });
+
+test('broken-shield variants remove equipment while preserving the articulated hand', async () => {
+  const { createCrowdModel } = await import('../src/render/unit-models');
+  for (const build of [createUnitModel, createCrowdModel])
+    for (let type = 0; type < 6; type++) {
+      const intact = build(type),
+        broken = build(type, false, true);
+      assert(
+        broken.parts.leftArm.getAttribute('position').count <
+          intact.parts.leftArm.getAttribute('position').count,
+      );
+      assert(broken.parts.leftArm.getAttribute('position').count > 0);
+      assert.equal(
+        broken.parts.rightArm.getAttribute('position').count,
+        intact.parts.rightArm.getAttribute('position').count,
+      );
+      for (const g of [...Object.values(intact.parts), ...Object.values(broken.parts)]) g.dispose();
+    }
+});
