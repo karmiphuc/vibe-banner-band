@@ -1,0 +1,1080 @@
+{
+  "version": "battle-lab-6",
+  "runtime": "v24.19.0",
+  "cpu": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+  "platform": "linux",
+  "note": "Headless tsx source, single run, 1800 ticks max, 30 tick warmup. Shared cloud CPU. Not renderer FPS or device qualification.",
+  "results": [
+    {
+      "config": {
+        "seed": 7541,
+        "terrain": "highlands",
+        "romans": {
+          "count": 300,
+          "skirmishers": 18,
+          "cavalry": 24,
+          "horseArchers": 14,
+          "siege": 6,
+          "doctrine": "balanced",
+          "formations": [
+            {
+              "id": 0,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "id": 2,
+              "role": "cavalry",
+              "weight": 1
+            },
+            {
+              "id": 3,
+              "role": "horse-archer",
+              "weight": 1
+            },
+            {
+              "id": 4,
+              "role": "siege",
+              "weight": 1
+            }
+          ]
+        },
+        "gauls": {
+          "count": 300,
+          "skirmishers": 18,
+          "cavalry": 24,
+          "horseArchers": 14,
+          "siege": 6,
+          "doctrine": "balanced",
+          "formations": [
+            {
+              "id": 0,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "id": 2,
+              "role": "cavalry",
+              "weight": 1
+            },
+            {
+              "id": 3,
+              "role": "horse-archer",
+              "weight": 1
+            },
+            {
+              "id": 4,
+              "role": "siege",
+              "weight": 1
+            }
+          ]
+        }
+      },
+      "orders": [
+        {
+          "tick": 0,
+          "sequence": 1,
+          "order": {
+            "team": 0,
+            "group": 2,
+            "kind": "tactic",
+            "tactic": "flank-left"
+          }
+        },
+        {
+          "tick": 0,
+          "sequence": 2,
+          "order": {
+            "team": 0,
+            "group": 3,
+            "kind": "tactic",
+            "tactic": "circle-right"
+          }
+        },
+        {
+          "tick": 0,
+          "sequence": 3,
+          "order": {
+            "team": 1,
+            "group": 2,
+            "kind": "tactic",
+            "tactic": "skein-charge"
+          }
+        },
+        {
+          "tick": 0,
+          "sequence": 4,
+          "order": {
+            "team": 1,
+            "group": 3,
+            "kind": "tactic",
+            "tactic": "feint"
+          }
+        }
+      ],
+      "ticks": 1800,
+      "p50ms": 3.409,
+      "p95ms": 7.064,
+      "p99ms": 9.693,
+      "hash": "dfd4933a",
+      "standing": [
+        207,
+        254
+      ],
+      "transitions": [
+        {
+          "tick": 1,
+          "team": 0,
+          "id": 2,
+          "phase": "forming",
+          "cycle": 0,
+          "x": -80940,
+          "z": 49054
+        },
+        {
+          "tick": 1,
+          "team": 0,
+          "id": 3,
+          "phase": "circling",
+          "cycle": 1,
+          "x": 22890,
+          "z": -106064
+        },
+        {
+          "tick": 1,
+          "team": 1,
+          "id": 2,
+          "phase": "forming",
+          "cycle": 0,
+          "x": 80940,
+          "z": 49725
+        },
+        {
+          "tick": 1,
+          "team": 1,
+          "id": 3,
+          "phase": "approaching",
+          "cycle": 0,
+          "x": -51091,
+          "z": -53925
+        },
+        {
+          "tick": 109,
+          "team": 0,
+          "id": 2,
+          "phase": "flanking",
+          "cycle": 0,
+          "x": 58888,
+          "z": -22338
+        },
+        {
+          "tick": 109,
+          "team": 1,
+          "id": 2,
+          "phase": "charging",
+          "cycle": 0,
+          "x": -113435,
+          "z": 51488
+        },
+        {
+          "tick": 241,
+          "team": 1,
+          "id": 3,
+          "phase": "evading",
+          "cycle": 0,
+          "x": 77083,
+          "z": -21530
+        },
+        {
+          "tick": 529,
+          "team": 1,
+          "id": 3,
+          "phase": "approaching",
+          "cycle": 1,
+          "x": 35648,
+          "z": -74308
+        },
+        {
+          "tick": 589,
+          "team": 1,
+          "id": 2,
+          "phase": "withdrawing",
+          "cycle": 0,
+          "x": -82452,
+          "z": 50911
+        },
+        {
+          "tick": 649,
+          "team": 1,
+          "id": 3,
+          "phase": "evading",
+          "cycle": 1,
+          "x": 79369,
+          "z": 14647
+        },
+        {
+          "tick": 709,
+          "team": 0,
+          "id": 2,
+          "phase": "charging",
+          "cycle": 0,
+          "x": -103351,
+          "z": 67189
+        },
+        {
+          "tick": 721,
+          "team": 1,
+          "id": 2,
+          "phase": "regrouping",
+          "cycle": 1,
+          "x": -77552,
+          "z": 51340
+        },
+        {
+          "tick": 757,
+          "team": 1,
+          "id": 2,
+          "phase": "charging",
+          "cycle": 1,
+          "x": 62218,
+          "z": -23993
+        },
+        {
+          "tick": 865,
+          "team": 0,
+          "id": 3,
+          "phase": "evading",
+          "cycle": 5,
+          "x": 33222,
+          "z": -115040
+        },
+        {
+          "tick": 913,
+          "team": 1,
+          "id": 3,
+          "phase": "approaching",
+          "cycle": 2,
+          "x": 67506,
+          "z": -39104
+        },
+        {
+          "tick": 1153,
+          "team": 1,
+          "id": 3,
+          "phase": "evading",
+          "cycle": 2,
+          "x": 72349,
+          "z": 23610
+        },
+        {
+          "tick": 1165,
+          "team": 0,
+          "id": 3,
+          "phase": "circling",
+          "cycle": 7,
+          "x": 119548,
+          "z": -91565
+        },
+        {
+          "tick": 1189,
+          "team": 0,
+          "id": 2,
+          "phase": "withdrawing",
+          "cycle": 0,
+          "x": -82326,
+          "z": 58498
+        },
+        {
+          "tick": 1237,
+          "team": 1,
+          "id": 2,
+          "phase": "withdrawing",
+          "cycle": 1,
+          "x": 58611,
+          "z": -23510
+        },
+        {
+          "tick": 1357,
+          "team": 0,
+          "id": 2,
+          "phase": "regrouping",
+          "cycle": 1,
+          "x": -77789,
+          "z": 55800
+        },
+        {
+          "tick": 1393,
+          "team": 0,
+          "id": 2,
+          "phase": "flanking",
+          "cycle": 1,
+          "x": 4298,
+          "z": -58171
+        },
+        {
+          "tick": 1429,
+          "team": 1,
+          "id": 2,
+          "phase": "regrouping",
+          "cycle": 2,
+          "x": 53381,
+          "z": -21165
+        },
+        {
+          "tick": 1429,
+          "team": 1,
+          "id": 3,
+          "phase": "approaching",
+          "cycle": 3,
+          "x": 68618,
+          "z": -62445
+        },
+        {
+          "tick": 1489,
+          "team": 1,
+          "id": 2,
+          "phase": "charging",
+          "cycle": 2,
+          "x": -96932,
+          "z": 54560
+        },
+        {
+          "tick": 1609,
+          "team": 1,
+          "id": 3,
+          "phase": "evading",
+          "cycle": 3,
+          "x": 52415,
+          "z": 41780
+        },
+        {
+          "tick": 1669,
+          "team": 0,
+          "id": 3,
+          "phase": "evading",
+          "cycle": 9,
+          "x": 92378,
+          "z": -109824
+        }
+      ]
+    },
+    {
+      "config": {
+        "seed": 7541,
+        "terrain": "highlands",
+        "romans": {
+          "count": 1000,
+          "skirmishers": 18,
+          "cavalry": 24,
+          "horseArchers": 14,
+          "siege": 6,
+          "doctrine": "balanced",
+          "formations": [
+            {
+              "id": 0,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "id": 2,
+              "role": "cavalry",
+              "weight": 1
+            },
+            {
+              "id": 3,
+              "role": "horse-archer",
+              "weight": 1
+            },
+            {
+              "id": 4,
+              "role": "siege",
+              "weight": 1
+            }
+          ]
+        },
+        "gauls": {
+          "count": 1000,
+          "skirmishers": 18,
+          "cavalry": 24,
+          "horseArchers": 14,
+          "siege": 6,
+          "doctrine": "balanced",
+          "formations": [
+            {
+              "id": 0,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "id": 2,
+              "role": "cavalry",
+              "weight": 1
+            },
+            {
+              "id": 3,
+              "role": "horse-archer",
+              "weight": 1
+            },
+            {
+              "id": 4,
+              "role": "siege",
+              "weight": 1
+            }
+          ]
+        }
+      },
+      "orders": [
+        {
+          "tick": 0,
+          "sequence": 1,
+          "order": {
+            "team": 0,
+            "group": 2,
+            "kind": "tactic",
+            "tactic": "flank-left"
+          }
+        },
+        {
+          "tick": 0,
+          "sequence": 2,
+          "order": {
+            "team": 0,
+            "group": 3,
+            "kind": "tactic",
+            "tactic": "circle-right"
+          }
+        },
+        {
+          "tick": 0,
+          "sequence": 3,
+          "order": {
+            "team": 1,
+            "group": 2,
+            "kind": "tactic",
+            "tactic": "skein-charge"
+          }
+        },
+        {
+          "tick": 0,
+          "sequence": 4,
+          "order": {
+            "team": 1,
+            "group": 3,
+            "kind": "tactic",
+            "tactic": "feint"
+          }
+        }
+      ],
+      "ticks": 1800,
+      "p50ms": 11.802,
+      "p95ms": 17.273,
+      "p99ms": 24.846,
+      "hash": "032cba22",
+      "standing": [
+        832,
+        894
+      ],
+      "transitions": [
+        {
+          "tick": 1,
+          "team": 0,
+          "id": 2,
+          "phase": "forming",
+          "cycle": 0,
+          "x": -86969,
+          "z": 70187
+        },
+        {
+          "tick": 1,
+          "team": 0,
+          "id": 3,
+          "phase": "circling",
+          "cycle": 1,
+          "x": 9756,
+          "z": -145174
+        },
+        {
+          "tick": 1,
+          "team": 1,
+          "id": 2,
+          "phase": "forming",
+          "cycle": 0,
+          "x": 86969,
+          "z": 71992
+        },
+        {
+          "tick": 1,
+          "team": 1,
+          "id": 3,
+          "phase": "approaching",
+          "cycle": 0,
+          "x": -54537,
+          "z": -75092
+        },
+        {
+          "tick": 241,
+          "team": 0,
+          "id": 2,
+          "phase": "flanking",
+          "cycle": 0,
+          "x": 66200,
+          "z": -38300
+        },
+        {
+          "tick": 241,
+          "team": 1,
+          "id": 2,
+          "phase": "charging",
+          "cycle": 0,
+          "x": -119544,
+          "z": 71840
+        },
+        {
+          "tick": 241,
+          "team": 1,
+          "id": 3,
+          "phase": "evading",
+          "cycle": 0,
+          "x": 83367,
+          "z": -45725
+        },
+        {
+          "tick": 541,
+          "team": 1,
+          "id": 3,
+          "phase": "approaching",
+          "cycle": 1,
+          "x": 27017,
+          "z": -104191
+        },
+        {
+          "tick": 637,
+          "team": 1,
+          "id": 3,
+          "phase": "evading",
+          "cycle": 1,
+          "x": 90651,
+          "z": -8879
+        },
+        {
+          "tick": 721,
+          "team": 1,
+          "id": 2,
+          "phase": "withdrawing",
+          "cycle": 0,
+          "x": -67909,
+          "z": 71901
+        },
+        {
+          "tick": 817,
+          "team": 0,
+          "id": 3,
+          "phase": "evading",
+          "cycle": 5,
+          "x": 11018,
+          "z": -146255
+        },
+        {
+          "tick": 841,
+          "team": 0,
+          "id": 2,
+          "phase": "charging",
+          "cycle": 0,
+          "x": -81426,
+          "z": 96079
+        },
+        {
+          "tick": 865,
+          "team": 1,
+          "id": 2,
+          "phase": "regrouping",
+          "cycle": 1,
+          "x": -63035,
+          "z": 72871
+        },
+        {
+          "tick": 925,
+          "team": 1,
+          "id": 2,
+          "phase": "charging",
+          "cycle": 1,
+          "x": 30574,
+          "z": -18287
+        },
+        {
+          "tick": 937,
+          "team": 1,
+          "id": 3,
+          "phase": "approaching",
+          "cycle": 2,
+          "x": 50224,
+          "z": -89470
+        },
+        {
+          "tick": 1117,
+          "team": 0,
+          "id": 3,
+          "phase": "circling",
+          "cycle": 7,
+          "x": 71918,
+          "z": -144366
+        },
+        {
+          "tick": 1177,
+          "team": 1,
+          "id": 3,
+          "phase": "evading",
+          "cycle": 2,
+          "x": 75351,
+          "z": 4239
+        },
+        {
+          "tick": 1321,
+          "team": 0,
+          "id": 2,
+          "phase": "withdrawing",
+          "cycle": 0,
+          "x": -65839,
+          "z": 85344
+        },
+        {
+          "tick": 1405,
+          "team": 1,
+          "id": 2,
+          "phase": "withdrawing",
+          "cycle": 1,
+          "x": 39113,
+          "z": -28443
+        },
+        {
+          "tick": 1453,
+          "team": 1,
+          "id": 3,
+          "phase": "approaching",
+          "cycle": 3,
+          "x": 69419,
+          "z": -101358
+        },
+        {
+          "tick": 1525,
+          "team": 0,
+          "id": 2,
+          "phase": "regrouping",
+          "cycle": 1,
+          "x": -60596,
+          "z": 82461
+        },
+        {
+          "tick": 1597,
+          "team": 0,
+          "id": 2,
+          "phase": "flanking",
+          "cycle": 1,
+          "x": -51617,
+          "z": -67117
+        },
+        {
+          "tick": 1645,
+          "team": 1,
+          "id": 2,
+          "phase": "regrouping",
+          "cycle": 2,
+          "x": 34297,
+          "z": -25335
+        },
+        {
+          "tick": 1681,
+          "team": 1,
+          "id": 3,
+          "phase": "evading",
+          "cycle": 3,
+          "x": 49354,
+          "z": 16597
+        },
+        {
+          "tick": 1693,
+          "team": 0,
+          "id": 3,
+          "phase": "evading",
+          "cycle": 10,
+          "x": 91838,
+          "z": -159216
+        },
+        {
+          "tick": 1717,
+          "team": 1,
+          "id": 2,
+          "phase": "charging",
+          "cycle": 2,
+          "x": -82192,
+          "z": 80862
+        }
+      ]
+    },
+    {
+      "config": {
+        "seed": 7541,
+        "terrain": "highlands",
+        "romans": {
+          "count": 2500,
+          "skirmishers": 18,
+          "cavalry": 24,
+          "horseArchers": 14,
+          "siege": 6,
+          "doctrine": "balanced",
+          "formations": [
+            {
+              "id": 0,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "id": 2,
+              "role": "cavalry",
+              "weight": 1
+            },
+            {
+              "id": 3,
+              "role": "horse-archer",
+              "weight": 1
+            },
+            {
+              "id": 4,
+              "role": "siege",
+              "weight": 1
+            }
+          ]
+        },
+        "gauls": {
+          "count": 2500,
+          "skirmishers": 18,
+          "cavalry": 24,
+          "horseArchers": 14,
+          "siege": 6,
+          "doctrine": "balanced",
+          "formations": [
+            {
+              "id": 0,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "id": 2,
+              "role": "cavalry",
+              "weight": 1
+            },
+            {
+              "id": 3,
+              "role": "horse-archer",
+              "weight": 1
+            },
+            {
+              "id": 4,
+              "role": "siege",
+              "weight": 1
+            }
+          ]
+        }
+      },
+      "orders": [
+        {
+          "tick": 0,
+          "sequence": 1,
+          "order": {
+            "team": 0,
+            "group": 2,
+            "kind": "tactic",
+            "tactic": "flank-left"
+          }
+        },
+        {
+          "tick": 0,
+          "sequence": 2,
+          "order": {
+            "team": 0,
+            "group": 3,
+            "kind": "tactic",
+            "tactic": "circle-right"
+          }
+        },
+        {
+          "tick": 0,
+          "sequence": 3,
+          "order": {
+            "team": 1,
+            "group": 2,
+            "kind": "tactic",
+            "tactic": "skein-charge"
+          }
+        },
+        {
+          "tick": 0,
+          "sequence": 4,
+          "order": {
+            "team": 1,
+            "group": 3,
+            "kind": "tactic",
+            "tactic": "feint"
+          }
+        }
+      ],
+      "ticks": 1800,
+      "p50ms": 33.796,
+      "p95ms": 53.736,
+      "p99ms": 77.916,
+      "hash": "5424aac9",
+      "standing": [
+        2200,
+        2240
+      ],
+      "transitions": [
+        {
+          "tick": 1,
+          "team": 0,
+          "id": 2,
+          "phase": "forming",
+          "cycle": 0,
+          "x": -104332,
+          "z": 73795
+        },
+        {
+          "tick": 1,
+          "team": 0,
+          "id": 3,
+          "phase": "circling",
+          "cycle": 1,
+          "x": 16614,
+          "z": -152837
+        },
+        {
+          "tick": 1,
+          "team": 1,
+          "id": 2,
+          "phase": "forming",
+          "cycle": 0,
+          "x": 104332,
+          "z": 74684
+        },
+        {
+          "tick": 1,
+          "team": 1,
+          "id": 3,
+          "phase": "approaching",
+          "cycle": 0,
+          "x": -64604,
+          "z": -77397
+        },
+        {
+          "tick": 241,
+          "team": 0,
+          "id": 2,
+          "phase": "flanking",
+          "cycle": 0,
+          "x": 76154,
+          "z": -53248
+        },
+        {
+          "tick": 241,
+          "team": 1,
+          "id": 2,
+          "phase": "charging",
+          "cycle": 0,
+          "x": -136893,
+          "z": 82900
+        },
+        {
+          "tick": 241,
+          "team": 1,
+          "id": 3,
+          "phase": "evading",
+          "cycle": 0,
+          "x": 96579,
+          "z": -54241
+        },
+        {
+          "tick": 541,
+          "team": 1,
+          "id": 3,
+          "phase": "approaching",
+          "cycle": 1,
+          "x": 16375,
+          "z": -104140
+        },
+        {
+          "tick": 649,
+          "team": 1,
+          "id": 3,
+          "phase": "evading",
+          "cycle": 1,
+          "x": 103506,
+          "z": -22445
+        },
+        {
+          "tick": 721,
+          "team": 1,
+          "id": 2,
+          "phase": "withdrawing",
+          "cycle": 0,
+          "x": -48596,
+          "z": 77645
+        },
+        {
+          "tick": 841,
+          "team": 0,
+          "id": 2,
+          "phase": "charging",
+          "cycle": 0,
+          "x": -48611,
+          "z": 107649
+        },
+        {
+          "tick": 877,
+          "team": 0,
+          "id": 3,
+          "phase": "evading",
+          "cycle": 5,
+          "x": -4629,
+          "z": -126340
+        },
+        {
+          "tick": 913,
+          "team": 1,
+          "id": 2,
+          "phase": "regrouping",
+          "cycle": 1,
+          "x": -43277,
+          "z": 79011
+        },
+        {
+          "tick": 949,
+          "team": 1,
+          "id": 3,
+          "phase": "approaching",
+          "cycle": 2,
+          "x": 57565,
+          "z": -78780
+        },
+        {
+          "tick": 1153,
+          "team": 1,
+          "id": 2,
+          "phase": "charging",
+          "cycle": 1,
+          "x": -11540,
+          "z": 39308
+        },
+        {
+          "tick": 1177,
+          "team": 0,
+          "id": 3,
+          "phase": "circling",
+          "cycle": 7,
+          "x": 69295,
+          "z": -167340
+        },
+        {
+          "tick": 1189,
+          "team": 1,
+          "id": 3,
+          "phase": "evading",
+          "cycle": 2,
+          "x": 97961,
+          "z": -13617
+        },
+        {
+          "tick": 1321,
+          "team": 0,
+          "id": 2,
+          "phase": "withdrawing",
+          "cycle": 0,
+          "x": -55861,
+          "z": 122018
+        },
+        {
+          "tick": 1489,
+          "team": 1,
+          "id": 3,
+          "phase": "approaching",
+          "cycle": 3,
+          "x": 67180,
+          "z": -103416
+        },
+        {
+          "tick": 1501,
+          "team": 1,
+          "id": 2,
+          "phase": "withdrawing",
+          "cycle": 1,
+          "x": 5730,
+          "z": 10870
+        },
+        {
+          "tick": 1621,
+          "team": 0,
+          "id": 2,
+          "phase": "regrouping",
+          "cycle": 1,
+          "x": -53079,
+          "z": 116423
+        },
+        {
+          "tick": 1633,
+          "team": 0,
+          "id": 3,
+          "phase": "evading",
+          "cycle": 9,
+          "x": 53530,
+          "z": -171266
+        },
+        {
+          "tick": 1633,
+          "team": 1,
+          "id": 3,
+          "phase": "evading",
+          "cycle": 3,
+          "x": 82537,
+          "z": 14366
+        },
+        {
+          "tick": 1681,
+          "team": 1,
+          "id": 2,
+          "phase": "regrouping",
+          "cycle": 2,
+          "x": 1963,
+          "z": 14638
+        }
+      ]
+    }
+  ]
+}

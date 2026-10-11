@@ -125,7 +125,7 @@ test('worker keeps stepping when snapshot buffers are exhausted and ignores stal
             resolve({ tick: m.summary.tick, snapshots });
           }
         };
-        worker.postMessage({ kind: 'init', session: 77, protocol: 5, config });
+        worker.postMessage({ kind: 'init', session: 77, protocol: 6, config });
       });
     },
     {
@@ -420,4 +420,61 @@ test('mixed mounted combat and artillery replay match Node after 300 active tick
   expect(await page.evaluate(() => (window as unknown as LabWindow).battleLab.summary!.hash)).toBe(
     b.hash(),
   );
+});
+
+test('mounted formation tactics expose phases, enforce roles and replay identically in the worker', async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('./');
+  await expect(page.locator('#loading')).toBeHidden();
+  await expect(page.locator('[data-tactic="skein-charge"]')).toBeDisabled();
+  await page.locator('#command-group').selectOption('2');
+  await page.locator('[data-tactic="flank-left"]').click();
+  await expect(page.locator('#formation-status')).toContainText('forming');
+  await expect(page.locator('#command-formation')).toHaveValue('skein');
+  await expect(page.locator('[data-tactic="feint"]')).toBeDisabled();
+  await page.locator('#command-group').selectOption('3');
+  await page.locator('[data-tactic="feint"]').click();
+  await expect(page.locator('#order-ack')).toContainText('Order 2');
+  const { SCENARIOS } = await import('../../src/content/scenarios');
+  const { SIM_VERSION } = await import('../../src/content/catalog');
+  const { CONTENT_HASH } = await import('../../src/sim/battle');
+  const config = structuredClone(SCENARIOS[0].config);
+  config.terrain = 'meadow';
+  config.romans.count = config.gauls.count = 60;
+  const b = new Battle(config);
+  b.issueOrder({ team: 0, group: 2, kind: 'tactic', tactic: 'flank-left' });
+  b.issueOrder({ team: 0, group: 3, kind: 'tactic', tactic: 'feint' });
+  b.issueOrder({ team: 1, group: 3, kind: 'tactic', tactic: 'circle-right' });
+  for (let i = 0; i < 720; i++) b.step();
+  await page
+    .locator('#replay-file')
+    .setInputFiles({
+      name: 'mounted-tactics.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(
+        JSON.stringify({
+          format: 'banner-band-replay',
+          version: SIM_VERSION,
+          content: CONTENT_HASH,
+          config,
+          tick: b.tick,
+          expectedHash: b.hash(),
+          orders: b.orders,
+        }),
+      ),
+    });
+  await expect(page.locator('#battle-status')).toHaveText('REPLAY VERIFIED', { timeout: 60000 });
+  const state = await page.evaluate(() => (window as unknown as LabWindow).battleLab.summary!);
+  expect(state.hash).toBe(b.hash());
+  expect(state.formations.find((f) => f.team === 0 && f.id === 2)?.tactic?.phase).not.toBe(
+    'forming',
+  );
+  await page.locator('#command-group').selectOption('2');
+  await page.screenshot({ path: 'artifacts/local/mounted-tactics-v6.png' });
+  await page.locator('[data-order="hold"]').click();
+  await expect(page.locator('[data-tactic="none"]')).toHaveAttribute('aria-pressed', 'true');
+  expect(errors).toEqual([]);
 });

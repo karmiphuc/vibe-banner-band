@@ -68,7 +68,7 @@ const armyForm = (
 </section>`;
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-<header class="topbar"><a class="brand" href="./" aria-label="Banner Band home"><span class="brand-symbol">${icon('flag')}</span><span>BANNER<span class="brand-slash">/</span>BAND</span></a><div class="page-title">CUSTOM BATTLE <span class="title-divider">/</span> <span>THE GALLIC FRONTIER</span></div><a class="build-tag" href="https://github.com/karmiphuc/vibe-banner-band" target="_blank" rel="noopener" title="Source code and project documentation"><i></i> PROOF OF CONCEPT <b>0.5 ↗</b></a></header>
+<header class="topbar"><a class="brand" href="./" aria-label="Banner Band home"><span class="brand-symbol">${icon('flag')}</span><span>BANNER<span class="brand-slash">/</span>BAND</span></a><div class="page-title">CUSTOM BATTLE <span class="title-divider">/</span> <span>THE GALLIC FRONTIER</span></div><a class="build-tag" href="https://github.com/karmiphuc/vibe-banner-band" target="_blank" rel="noopener" title="Source code and project documentation"><i></i> PROOF OF CONCEPT <b>0.6 ↗</b></a></header>
 <main class="workspace">
   <aside class="setup-panel"><div class="panel-intro"><span class="eyebrow">01 / BATTLE SETUP</span><h1>Set the field.</h1><p>Build two armies. Watch their commanders lead.</p></div>
   <form id="battle-form"><fieldset id="setup-fields"><legend class="sr-only">Battle configuration</legend>

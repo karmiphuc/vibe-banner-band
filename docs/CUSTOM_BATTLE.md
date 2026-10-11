@@ -4,7 +4,7 @@ Status: implemented experimental vertical slice, 2026-10-11. It tests architectu
 
 [Play on GitHub Pages](https://karmiphuc.github.io/vibe-banner-band/). Static build is published from the repository `gh-pages` branch; see [deployment details](engineering/DEPLOYMENT.md).
 
-See [combined-arms proof of concept 0.5](REFINEMENT_05.md) for the newest controls, combat rules, model workshop and verification.
+See [mounted tactics 0.6](REFINEMENT_06.md) for the latest formation controls and [combined arms 0.5](REFINEMENT_05.md) for mounted combat, artillery and terrain.
 
 ## Run and test
 
@@ -83,3 +83,7 @@ See [review notes](REVIEW.md), [evidence](evidence/battle-lab-headless.json) and
 Choose **Try the reserve & flank battle** to exercise ranked movement, held reserves, facing/frontage and two-leg flank orders. Click formation labels on the field to select them. See the [play guide and explicit navigation limits](REFINEMENT_04.md).
 
 Current combined-arms rules and versioned limits supersede earlier infantry-only details below: see [ADR 0008](decisions/0008-combined-arms-and-terrain.md).
+
+## Mounted tactics (0.6)
+
+Select cavalry formation 3 for flank-and-charge or skein charge cycles; select horse-archer formation 4 for left/right circling or feint-and-evade. Start the battle to execute them. See [controls, phases, replay compatibility and limits](REFINEMENT_06.md).

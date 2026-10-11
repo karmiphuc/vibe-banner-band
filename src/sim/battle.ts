@@ -1,3 +1,4 @@
+import { supportsTactic, startTactic, updateTactic } from './tactics';
 import {
   CONTENT_VERSION,
   SIM_VERSION,
@@ -30,7 +31,7 @@ import {
   WORLD_VERSION,
   forestAt,
 } from '../content/world';
-import { HEADINGS, rotatedSlot } from './formation-math';
+import { HEADINGS, rotatedSlot, skeinSlot } from './formation-math';
 import { turnToward, inFront } from './combat-math';
 import {
   MAX_ORDERS,
@@ -656,6 +657,14 @@ export class Battle {
     const rows = Math.ceil(
       (f.role === 'siege' ? Math.ceil(regular.length / 3) : regular.length) / f.files,
     );
+    const wedge =
+      f.formation === 'skein' ? regular.map((_, k) => skeinSlot(k, f.files, spacing)) : [];
+    const wedgeX = wedge.length
+      ? Math.trunc(wedge.reduce((n, p) => n + p[0], 0) / wedge.length)
+      : 0;
+    const wedgeZ = wedge.length
+      ? Math.trunc(wedge.reduce((n, p) => n + p[1], 0) / wedge.length)
+      : 0;
     for (let k = 0; k < regular.length; k++) {
       const rank = f.role === 'siege' ? Math.floor(k / 3) : k;
       const depth =
@@ -671,7 +680,12 @@ export class Battle {
             spacing) /
             2,
         );
-      [this.slotX[regular[k]], this.slotZ[regular[k]]] = rotatedSlot(depth, lateral, f.heading);
+      [this.slotX[regular[k]], this.slotZ[regular[k]]] = rotatedSlot(
+        ...(f.formation === 'skein'
+          ? ([wedge[k][0] - wedgeX, wedge[k][1] - wedgeZ] as [number, number])
+          : ([depth, lateral] as [number, number])),
+        f.heading,
+      );
     }
     for (const id of ids)
       if (UNITS[this.type[id]].role === 'commander')
@@ -788,12 +802,31 @@ export class Battle {
       (f) => f.team === order.team && (order.group === 'all' || f.id === order.group),
     );
     if (!selected.length) throw Error('That formation is not deployed.');
+    if (order.kind === 'tactic' && selected.some((f) => !supportsTactic(order.tactic, f.role)))
+      throw Error('Select cavalry for charges or horse archers for mounted skirmish tactics.');
+    if (
+      order.kind === 'formation' &&
+      order.formation === 'skein' &&
+      selected.some((f) => f.role !== 'cavalry')
+    )
+      throw Error('Skein layout requires a cavalry formation.');
     const originX = Math.trunc(selected.reduce((sum, f) => sum + f.x, 0) / selected.length);
     const originZ = Math.trunc(selected.reduce((sum, f) => sum + f.z, 0) / selected.length);
     for (let index = 0; index < this.formations.length; index++) {
       const f = this.formations[index];
       if (f.team !== order.team || (order.group !== 'all' && order.group !== f.id)) continue;
-      if (order.kind === 'fire') f.fireAtWill = order.enabled;
+      if (order.kind !== 'fire' && order.kind !== 'tactic') delete f.tactic;
+      if (order.kind === 'tactic') {
+        f.route = [];
+        f.movement = 'hold';
+        this.arrange(index);
+        if (order.tactic === 'none') delete f.tactic;
+        else {
+          f.tactic = startTactic(order.tactic, this.tick, f.x, f.z, f.id);
+          f.formation = f.role === 'cavalry' ? 'skein' : 'loose';
+          this.arrange(index, f.x, f.z);
+        }
+      } else if (order.kind === 'fire') f.fireAtWill = order.enabled;
       else if (order.kind === 'formation') {
         f.formation = order.formation;
         this.arrange(index, f.x, f.z);
@@ -941,6 +974,7 @@ export class Battle {
   }
 
   private advanceFormations(): void {
+    const activeTactics = this.formations.some((f) => f.tactic && f.tactic.phase !== 'spent');
     const stats = this.formations.map(() => ({
       n: 0,
       x: 0,
@@ -950,6 +984,8 @@ export class Battle {
       nearest: Infinity,
       ammunition: 0,
       speed: 1000,
+      mounted: 0,
+      radius: 0,
     }));
     for (let i = 0; i < this.count; i++)
       if (this.active(i) && this.state[i] !== State.Routing) {
@@ -957,6 +993,9 @@ export class Battle {
           s = stats[index],
           f = this.formations[index];
         s.n++;
+        if (this.mounted(i)) s.mounted++;
+        if (activeTactics)
+          s.radius = Math.max(s.radius, isqrt(this.slotX[i] ** 2 + this.slotZ[i] ** 2));
         s.ammunition += this.ammo[i];
         s.x += this.x[i];
         s.z += this.z[i];
@@ -991,6 +1030,15 @@ export class Battle {
         s = stats[index];
       if (!s.n) continue;
       if (this.tick % 30 === 0 && s.n !== f.strength) this.arrange(index, f.x, f.z);
+      if (f.tactic) {
+        if (this.tick % 12 === 0) {
+          const heading = f.heading;
+          updateTactic(f, index, this.formations, stats, this.tick);
+          if (heading !== f.heading) this.arrange(index, f.x, f.z);
+          this.fitFormation(index);
+        }
+        continue;
+      }
       if (f.movement === 'flank-left' || f.movement === 'flank-right') {
         if (s.error < s.n * 2 * SCALE || (!f.route.length && s.contact > 0)) {
           const next = f.route.shift();
@@ -1218,7 +1266,9 @@ export class Battle {
                 : 100)) /
           100,
       );
-      const holding = formation.movement !== 'charge' && formation.movement !== 'skirmish';
+      const holding =
+        !!formation.tactic ||
+        (formation.movement !== 'charge' && formation.movement !== 'skirmish');
       if (
         UNITS[this.type[i]].role === 'engineer' &&
         this.engineId[i] >= 0 &&
@@ -1235,6 +1285,7 @@ export class Battle {
           continue;
         }
       } else if (
+        !formation.tactic &&
         formation.movement === 'skirmish' &&
         this.mounted(i) &&
         isMissileType(this.type[i]) &&
@@ -1754,6 +1805,7 @@ export class Battle {
     const [romans, gauls] = this.stats();
     const formations = this.formations.map((f) => ({
       ...f,
+      tactic: f.tactic ? { ...f.tactic } : undefined,
       route: f.route.map((p) => ({ ...p })),
       standing: 0,
       total: 0,
@@ -1890,7 +1942,11 @@ export class Battle {
       commanderLost: [...this.commanderLost],
       winner: this.winner,
       events: this.events.map((e) => ({ ...e })),
-      formations: this.formations.map((f) => ({ ...f, route: f.route.map((p) => ({ ...p })) })),
+      formations: this.formations.map((f) => ({
+        ...f,
+        tactic: f.tactic ? { ...f.tactic } : undefined,
+        route: f.route.map((p) => ({ ...p })),
+      })),
       orders: structuredClone(this.orders),
       engines: structuredClone(this.engines),
     };
@@ -1919,6 +1975,7 @@ export class Battle {
     battle.events = checkpoint.events.map((e) => ({ ...e }));
     battle.formations = checkpoint.formations.map((f) => ({
       ...f,
+      tactic: f.tactic ? { ...f.tactic } : undefined,
       route: f.route.map((p) => ({ ...p })),
     }));
     battle.orders = structuredClone(checkpoint.orders);

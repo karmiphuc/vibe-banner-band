@@ -1,6 +1,8 @@
+import type { TacticKind, TacticState } from './tactics';
+import { TACTICS } from './tactics';
 import { ORDER_LIMIT, type Team, type FormationRole } from '../content/catalog';
 export type Group = 'all' | number;
-export type Formation = 'line' | 'shieldwall' | 'loose';
+export type Formation = 'line' | 'shieldwall' | 'loose' | 'skein';
 export type Movement =
   | 'advance'
   | 'charge'
@@ -12,6 +14,7 @@ export type Movement =
   | 'brace';
 export type Order = { team: Team; group: Group } & (
   | { kind: Movement; x?: number; z?: number }
+  | { kind: 'tactic'; tactic: TacticKind }
   | { kind: 'formation'; formation: Formation }
   | { kind: 'fire'; enabled: boolean }
   | { kind: 'face'; heading: number }
@@ -32,6 +35,7 @@ export interface FormationState {
   heading: number;
   files: number;
   strength: number;
+  tactic?: TacticState;
   route: { x: number; z: number }[];
   x: number;
   z: number;
@@ -59,12 +63,16 @@ export function validateOrder(input: unknown): Order {
       ? { ...base, kind: 'face', heading: Number(value) }
       : { ...base, kind: 'frontage', files: Number(value) };
   }
+  if (d.kind === 'tactic') {
+    if (!TACTICS.includes(d.tactic as TacticKind)) throw Error('Unknown tactic.');
+    return { ...base, kind: 'tactic', tactic: d.tactic as TacticKind };
+  }
   if (d.kind === 'fire') {
     if (typeof d.enabled !== 'boolean') throw Error('Invalid fire order.');
     return { ...base, kind: 'fire', enabled: d.enabled };
   }
   if (d.kind === 'formation') {
-    if (!['line', 'shieldwall', 'loose'].includes(d.formation as string))
+    if (!['line', 'shieldwall', 'loose', 'skein'].includes(d.formation as string))
       throw Error('Unknown formation.');
     return { ...base, kind: 'formation', formation: d.formation as Formation };
   }

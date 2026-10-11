@@ -37,3 +37,7 @@ See [tactical order ADR](../decisions/0006-recorded-tactical-orders.md), [combat
 ## Implemented combined-arms extension (0.5)
 
 The five-ID limit is unchanged. Roles now include `cavalry`, `horse-archer` and `siege`; composition shares require a matching formation. Siege shares count crew soldiers and round down to complete triplets. Formation weights split each role's pool; the commander remains in the first infantry formation. Engine crew membership and slots survive casualty reformation. `skirmish` and `brace` orders use the same recorded-command path as existing movement orders. See [ADR 0008](../decisions/0008-combined-arms-and-terrain.md) for current behavior and limits.
+
+## Implemented mounted controllers (0.6)
+
+See [the mounted-tactics contract](../REFINEMENT_06.md) and [ADR 0009](../decisions/0009-mounted-formation-tactics.md). Role-specific tactical orders own a persistent, hashed phase controller; manual maneuver/layout orders cancel it. Cavalry flank/charge/withdraw/regroup and horse-archer circle/feint/evade are implemented. These controllers do not replace the existing infantry, ranged or siege commands.

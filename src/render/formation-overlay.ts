@@ -2,7 +2,7 @@ import { terrainHeight } from '../content/world';
 import * as THREE from 'three';
 import { SCALE, MAX_UNITS, UNITS, ROLE_LABELS, type Terrain, type Team } from '../content/catalog';
 import { UNIT_STRIDE, State, type BattleSummary } from '../sim/battle';
-import { HEADINGS, rotatedSlot } from '../sim/formation-math';
+import { HEADINGS, rotatedSlot, skeinSlot } from '../sim/formation-math';
 import type { Group } from '../sim/orders';
 
 /** Presentation consumes snapshots; selecting banners never edits authoritative state. */
@@ -93,7 +93,7 @@ export class FormationOverlay {
         this.outlines.set(key, line);
       }
       const b = this.banners.get(key)!;
-      b.textContent = `${f.id + 1} ${ROLE_LABELS[f.role]} · ${f.standing}`;
+      b.textContent = `${f.id + 1} ${ROLE_LABELS[f.role]} · ${f.standing}${f.tactic ? ` / ${f.tactic.phase}` : ''}`;
       b.title = `${f.team === 0 ? 'Roman' : 'Gallic'} formation ${f.id + 1}: ${f.movement}; ${f.files} files`;
       b.setAttribute(
         'aria-label',
@@ -117,6 +117,21 @@ export class FormationOverlay {
         [halfDepth, halfWidth],
         [halfDepth, -halfWidth],
       ];
+      if (f.formation === 'skein' && f.strength) {
+        const slots = Array.from({ length: f.strength }, (_, i) => skeinSlot(i, f.files, spacing));
+        const cx = slots.reduce((n, p) => n + p[0], 0) / slots.length;
+        const cz = slots.reduce((n, p) => n + p[1], 0) / slots.length;
+        const back = slots.at(-1)![0];
+        const width = Math.max(...slots.map((p) => Math.abs(p[1]))) + spacing / 2;
+        corners.splice(
+          0,
+          corners.length,
+          [-cx - spacing / 2, -cz],
+          [back - cx + spacing / 2, width - cz],
+          [back - cx + spacing / 2, -width - cz],
+          [-cx - spacing / 2, -cz],
+        );
+      }
       const points = corners.map(([d, l]) => rotatedSlot(Math.trunc(d), Math.trunc(l), f.heading));
       const [hx, hz] = HEADINGS[f.heading];
       const vertices: number[] = [];
@@ -175,9 +190,16 @@ export class FormationOverlay {
       button.classList.toggle('selected', active);
       button.setAttribute('aria-pressed', String(active));
       const line = this.outlines.get(key)!;
-      line.visible = !!c && active && f.movement !== 'charge';
-      if (c && f.movement.startsWith('flank')) {
-        const vertices = [c.x / c.n, 0.1, c.z / c.n, f.x / SCALE, 0.1, f.z / SCALE];
+      line.visible = !!c && active && (f.movement !== 'charge' || !!f.tactic);
+      if (c && (f.movement.startsWith('flank') || f.tactic)) {
+        const vertices = [
+          c.x / c.n,
+          this.height((c.x / c.n) * SCALE, (c.z / c.n) * SCALE) + 0.15,
+          c.z / c.n,
+          f.x / SCALE,
+          this.height(f.x, f.z) + 0.15,
+          f.z / SCALE,
+        ];
         if (f.route[0])
           vertices.push(
             f.x / SCALE,
