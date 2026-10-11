@@ -66,4 +66,4 @@ Publish a supported-device table only after the gate passes. If it fails, record
 
 ## Combined-arms capacity experiment (0.5)
 
-[The refinement report](../REFINEMENT_05.md) and [raw Node measurements](../evidence/battle-lab-v5-headless.json) cover 600, 2,000 and 5,000 soldiers with all five roles over 1,500 ticks. The maximum tier exceeds the 33.3 ms tick budget on the measured shared cloud CPU. No 5,000-soldier real-time or browser FPS qualification is claimed. The Chromium maximum-capacity check proves deployment and stepping only; SwiftShader requires a longer startup/step allowance than small encounters.
+[The refinement report](../REFINEMENT_05.md) and [raw Node measurements](../evidence/battle-lab-v5-headless.json) cover 600, 2,000 and 5,000 soldiers with all five roles over 1,500 ticks. The maximum tier is approximately at the 33.3 ms tick budget at p95, with p99 spikes above budget on the measured shared cloud CPU. No 5,000-soldier real-time or browser FPS qualification is claimed. The Chromium maximum-capacity check proves deployment and stepping only; SwiftShader requires a longer startup/step allowance than small encounters.

@@ -34,6 +34,6 @@ Raw evidence: [headless combined-arms timings](evidence/battle-lab-v5-headless.j
 | 2,000 | 9.424 ms | 14.144 ms | 20.968 ms | 305 |
 | 5,000 | 27.282 ms | 33.197 ms | 45.726 ms | 446 |
 
-The maximum setting exceeds the 33.3 ms budget for a steady 30-tick simulation on this machine. The scheduler does not skip authoritative ticks to disguise that slowdown. These figures measure simulation only; rendered FPS remains unqualified.
+The maximum setting is approximately at the 33.3 ms tick budget at p95, with p99 spikes above it. This leaves little headroom for a steady 30-tick simulation on this machine. The scheduler does not skip authoritative ticks to disguise that slowdown. These figures measure simulation only; rendered FPS remains unqualified.
 
 [Validation environment and coverage](evidence/validation-v5.json) distinguish test passes and visual review from the remaining production gates.
