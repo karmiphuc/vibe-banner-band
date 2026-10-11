@@ -1,3 +1,4 @@
+import { createHorseModel, createBallistaModel } from '../../src/render/combined-models';
 import { createHash } from 'node:crypto';
 import {
   ASSET_RECIPE_VERSION,
@@ -8,7 +9,9 @@ import {
 import { UNITS } from '../../src/content/catalog';
 const models = [];
 for (let type = 0; type < UNITS.length; type++)
-  for (const sidearm of UNITS[type].role === 'skirmisher' ? [false, true] : [false]) {
+  for (const sidearm of ['skirmisher', 'horse-archer'].includes(UNITS[type].role)
+    ? [false, true]
+    : [false]) {
     for (const brokenShield of [false, true])
       for (const lod of ['near', 'crowd'] as const) {
         const generate = () => {
@@ -38,6 +41,36 @@ for (let type = 0; type < UNITS.length; type++)
         models.push({ unit: UNITS[type].id, sidearm, brokenShield, lod, ...a, repeatBuild: true });
       }
   }
+for (const [name, build] of [
+  ['horse-near', () => Object.values(createHorseModel())],
+  ['horse-crowd', () => Object.values(createHorseModel(true))],
+  ['ballista', () => [createBallistaModel()]],
+] as const) {
+  const generate = () => {
+    const hash = createHash('sha256');
+    let triangles = 0;
+    for (const g of build()) {
+      for (const a of ['position', 'normal', 'color']) {
+        const v = g.attributes[a].array;
+        hash.update(new Uint8Array(v.buffer, v.byteOffset, v.byteLength));
+      }
+      triangles += (g.index?.count ?? g.attributes.position.count) / 3;
+      g.dispose();
+    }
+    return { sha256: hash.digest('hex'), triangles };
+  };
+  const a = generate(),
+    b = generate();
+  if (a.sha256 !== b.sha256) throw Error('Non-repeatable equipment recipe');
+  models.push({
+    unit: name,
+    sidearm: false,
+    brokenShield: false,
+    lod: 'equipment',
+    ...a,
+    repeatBuild: true,
+  });
+}
 console.log(
   JSON.stringify(
     {

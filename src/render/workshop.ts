@@ -1,3 +1,4 @@
+import { createHorseModel, HORSE_JOINTS, createBallistaModel } from './combined-models';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { UNITS } from '../content/catalog';
@@ -30,7 +31,7 @@ export function openWorkshop(initialType: number): void {
   controls.target.set(0, 1.12, 0);
   controls.enablePan = false;
   controls.minDistance = 2.5;
-  controls.maxDistance = 8;
+  controls.maxDistance = 14;
   controls.maxPolarAngle = Math.PI * 0.52;
   controls.enableDamping = true;
   scene.add(new THREE.HemisphereLight('#e9f2ec', '#303c32', 2));
@@ -65,8 +66,16 @@ export function openWorkshop(initialType: number): void {
     metalness: 0.15,
     side: THREE.DoubleSide,
   });
+  let extras: THREE.Mesh[] = [];
+  let mounted = false,
+    engineer = false;
   let parts = {} as Record<PartName, THREE.Mesh>;
   const rebuild = () => {
+    for (const mesh of extras) {
+      root.remove(mesh);
+      mesh.geometry.dispose();
+    }
+    extras = [];
     for (const mesh of Object.values(parts)) {
       root.remove(mesh);
       mesh.geometry.dispose();
@@ -74,7 +83,9 @@ export function openWorkshop(initialType: number): void {
     const type = Number(find<HTMLSelectElement>('workshop-unit').value),
       u = UNITS[type];
     const sidearm = find<HTMLInputElement>('workshop-sidearm');
-    sidearm.disabled = u.role !== 'skirmisher';
+    sidearm.disabled = u.role !== 'skirmisher' && u.role !== 'horse-archer';
+    mounted = u.role === 'cavalry' || u.role === 'horse-archer';
+    engineer = u.role === 'engineer';
     const model = (
       find<HTMLInputElement>('workshop-lod').checked ? createCrowdModel : createUnitModel
     )(type, sidearm.checked, find<HTMLInputElement>('workshop-broken').checked);
@@ -86,6 +97,32 @@ export function openWorkshop(initialType: number): void {
       root.add(mesh);
       parts[name] = mesh;
     }
+    if (mounted) {
+      for (const [name, geometry] of Object.entries(
+        createHorseModel(find<HTMLInputElement>('workshop-lod').checked),
+      )) {
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.name = name;
+        mesh.position.set(...HORSE_JOINTS[name]);
+        mesh.castShadow = true;
+        root.add(mesh);
+        extras.push(mesh);
+      }
+    } else if (u.role === 'engineer') {
+      const mesh = new THREE.Mesh(createBallistaModel(), material);
+      mesh.position.x = 0;
+      root.add(mesh);
+      extras.push(mesh);
+    }
+    const large = mounted || u.role === 'engineer';
+    plinth.scale.set(large ? 2.6 : 1, 1, large ? 2.6 : 1);
+    trim.scale.setScalar(large ? 2.6 : 1);
+    camera.position.set(
+      engineer ? 6 : large ? 4.8 : 2.9,
+      engineer ? 4.4 : large ? 3.2 : 2.15,
+      engineer ? 10 : large ? 7 : 4.6,
+    );
+    controls.target.set(0, mounted ? 1.4 : 1.12, 0);
     find('workshop-name').textContent = u.name;
     find('workshop-description').textContent = u.description;
     find('workshop-equipment').replaceChildren(
@@ -100,7 +137,7 @@ export function openWorkshop(initialType: number): void {
       0,
     );
     find('workshop-metrics').textContent =
-      `${triangles.toLocaleString()} triangles · 5 articulated parts`;
+      `${(triangles + extras.reduce((n, m) => n + (m.geometry.index?.count ?? m.geometry.attributes.position.count) / 3, 0)).toLocaleString()} triangles · ${5 + extras.length} parts`;
   };
   for (const id of ['workshop-unit', 'workshop-sidearm', 'workshop-lod', 'workshop-broken'])
     find(id).addEventListener('change', rebuild);
@@ -157,6 +194,30 @@ export function openWorkshop(initialType: number): void {
       parts.rightArm.rotation.x = -0.4;
       parts.rightArm.rotation.y = -0.3;
     }
+    if (mounted) {
+      for (const [name, mesh] of Object.entries(parts)) {
+        mesh.position.y += 0.68;
+        if (name === 'leftLeg' || name === 'rightLeg') {
+          mesh.position.x *= 2.5;
+          mesh.rotation.set(-0.35, 0, name === 'leftLeg' ? -0.16 : 0.16);
+        }
+      }
+      for (const mesh of extras)
+        if (mesh.name !== 'body')
+          mesh.rotation.x =
+            pose === 'march'
+              ? Math.sin(
+                  phase * 10 +
+                    (mesh.name.includes('Right') ? Math.PI : 0) +
+                    (mesh.name.startsWith('rear') ? 1.8 : 0),
+                ) * 0.6
+              : 0;
+    }
+    if (engineer)
+      for (const mesh of Object.values(parts)) {
+        mesh.position.x -= 1.5;
+        mesh.position.z -= 1.5;
+      }
     renderer.render(scene, camera);
   };
   frame = requestAnimationFrame(animate);

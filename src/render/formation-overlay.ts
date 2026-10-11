@@ -1,11 +1,16 @@
+import { terrainHeight } from '../content/world';
 import * as THREE from 'three';
-import { SCALE, type Team } from '../content/catalog';
+import { SCALE, MAX_UNITS, UNITS, ROLE_LABELS, type Terrain, type Team } from '../content/catalog';
 import { UNIT_STRIDE, State, type BattleSummary } from '../sim/battle';
 import { HEADINGS, rotatedSlot } from '../sim/formation-math';
 import type { Group } from '../sim/orders';
 
 /** Presentation consumes snapshots; selecting banners never edits authoritative state. */
 export class FormationOverlay {
+  terrain: Terrain = 'meadow';
+  private height(x: number, z: number): number {
+    return terrainHeight(this.terrain, Math.round(x), Math.round(z)) / SCALE;
+  }
   private root = document.createElement('div');
   private banners = new Map<string, HTMLButtonElement>();
   private outlines = new Map<string, THREE.LineSegments>();
@@ -36,7 +41,7 @@ export class FormationOverlay {
         opacity: 0.62,
         depthWrite: false,
       }),
-      2000,
+      MAX_UNITS,
     );
     this.rings.count = 0;
     this.rings.frustumCulled = false;
@@ -88,13 +93,22 @@ export class FormationOverlay {
         this.outlines.set(key, line);
       }
       const b = this.banners.get(key)!;
-      b.textContent = `${f.id + 1} ${f.role === 'ranged' ? 'JAV' : 'INF'} · ${f.standing}`;
+      b.textContent = `${f.id + 1} ${ROLE_LABELS[f.role]} · ${f.standing}`;
       b.title = `${f.team === 0 ? 'Roman' : 'Gallic'} formation ${f.id + 1}: ${f.movement}; ${f.files} files`;
       b.setAttribute(
         'aria-label',
         `Select ${f.team === 0 ? 'Roman' : 'Gallic'} formation ${f.id + 1}`,
       );
-      const spacing = f.formation === 'loose' ? 2300 : f.formation === 'shieldwall' ? 1100 : 1450;
+      const spacing =
+        f.role === 'siege'
+          ? 6000
+          : f.role === 'cavalry' || f.role === 'horse-archer'
+            ? 2800
+            : f.formation === 'loose'
+              ? 2300
+              : f.formation === 'shieldwall'
+                ? 1100
+                : 1450;
       const halfWidth = (Math.max(1, Math.min(f.files, f.strength) - 1) * spacing) / 2;
       const halfDepth = (Math.max(1, Math.ceil(f.strength / f.files) - 1) * spacing) / 2;
       const corners = [
@@ -106,7 +120,12 @@ export class FormationOverlay {
       const points = corners.map(([d, l]) => rotatedSlot(Math.trunc(d), Math.trunc(l), f.heading));
       const [hx, hz] = HEADINGS[f.heading];
       const vertices: number[] = [];
-      const add = (p: number[]) => vertices.push((f.x + p[0]) / SCALE, 0.09, (f.z + p[1]) / SCALE);
+      const add = (p: number[]) =>
+        vertices.push(
+          (f.x + p[0]) / SCALE,
+          this.height(f.x + p[0], f.z + p[1]) + 0.09,
+          (f.z + p[1]) / SCALE,
+        );
       for (let i = 0; i < 4; i++) {
         add(points[i]);
         add(points[(i + 1) % 4]);
@@ -132,7 +151,7 @@ export class FormationOverlay {
       const b = 3 + id * UNIT_STRIDE,
         state = data[b + 4];
       if (state >= State.Routing) continue;
-      const team: Team = data[b + 8] < 3 ? 0 : 1,
+      const team: Team = UNITS[data[b + 8]].team,
         group = data[b + 20],
         key = `${team}:${group}`;
       const c = centers.get(key) ?? { x: 0, z: 0, n: 0 };
@@ -141,7 +160,7 @@ export class FormationOverlay {
       c.n++;
       centers.set(key, c);
       if (team === this.team && (this.group === 'all' || this.group === group)) {
-        this.temp.position.set(data[b] / SCALE, 0.065, data[b + 1] / SCALE);
+        this.temp.position.set(data[b] / SCALE, data[b + 27] / SCALE + 0.065, data[b + 1] / SCALE);
         this.temp.updateMatrix();
         this.rings.setMatrixAt(ringCount++, this.temp.matrix);
       }
@@ -176,7 +195,9 @@ export class FormationOverlay {
         button.hidden = true;
         continue;
       }
-      this.point.set(c.x / c.n, 3.2, c.z / c.n).project(camera);
+      this.point
+        .set(c.x / c.n, this.height((c.x / c.n) * SCALE, (c.z / c.n) * SCALE) + 3.2, c.z / c.n)
+        .project(camera);
       button.hidden = Math.abs(this.point.x) > 1 || Math.abs(this.point.y) > 1 || this.point.z > 1;
       button.style.transform = `translate(${((this.point.x + 1) * width) / 2}px,${((1 - this.point.y) * height) / 2}px) translate(-50%,-100%)`;
     }

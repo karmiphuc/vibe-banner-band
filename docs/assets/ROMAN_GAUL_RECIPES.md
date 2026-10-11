@@ -1,6 +1,6 @@
 # Early Roman–Gallic unit recipes
 
-Status: original runtime-generated articulated prototype models. Implemented in [unit-models.ts](../../src/render/unit-models.ts), consumed by [battlefield.ts](../../src/render/battlefield.ts). Recipe version `rome-gaul-articulated-3`.
+Status: original runtime-generated articulated prototype models. Implemented in [unit-models.ts](../../src/render/unit-models.ts), consumed by [battlefield.ts](../../src/render/battlefield.ts). Recipe version `rome-gaul-combined-4`.
 
 The [0.2 refinement](../REFINEMENT_02.md) adds a disposable model workshop, detailed near recipes and a simpler crowd tier. [Recipe evidence](../evidence/model-recipes-v2.json) reports both builds, variant hashes and triangle counts.
 
@@ -23,3 +23,7 @@ Roman silhouettes use mail hems, shoulder strap, belt/buckle, bronze helmet and 
 ## Promotion requirements
 
 Follow the [production pipeline](PIPELINE.md): formal recipe inputs/schema, asset-local manifest/socket hierarchy, fitted approved rig/body, authored compatible clips, pose review, export/import validation, LOD/material/animation budgets and actual animated-crowd measurement. The current rigid-part implementation is a useful reference/test fixture, not a substitute for those gates.
+
+## Combined arms in 0.5
+
+[Combined models](../../src/render/combined-models.ts) add original horse and ballista geometry. Twelve humanoid designs share five-part joints, with dedicated spear, bow, sidearm and crew-tool variants. The horse seat is approximately 1.45 m high; rider roots are offset by 0.68 m, with legs spread outside the saddle. Horse bodies and four legs are instanced separately. Engines are a single merged batch per battle. [Repeat-build report](../evidence/model-recipes-v5.json) includes equipment and near/crowd variants. Horse crowd geometry uses low-poly body volumes and omits bit rings; leg and tack silhouettes remain. No production animation or grip-fit qualification is implied.

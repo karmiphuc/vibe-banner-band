@@ -96,8 +96,8 @@ test('frontage limits keep 2,000-unit formations within the arena at diagonal he
   }
   for (let i = 0; i < 1000; i++) {
     const f = b.formationOf(i);
-    assert(Math.abs(f.x + b.slotX[i]) <= 62 * SCALE);
-    assert(Math.abs(f.z + b.slotZ[i]) <= 62 * SCALE);
+    assert(Math.abs(f.x + b.slotX[i]) <= 320 * SCALE);
+    assert(Math.abs(f.z + b.slotZ[i]) <= 320 * SCALE);
   }
 });
 

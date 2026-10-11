@@ -2,7 +2,7 @@
 
 ## Current checks
 
-The [custom battle](../CUSTOM_BATTLE.md) has 39 headless/model tests and seven production-build Chromium tests, including worker backpressure and headless/worker replay agreement. `runtime.yml` runs boundaries, tests, typecheck/build and browser tests. Firefox/Safari and real-device GPU performance remain open.
+The [custom battle](../CUSTOM_BATTLE.md) has 47 headless/model tests and ten production-build Chromium tests, including worker backpressure and headless/worker replay agreement. `runtime.yml` runs boundaries, tests, typecheck/build and browser tests. Firefox/Safari and real-device GPU performance remain open.
 
 `python3 tools/check_docs.py` checks local Markdown file links, JSON syntax and limited reference/timing integrity in the illustrative catalog. The documentation workflow runs it on pushes and pull requests. It does not validate a game engine, external URL availability, asset quality, or the full future schema.
 
@@ -47,3 +47,5 @@ Run GPU benchmarks on suitable controlled hardware when available; never use sha
 ## Done criteria
 
 A subsystem needs contract, implementation, relevant tests, diagnostics and benchmark impact where applicable. A visually plausible screenshot is insufficient. For assets, automatic checks plus human pose/scale review are both required. For performance claims, attach [measurement context](PERFORMANCE.md). For docs-only changes, report docs checks rather than pretending runtime tests exist.
+
+Combined-arms coverage includes 5,000-soldier roster conservation, complete and stable engine crews, nearby-operator firing requirements, mounted shooting/unhorsing, frontal brace impacts, integer terrain/ford routing, model repeat builds, packed snapshots and active-combat Node/worker replay agreement. Browser capacity checks are deployment/step smoke tests under software rendering, not FPS qualification.

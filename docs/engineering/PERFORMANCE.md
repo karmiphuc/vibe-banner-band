@@ -63,3 +63,7 @@ Benchmark renderer-only, simulation-only and integrated workloads to localize bo
 Eliminate global scans and allocation churn → bound/correct dense queries and navigation → batch compatible meshes/materials → optimize animation/attachments → LOD/culling/overdraw → measured Wasm/GPU presentation experiments. Never change target count, AI rules or collision correctness silently to improve a chart.
 
 Publish a supported-device table only after the gate passes. If it fails, record measured limit and reason; revisit implementation or explicitly revise product scope through an ADR.
+
+## Combined-arms capacity experiment (0.5)
+
+[The refinement report](../REFINEMENT_05.md) and [raw Node measurements](../evidence/battle-lab-v5-headless.json) cover 600, 2,000 and 5,000 soldiers with all five roles over 1,500 ticks. The maximum tier exceeds the 33.3 ms tick budget on the measured shared cloud CPU. No 5,000-soldier real-time or browser FPS qualification is claimed. The Chromium maximum-capacity check proves deployment and stepping only; SwiftShader requires a longer startup/step allowance than small encounters.

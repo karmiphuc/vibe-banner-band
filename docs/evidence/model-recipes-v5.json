@@ -1,0 +1,612 @@
+{
+  "recipe": "rome-gaul-combined-4",
+  "runtime": "v24.19.0",
+  "source": "src/render/unit-models.ts",
+  "license": "Repository GPL v3; geometry authored in this repository",
+  "coverage": "Exact local position/normal/color bytes and joint transforms, pinned toolchain. Not pixel, animation or production-rig qualification.",
+  "models": [
+    {
+      "unit": "roman.legionary.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "near",
+      "sha256": "7f64d2668c32f26c04d1ed9ae5d6506caf77dcd55b9e87def821c950f111dd54",
+      "triangles": 4628,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.legionary.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "crowd",
+      "sha256": "04d44682ded0c7a6115fd8ce7c48416e43b602effe62237c1dfa4be03c1842c9",
+      "triangles": 292,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.legionary.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "near",
+      "sha256": "745540b752d955eeeb7cb27d5919d74f5a20e287310effb408182b805ed11c6a",
+      "triangles": 3116,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.legionary.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "crowd",
+      "sha256": "c7f78efd988810d5103d80d015e88fbbba553c6387cd5cd999956853021b3059",
+      "triangles": 148,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.auxiliary.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "near",
+      "sha256": "0b7e643a760892751428861a77dde37f8596c5fea5584bcae7de837b7b882ed1",
+      "triangles": 3236,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.auxiliary.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "crowd",
+      "sha256": "6876e40d3c9f171877e565f7c363136ea70e057e685858ea53840a92a19fa13d",
+      "triangles": 312,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.auxiliary.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "near",
+      "sha256": "a133e028f44dbda020e72529a98603ef1f39efe1e4d5608082dc46cac0b671ed",
+      "triangles": 1564,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.auxiliary.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "crowd",
+      "sha256": "84ec7014b0f954a5355d9aaed7dfa4cc518873ba66dfb2e16c3c368b27f29e4d",
+      "triangles": 148,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.auxiliary.v1",
+      "sidearm": true,
+      "brokenShield": false,
+      "lod": "near",
+      "sha256": "5881aed66284222078116a25b047e24f97808b9fba2627c1027889a249e6fdcf",
+      "triangles": 3216,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.auxiliary.v1",
+      "sidearm": true,
+      "brokenShield": false,
+      "lod": "crowd",
+      "sha256": "3715cb45c9bb19dbf1acc6144e19042ec019ef83a1d453daed253e584e579a90",
+      "triangles": 312,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.auxiliary.v1",
+      "sidearm": true,
+      "brokenShield": true,
+      "lod": "near",
+      "sha256": "fa3ee7669baf36968dd5290de5ed23b1fb0b4bcab705cf707e31a322877cbb51",
+      "triangles": 1544,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.auxiliary.v1",
+      "sidearm": true,
+      "brokenShield": true,
+      "lod": "crowd",
+      "sha256": "a71ea31fc34ea9ea6cc2c05e43a84afa086c7843357957a03aa2677ae94cc857",
+      "triangles": 148,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.legate.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "near",
+      "sha256": "a080861e7fb1361622e44532e2de930889e82e38bee302af718111f2f8e3c51e",
+      "triangles": 5166,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.legate.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "crowd",
+      "sha256": "d80f50267fa042eefad98a593f61a949f1681cbc17b9d440b029d6762bdfc23f",
+      "triangles": 360,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.legate.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "near",
+      "sha256": "00451f1d4834b79fd3ef576fae2aa830d3076d1642025b0de6d72d19952ce0b8",
+      "triangles": 3654,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.legate.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "crowd",
+      "sha256": "776e106c70751c25c50a500761c75dc415126f41288a2935ce86edce67a11056",
+      "triangles": 216,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.warrior.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "near",
+      "sha256": "88aa682c2c4a767970e8717950ff65cd664b65a4d643f5fa9fc178edc92616ed",
+      "triangles": 3898,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.warrior.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "crowd",
+      "sha256": "4dc18923e7b8c4b815519d9a97092d342f1543fc52439af527fb47e18a3292b0",
+      "triangles": 312,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.warrior.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "near",
+      "sha256": "c481691b4e45c4c989aeeb2f167099bc36bd8056632452d0c137f3707e7ce767",
+      "triangles": 2226,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.warrior.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "crowd",
+      "sha256": "34945489c49c3420220e07ef48af18ea6153583659e96cd126c942ae746a9cb9",
+      "triangles": 148,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.skirmisher.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "near",
+      "sha256": "1b92f9332ad12f27c5c784b06a00f281b8ace4097d11d0962193f62a7aca8d1d",
+      "triangles": 3990,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.skirmisher.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "crowd",
+      "sha256": "edcd9ac6c30d55d5ad02348082bac2c247811f00b9f7e4ce14856fc63e7fd7d0",
+      "triangles": 312,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.skirmisher.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "near",
+      "sha256": "996f47b425af3e7d759ec0101bde618ed1d539d3a64c4114dc6e5c28a98d8c94",
+      "triangles": 2318,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.skirmisher.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "crowd",
+      "sha256": "895740b991e68f300345526862ab8d4066e37179c21d552581acf0b33fb05795",
+      "triangles": 148,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.skirmisher.v1",
+      "sidearm": true,
+      "brokenShield": false,
+      "lod": "near",
+      "sha256": "c2e97c40738319b7ad5173110b5160e34d871d01372fa903507c45b240dd1343",
+      "triangles": 3970,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.skirmisher.v1",
+      "sidearm": true,
+      "brokenShield": false,
+      "lod": "crowd",
+      "sha256": "685b8ab2f9215680a354e96e8acb434a682cc5a37a1c89b4b453528a238c17e5",
+      "triangles": 312,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.skirmisher.v1",
+      "sidearm": true,
+      "brokenShield": true,
+      "lod": "near",
+      "sha256": "92b8dad8539262b3a33208dab5e4c731f1183e47a95192ad35025fea89c0c6ec",
+      "triangles": 2298,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.skirmisher.v1",
+      "sidearm": true,
+      "brokenShield": true,
+      "lod": "crowd",
+      "sha256": "34945489c49c3420220e07ef48af18ea6153583659e96cd126c942ae746a9cb9",
+      "triangles": 148,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.warlord.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "near",
+      "sha256": "5097cce6cf2d515ec78e0a392cf1d6fb76fab75b11d32644afd54181da3314fb",
+      "triangles": 5586,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.warlord.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "crowd",
+      "sha256": "7d28d2f9f6c4cda346574ea127076798c13e9277c38e623cd686f061e4b5637a",
+      "triangles": 368,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.warlord.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "near",
+      "sha256": "3ff8a5ede6b0c8033ea70b5c328c474f6379b683e60607677e1029c59f6e4556",
+      "triangles": 3914,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.warlord.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "crowd",
+      "sha256": "16ba49690987a8b9d75f50d7c8a4e01eb31abcb6becd31907dc42d4806431a65",
+      "triangles": 204,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.equites.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "near",
+      "sha256": "e0d6df966bac34b37e259e5f0e1a30cd1ac95076ac0609a2110f793bdd91648c",
+      "triangles": 4808,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.equites.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "crowd",
+      "sha256": "651b48a050d216ef5ab396301dfb2987d80862ef28c9c2b08feb19a763ef7c24",
+      "triangles": 312,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.equites.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "near",
+      "sha256": "31fd86b351711d2ff361f7201af371c6715d85a0c874c6100ae11c4bddff1e5d",
+      "triangles": 3136,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.equites.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "crowd",
+      "sha256": "d6cdec20c04846fba981e619ddcfd18e7eb53f42e1e7c0fbe555a14254d2b936",
+      "triangles": 148,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.noble-rider.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "near",
+      "sha256": "89fe08446d8d090465975f4ecb13f0c71e9d7c3650aa8c0a3bd98cc8ec33a36b",
+      "triangles": 3918,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.noble-rider.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "crowd",
+      "sha256": "4c530c983fde7cdf1b084102e7997839d7819e64870d7676c663b5f50cad319e",
+      "triangles": 312,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.noble-rider.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "near",
+      "sha256": "bb41dba33ca05edbc998b6c082fa9c9b9fabf7378ecc26a4bd5401cfd060f766",
+      "triangles": 2246,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.noble-rider.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "crowd",
+      "sha256": "d547665a490dba1efd12921dc22ada4a377ba6d710ca5760248b810d2a2f1871",
+      "triangles": 148,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.mounted-archer.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "near",
+      "sha256": "dd9e16b87fbb232b471c5fb9f27cc0d63b0b8471e8787eaa78344e0fde5e8d39",
+      "triangles": 2168,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.mounted-archer.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "crowd",
+      "sha256": "9962c64bc8429140c3f2b431850849aa3cb739d25270ae0d1ac0ea63195833b5",
+      "triangles": 172,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.mounted-archer.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "near",
+      "sha256": "dd9e16b87fbb232b471c5fb9f27cc0d63b0b8471e8787eaa78344e0fde5e8d39",
+      "triangles": 2168,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.mounted-archer.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "crowd",
+      "sha256": "9962c64bc8429140c3f2b431850849aa3cb739d25270ae0d1ac0ea63195833b5",
+      "triangles": 172,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.mounted-archer.v1",
+      "sidearm": true,
+      "brokenShield": false,
+      "lod": "near",
+      "sha256": "5a73681cf2ea67dc8f873f45865bf788164486e4430ae07385cb792345e1f1a0",
+      "triangles": 2096,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.mounted-archer.v1",
+      "sidearm": true,
+      "brokenShield": false,
+      "lod": "crowd",
+      "sha256": "50f72196b8ad1ee89d250e499e1e50aa5f00fa984ee074aa83c84a084cc59f2d",
+      "triangles": 148,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.mounted-archer.v1",
+      "sidearm": true,
+      "brokenShield": true,
+      "lod": "near",
+      "sha256": "5a73681cf2ea67dc8f873f45865bf788164486e4430ae07385cb792345e1f1a0",
+      "triangles": 2096,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.mounted-archer.v1",
+      "sidearm": true,
+      "brokenShield": true,
+      "lod": "crowd",
+      "sha256": "50f72196b8ad1ee89d250e499e1e50aa5f00fa984ee074aa83c84a084cc59f2d",
+      "triangles": 148,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.mounted-archer.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "near",
+      "sha256": "988f619f2a586cfd4dbe9d58bd754822bd89e1a2799b0e1ac7975089ce26c5a3",
+      "triangles": 2922,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.mounted-archer.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "crowd",
+      "sha256": "be1c9e4664f84c6e389609595841b63331af2e36f2a7a11d26041e0a36e18c85",
+      "triangles": 172,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.mounted-archer.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "near",
+      "sha256": "988f619f2a586cfd4dbe9d58bd754822bd89e1a2799b0e1ac7975089ce26c5a3",
+      "triangles": 2922,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.mounted-archer.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "crowd",
+      "sha256": "be1c9e4664f84c6e389609595841b63331af2e36f2a7a11d26041e0a36e18c85",
+      "triangles": 172,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.mounted-archer.v1",
+      "sidearm": true,
+      "brokenShield": false,
+      "lod": "near",
+      "sha256": "25b1d4417869977802e0661269fad6f1bee8a7fdabc48375beed2382bcb20656",
+      "triangles": 2850,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.mounted-archer.v1",
+      "sidearm": true,
+      "brokenShield": false,
+      "lod": "crowd",
+      "sha256": "652ee5e826ae606e68839846aaf177f2c76de036efa242f553f551f7bb2b14f5",
+      "triangles": 148,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.mounted-archer.v1",
+      "sidearm": true,
+      "brokenShield": true,
+      "lod": "near",
+      "sha256": "25b1d4417869977802e0661269fad6f1bee8a7fdabc48375beed2382bcb20656",
+      "triangles": 2850,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.mounted-archer.v1",
+      "sidearm": true,
+      "brokenShield": true,
+      "lod": "crowd",
+      "sha256": "652ee5e826ae606e68839846aaf177f2c76de036efa242f553f551f7bb2b14f5",
+      "triangles": 148,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.ballista-crew.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "near",
+      "sha256": "45b69b98c7598be538fc885cb1b56480d5c8c3077d0b37c77756ae487eb5bf6c",
+      "triangles": 1460,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.ballista-crew.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "crowd",
+      "sha256": "6db2c7325a144e0ece995d498d8c5258d3f992bb20c1fa3ec892df23166e855a",
+      "triangles": 148,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.ballista-crew.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "near",
+      "sha256": "45b69b98c7598be538fc885cb1b56480d5c8c3077d0b37c77756ae487eb5bf6c",
+      "triangles": 1460,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.ballista-crew.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "crowd",
+      "sha256": "6db2c7325a144e0ece995d498d8c5258d3f992bb20c1fa3ec892df23166e855a",
+      "triangles": 148,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.ballista-crew.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "near",
+      "sha256": "9940ffd8a56a822ba2dfda2c1c526222f5cb9eebcc3c5ad556cd7f5521ee54a1",
+      "triangles": 2214,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.ballista-crew.v1",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "crowd",
+      "sha256": "38dd91f7088324f9ced2de4f6195bb0336e61fe719cde9ddd27ccdaa90eabff4",
+      "triangles": 148,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.ballista-crew.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "near",
+      "sha256": "9940ffd8a56a822ba2dfda2c1c526222f5cb9eebcc3c5ad556cd7f5521ee54a1",
+      "triangles": 2214,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.ballista-crew.v1",
+      "sidearm": false,
+      "brokenShield": true,
+      "lod": "crowd",
+      "sha256": "38dd91f7088324f9ced2de4f6195bb0336e61fe719cde9ddd27ccdaa90eabff4",
+      "triangles": 148,
+      "repeatBuild": true
+    },
+    {
+      "unit": "horse-near",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "equipment",
+      "sha256": "fa905b861d2e9773c6333503858d8d0a7fa1ce728b4282d6ecd4f6c44e325eab",
+      "triangles": 1544,
+      "repeatBuild": true
+    },
+    {
+      "unit": "horse-crowd",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "equipment",
+      "sha256": "3f1a688b68a140a3316e86eb7a606d6ac12186afe429455788931a36945f6856",
+      "triangles": 684,
+      "repeatBuild": true
+    },
+    {
+      "unit": "ballista",
+      "sidearm": false,
+      "brokenShield": false,
+      "lod": "equipment",
+      "sha256": "d318e31459a415571f911e222256341036dd78062f00d63b2e258934421c3820",
+      "triangles": 1628,
+      "repeatBuild": true
+    }
+  ]
+}

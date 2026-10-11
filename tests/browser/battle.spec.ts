@@ -14,6 +14,8 @@ test('deploy, inspect, pause, step, export/import and verify the worker against 
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('./');
   await expect(page.locator('#loading')).toBeHidden();
+  await page.locator('#scenario').selectOption('frontier');
+  await expect(page.locator('#loading')).toBeHidden();
   await expect(page.getByRole('button', { name: 'Begin battle' })).toBeEnabled();
   await page.screenshot({ path: 'artifacts/local/deployment.png', fullPage: true });
   await page.locator('#focus-unit').click();
@@ -56,6 +58,8 @@ test('deploy, inspect, pause, step, export/import and verify the worker against 
 test('custom setup, invalid import, rocky terrain and responsive layout', async ({ page }) => {
   await page.goto('./');
   await expect(page.locator('#loading')).toBeHidden();
+  await page.locator('#scenario').selectOption('frontier');
+  await expect(page.locator('#loading')).toBeHidden();
   await page.locator('#romans-count').fill('24');
   await page.locator('#romans-count').blur();
   await expect(page.locator('#roman-standing')).toHaveText('24');
@@ -79,6 +83,8 @@ test('worker keeps stepping when snapshot buffers are exhausted and ignores stal
   page,
 }) => {
   await page.goto('./');
+  await expect(page.locator('#loading')).toBeHidden();
+  await page.locator('#scenario').selectOption('frontier');
   await expect(page.locator('#loading')).toBeHidden();
   const workerFile = readdirSync('dist/assets').find(
     (name) => name.startsWith('battle.worker-') && name.endsWith('.js'),
@@ -119,7 +125,7 @@ test('worker keeps stepping when snapshot buffers are exhausted and ignores stal
             resolve({ tick: m.summary.tick, snapshots });
           }
         };
-        worker.postMessage({ kind: 'init', session: 77, protocol: 4, config });
+        worker.postMessage({ kind: 'init', session: 77, protocol: 5, config });
       });
     },
     {
@@ -139,6 +145,8 @@ test('scenario presets, observer tools and isolated equipment workshop', async (
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('./');
+  await expect(page.locator('#loading')).toBeHidden();
+  await page.locator('#scenario').selectOption('frontier');
   await expect(page.locator('#loading')).toBeHidden();
   await page.locator('#scenario').selectOption('pass');
   await expect(page.locator('#roman-standing')).toHaveText('120');
@@ -183,6 +191,8 @@ test('orders issued paused and in battle survive export/import with their exact 
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('./');
+  await expect(page.locator('#loading')).toBeHidden();
+  await page.locator('#scenario').selectOption('frontier');
   await expect(page.locator('#loading')).toBeHidden();
   await page.locator('#command-group').selectOption('all');
   await page.locator('[data-order="hold"]').click();
@@ -229,6 +239,8 @@ test('five editable formations command independently and round-trip their deploy
 }) => {
   await page.goto('./');
   await expect(page.locator('#loading')).toBeHidden();
+  await page.locator('#scenario').selectOption('frontier');
+  await expect(page.locator('#loading')).toBeHidden();
   for (let i = 0; i < 3; i++) {
     await page.locator('[data-add-formation="romans"]').click();
     await expect(page.locator('#romans-formations [data-formation-id]')).toHaveCount(3 + i);
@@ -266,7 +278,9 @@ test('reserve encounter exposes selectable formations, facing, frontage and repl
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('./');
   await expect(page.locator('#loading')).toBeHidden();
-  await page.locator('#try-tactics').click();
+  await page.locator('#scenario').selectOption('frontier');
+  await expect(page.locator('#loading')).toBeHidden();
+  await page.locator('#scenario').selectOption('hammer');
   await expect(page.locator('#roman-standing')).toHaveText('180');
   await page.waitForTimeout(1000);
   const idleFrames = await page.evaluate(
@@ -301,4 +315,111 @@ test('reserve encounter exposes selectable formations, facing, frontage and repl
     state.hash,
   );
   expect(errors).toEqual([]);
+});
+
+test('combined arms expose mounted and siege equipment, terrain and recorded role orders', async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('./');
+  await expect(page.locator('#loading')).toBeHidden();
+  await expect(page.locator('#roman-standing')).toHaveText('300');
+  await expect(page.locator('#romans-formations [data-formation-id]')).toHaveCount(5);
+  await page.locator('#command-group').selectOption('3');
+  await page.locator('[data-order="skirmish"]').click();
+  await page.locator('#command-group').selectOption('0');
+  await page.locator('[data-order="brace"]').click();
+  await page.locator('#command-group').selectOption('4');
+  await page.locator('[data-order="hold"]').click();
+  await expect(page.locator('#order-ack')).toContainText('Order 3');
+  await page.locator('#step').click();
+  await expect
+    .poll(() => page.evaluate(() => (window as unknown as LabWindow).battleLab.summary!.tick))
+    .toBe(1);
+  const state = await page.evaluate(() => (window as unknown as LabWindow).battleLab.summary!);
+  expect(state.engines.length).toBe(10);
+  expect(state.formations.find((f) => f.team === 0 && f.id === 0)?.movement).toBe('brace');
+  const { SCENARIOS } = await import('../../src/content/scenarios');
+  const b = new Battle(SCENARIOS[0].config);
+  for (const record of state.orders) b.issueOrder(record.order);
+  b.step();
+  expect(state.hash).toBe(b.hash());
+  await page.locator('#open-workshop').click();
+  await page.locator('#workshop-turntable').uncheck();
+  for (const type of ['6', '8', '10']) {
+    await page.locator('#workshop-unit').selectOption(type);
+    await expect(page.locator('#workshop-metrics')).toContainText(
+      type === '10' ? '6 parts' : '10 parts',
+    );
+    await page.screenshot({ path: `artifacts/local/combined-model-${type}.png` });
+  }
+  await page.locator('#close-workshop').click();
+  await page.locator('#reset').click();
+  await page.locator('#scenario').selectOption('fords');
+  await expect(page.locator('#location')).toHaveText('River frontier');
+  await expect(page.locator('#loading')).toBeHidden();
+  await page.screenshot({ path: 'artifacts/local/river-frontier.png' });
+  expect(errors).toEqual([]);
+});
+
+test('maximum capacity deploys 5000 soldiers and steps with bounded snapshot transport', async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('./');
+  await expect(page.locator('#loading')).toBeHidden();
+  await page.locator('#scenario').selectOption('maximum');
+  await expect(page.locator('#roman-standing')).toHaveText('2500', { timeout: 30000 });
+  await expect(page.locator('#gaul-standing')).toHaveText('2500', { timeout: 30000 });
+  await page.locator('#step').click();
+  await expect
+    .poll(() => page.evaluate(() => (window as unknown as LabWindow).battleLab.summary!.tick), {
+      timeout: 30000,
+    })
+    .toBe(1);
+  const state = await page.evaluate(() => (window as unknown as LabWindow).battleLab.summary!);
+  expect(state.engines.length).toBe(98);
+  expect(state.formations.length).toBe(10);
+  await page.screenshot({ path: 'artifacts/local/maximum-capacity.png' });
+  expect(errors).toEqual([]);
+});
+
+test('mixed mounted combat and artillery replay match Node after 300 active ticks', async ({
+  page,
+}) => {
+  const { SCENARIOS } = await import('../../src/content/scenarios');
+  const { SIM_VERSION } = await import('../../src/content/catalog');
+  const { CONTENT_HASH } = await import('../../src/sim/battle');
+  const config = structuredClone(SCENARIOS[0].config);
+  config.terrain = 'meadow';
+  config.romans.count = config.gauls.count = 60;
+  const b = new Battle(config);
+  b.issueOrder({ team: 0, group: 2, kind: 'charge' });
+  b.issueOrder({ team: 1, group: 4, kind: 'hold' });
+  for (let i = 0; i < 300; i++) b.step();
+  await page.goto('./');
+  await expect(page.locator('#loading')).toBeHidden();
+  await page
+    .locator('#replay-file')
+    .setInputFiles({
+      name: 'combined-v5.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(
+        JSON.stringify({
+          format: 'banner-band-replay',
+          version: SIM_VERSION,
+          content: CONTENT_HASH,
+          config,
+          tick: b.tick,
+          expectedHash: b.hash(),
+          orders: b.orders,
+        }),
+      ),
+    });
+  await expect(page.locator('#battle-status')).toHaveText('REPLAY VERIFIED', { timeout: 60000 });
+  expect(await page.evaluate(() => (window as unknown as LabWindow).battleLab.summary!.hash)).toBe(
+    b.hash(),
+  );
 });

@@ -1,7 +1,15 @@
-import { SCALE, type Team } from '../content/catalog';
+import { ORDER_LIMIT, type Team, type FormationRole } from '../content/catalog';
 export type Group = 'all' | number;
 export type Formation = 'line' | 'shieldwall' | 'loose';
-export type Movement = 'advance' | 'charge' | 'hold' | 'fallback' | 'flank-left' | 'flank-right';
+export type Movement =
+  | 'advance'
+  | 'charge'
+  | 'hold'
+  | 'fallback'
+  | 'flank-left'
+  | 'flank-right'
+  | 'skirmish'
+  | 'brace';
 export type Order = { team: Team; group: Group } & (
   | { kind: Movement; x?: number; z?: number }
   | { kind: 'formation'; formation: Formation }
@@ -17,7 +25,7 @@ export interface RecordedOrder {
 export interface FormationState {
   team: Team;
   id: number;
-  role: 'infantry' | 'ranged';
+  role: FormationRole;
   movement: Movement;
   formation: Formation;
   fireAtWill: boolean;
@@ -61,16 +69,23 @@ export function validateOrder(input: unknown): Order {
     return { ...base, kind: 'formation', formation: d.formation as Formation };
   }
   if (
-    !['advance', 'charge', 'hold', 'fallback', 'flank-left', 'flank-right'].includes(
-      d.kind as string,
-    )
+    ![
+      'advance',
+      'charge',
+      'hold',
+      'fallback',
+      'flank-left',
+      'flank-right',
+      'skirmish',
+      'brace',
+    ].includes(d.kind as string)
   )
     throw Error('Unknown movement order.');
   const kind = d.kind as Movement;
   if (d.x !== undefined || d.z !== undefined) {
     if (kind !== 'hold') throw Error('Only placement orders accept coordinates.');
     for (const v of [d.x, d.z])
-      if (typeof v !== 'number' || !Number.isSafeInteger(v) || Math.abs(v) > 50 * SCALE)
+      if (typeof v !== 'number' || !Number.isSafeInteger(v) || Math.abs(v) > ORDER_LIMIT)
         throw Error('Order position must be within the battlefield.');
     return { ...base, kind, x: d.x as number, z: d.z as number };
   }

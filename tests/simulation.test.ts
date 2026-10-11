@@ -158,7 +158,7 @@ test('swept javelin hits a unit crossed between endpoints and consumes projectil
   assert.equal(b.projectiles.length, 0);
 });
 test('configuration and replay imports reject unbounded or incompatible input', () => {
-  for (const count of [0, 1001, 2.5, NaN])
+  for (const count of [0, 2501, 2.5, NaN])
     assert.throws(() => validateConfig({ ...config(), romans: { ...config().romans, count } }));
   assert.throws(() => validateConfig({ ...config(), seed: -1 }));
   assert.throws(() => validateConfig({ ...config(), terrain: 'unknown' }));

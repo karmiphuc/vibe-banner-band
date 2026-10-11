@@ -37,3 +37,7 @@ Worker owns tick scheduling; elapsed time requests stepping but is never read in
 Stale session messages; duplicate/late commands; wrong protocol/content hash; detached buffers; main-thread stalls; pool exhaustion; event overflow; pause during loading; save during active attack; worker termination/restart. Snapshot loss/reordering must not affect replay state. Include real transferable-buffer browser tests, not only mocked `postMessage`.
 
 Reference: [MDN transferable objects](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects).
+
+## Implemented PoC protocol 5
+
+The current experiment has a three-buffer pool. Packed Int32 header: tick, actor count, projectile count. Actor stride 29 preserves original 0–20 fields and appends mount HP, pace, mount corpse X/Z, mount death tick, engine ID, terrain height and target ID. Projectile stride 10 appends height, kind and vertical velocity to the previous seven fields. The projectile tail is followed by an engine count and 14 integers per engine: ID, X, Z, heading, HP, ammo, cooldown, shot serial, surviving crew count, team, deployment ticks, terrain height, aim X/Z. See [ADR 0008](../decisions/0008-combined-arms-and-terrain.md). Proposed envelopes above remain future work; the implemented schema is in `src/platform/protocol.ts`.

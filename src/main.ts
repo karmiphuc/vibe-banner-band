@@ -1,3 +1,5 @@
+import { BattleAudio } from './render/battle-audio';
+import { ROLE_LABELS } from './content/catalog';
 import './style.css';
 import { CommandPanel } from './ui/command-panel';
 import { SCENARIOS } from './content/scenarios';
@@ -45,10 +47,20 @@ const armyForm = (
   color: string,
 ) => `<section class="army-builder ${color}">
   <div class="army-heading"><span class="faction-mark">${team === 'romans' ? 'Ⅰ' : 'ᛉ'}</span><div><h2>${title}</h2><p>${subtitle}</p></div><span class="army-side">${team === 'romans' ? 'WEST' : 'EAST'}</span></div>
-  <div class="count-row"><label for="${team}-count">Army strength <span>incl. commander</span></label><input id="${team}-count" type="number" min="2" max="1000" step="1" value="${DEFAULT_CONFIG[team].count}" /></div>
-  <div class="preset-row" aria-label="${title} army size presets">${[50, 100, 300, 1000].map((n) => `<button type="button" data-count="${n}" data-army="${team}">${n === 1000 ? '1,000' : n}</button>`).join('')}</div>
+  <div class="count-row"><label for="${team}-count">Army strength <span>incl. commander</span></label><input id="${team}-count" type="number" min="2" max="2500" step="1" value="${DEFAULT_CONFIG[team].count}" /></div>
+  <div class="preset-row" aria-label="${title} army size presets">${[100, 500, 1000, 2500].map((n) => `<button type="button" data-count="${n}" data-army="${team}">${n.toLocaleString()}</button>`).join('')}</div>
   <div class="mix-label"><label for="${team}-mix">Javelineers</label><output id="${team}-mix-value">${DEFAULT_CONFIG[team].skirmishers}%</output></div>
   <input id="${team}-mix" type="range" min="0" max="80" step="5" value="${DEFAULT_CONFIG[team].skirmishers}" />
+  <div class="specialist-mix">${[
+    ['cavalry', 'Cavalry', 70],
+    ['horseArchers', 'Horse archers', 70],
+    ['siege', 'Siege crew', 12],
+  ]
+    .map(
+      ([key, label, max]) =>
+        `<label for="${team}-${key}">${label} %<input id="${team}-${key}" type="number" min="0" max="${max}" step="1" value="0" /></label>`,
+    )
+    .join('')}</div>
   <div class="roster-breakdown"><span id="${team}-infantry-count"></span><span id="${team}-ranged-count"></span></div>
   <div id="${team}-formations" class="formation-builder"></div>
   <label class="select-label" for="${team}-doctrine">Doctrine</label><select id="${team}-doctrine"><option value="balanced">Balanced advance</option><option value="shieldwall" ${team === 'romans' ? 'selected' : ''}>Shield discipline</option><option value="charge" ${team === 'gauls' ? 'selected' : ''}>Aggressive charge</option></select>
@@ -56,20 +68,20 @@ const armyForm = (
 </section>`;
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-<header class="topbar"><a class="brand" href="./" aria-label="Banner Band home"><span class="brand-symbol">${icon('flag')}</span><span>BANNER<span class="brand-slash">/</span>BAND</span></a><div class="page-title">CUSTOM BATTLE <span class="title-divider">/</span> <span>THE GALLIC FRONTIER</span></div><a class="build-tag" href="https://github.com/karmiphuc/vibe-banner-band" target="_blank" rel="noopener" title="Source code and project documentation"><i></i> PROOF OF CONCEPT <b>0.4 ↗</b></a></header>
+<header class="topbar"><a class="brand" href="./" aria-label="Banner Band home"><span class="brand-symbol">${icon('flag')}</span><span>BANNER<span class="brand-slash">/</span>BAND</span></a><div class="page-title">CUSTOM BATTLE <span class="title-divider">/</span> <span>THE GALLIC FRONTIER</span></div><a class="build-tag" href="https://github.com/karmiphuc/vibe-banner-band" target="_blank" rel="noopener" title="Source code and project documentation"><i></i> PROOF OF CONCEPT <b>0.5 ↗</b></a></header>
 <main class="workspace">
   <aside class="setup-panel"><div class="panel-intro"><span class="eyebrow">01 / BATTLE SETUP</span><h1>Set the field.</h1><p>Build two armies. Watch their commanders lead.</p></div>
   <form id="battle-form"><fieldset id="setup-fields"><legend class="sr-only">Battle configuration</legend>
-    <section class="scenario-picker"><label for="scenario">CHOOSE AN ENCOUNTER</label><select id="scenario">${SCENARIOS.map((s) => `<option value="${s.id}">${s.name}</option>`).join('')}<option value="custom">Custom battle</option></select><p id="scenario-detail">${SCENARIOS.find((s) => s.id === 'frontier')!.description}</p><button type="button" id="try-tactics">Try the reserve &amp; flank battle →</button></section>
+    <section class="scenario-picker"><label for="scenario">CHOOSE AN ENCOUNTER</label><select id="scenario">${SCENARIOS.map((s) => `<option value="${s.id}">${s.name}</option>`).join('')}<option value="custom">Custom battle</option></select><p id="scenario-detail">${SCENARIOS.find((s) => s.id === 'frontier')!.description}</p><button type="button" id="try-tactics">Try combined arms →</button></section>
     ${armyForm('romans', 'Roman Republic', 'Discipline. Armor. Resolve.', 'roman')}
     ${armyForm('gauls', 'Gallic warband', 'Momentum. Reach. Ferocity.', 'gaul')}
-    <section class="world-settings"><div class="field"><label for="terrain">Battlefield</label><select id="terrain"><option value="meadow">Open meadow</option><option value="crossroads">Old crossroads</option><option value="rocky-pass">Rocky passage</option></select></div><div class="field seed-field"><label for="seed">World seed</label><input id="seed" type="number" min="0" max="4294967295" step="1" value="7541" /><button type="button" id="new-seed" aria-label="Use next seed" title="Use next seed">↻</button></div></section>
+    <section class="world-settings"><div class="field"><label for="terrain">Battlefield</label><select id="terrain"><option value="highlands">High ridges · 640 m</option><option value="river-valley">River crossings · 640 m</option><option value="meadow">Open meadow</option><option value="crossroads">Old crossroads</option><option value="rocky-pass">Rocky passage</option></select></div><div class="field seed-field"><label for="seed">World seed</label><input id="seed" type="number" min="0" max="4294967295" step="1" value="7541" /><button type="button" id="new-seed" aria-label="Use next seed" title="Use next seed">↻</button></div></section>
   </fieldset></form>
   <div class="setup-note" id="setup-note">Changes redeploy the armies. Both commanders are autonomous.</div>
   <div class="setup-footer"><button id="start" class="primary">${icon('play')}<span>Begin battle</span><kbd>SPACE</kbd></button><p id="scale-note">Early unit models · no direct hero control</p></div>
   </aside>
   <section class="battle-panel" aria-label="Custom battle observer">
-    <div class="battle-top"><div class="battle-location"><span class="eyebrow">02 / LIVE FIELD</span><strong id="location">Open meadow</strong></div><div class="live-controls"><span id="battle-status" class="status-badge">DEPLOYMENT</span><button id="reset" class="icon-button" title="Reset same seed" aria-label="Reset battle">${icon('reset')}</button><button id="step" class="icon-button" title="Advance one simulation tick" aria-label="Step one tick">${icon('step')}</button><div class="speed-control" aria-label="Simulation speed"><button data-speed="1" class="active" aria-pressed="true">1×</button><button data-speed="2" aria-pressed="false">2×</button><button data-speed="4" aria-pressed="false">4×</button></div></div></div>
+    <div class="battle-top"><div class="battle-location"><span class="eyebrow">02 / LIVE FIELD</span><strong id="location">Open meadow</strong></div><div class="live-controls"><span id="battle-status" class="status-badge">DEPLOYMENT</span><button id="reset" class="icon-button" title="Reset same seed" aria-label="Reset battle">${icon('reset')}</button><button id="step" class="icon-button" title="Advance one simulation tick" aria-label="Step one tick">${icon('step')}</button><button id="battle-audio" type="button" aria-pressed="false" title="Synthesized combat and hoof sounds">Sound off</button><div class="speed-control" aria-label="Simulation speed"><button data-speed="1" class="active" aria-pressed="true">1×</button><button data-speed="2" aria-pressed="false">2×</button><button data-speed="4" aria-pressed="false">4×</button></div></div></div>
     <div class="field-viewport" id="viewport">
       <div class="army-score"><div class="score roman"><span class="score-label">ROMANS</span><strong id="roman-standing">80</strong><span id="roman-losses">0 fallen</span><div class="strength-bar"><i id="roman-bar"></i></div></div><div class="score-center"><span>VS</span><strong id="clock">00:00</strong></div><div class="score gaul"><span class="score-label">GAULS</span><strong id="gaul-standing">100</strong><span id="gaul-losses">0 fallen</span><div class="strength-bar"><i id="gaul-bar"></i></div></div></div>
       <div class="observer-toolbar" aria-label="Observer tools"><button id="tactical" aria-pressed="false">${icon('shield')}<span>Tactical</span></button><button id="follow" aria-pressed="false">${icon('flag')}<span>Follow</span></button><button id="rotate" title="Rotate camera 90 degrees" aria-label="Rotate camera">↻</button><button id="fullscreen" title="Expand battlefield" aria-label="Expand battlefield">${icon('expand')}</button></div>
@@ -89,7 +101,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <div class="inspect-tabs"><button id="inspect-roman" class="active">Roman legate</button><button id="inspect-gaul">Gallic warlord</button></div>
     <div class="unit-emblem roman" id="unit-emblem">${icon('shield')}<span id="unit-role">COMMANDER</span></div>
     <h2 id="unit-name">Roman legate</h2><p class="unit-description" id="unit-description"></p>
-    <div class="unit-state"><span id="unit-state">Ready</span><span id="unit-id">UNIT #80</span></div>
+    <div class="unit-state"><span id="unit-state">Ready</span><span id="unit-id">UNIT #80</span></div><p id="unit-combined-status" class="unit-description"></p>
     <div class="unit-stat"><div><span>Health</span><strong id="unit-health"></strong></div><div class="meter"><i id="health-meter"></i></div></div>
     <div class="unit-stat"><div><span>Morale</span><strong id="unit-morale"></strong></div><div class="meter morale"><i id="morale-meter"></i></div></div>
     <div class="unit-stat"><div><span>Stamina</span><strong id="unit-stamina"></strong></div><div class="meter stamina"><i id="stamina-meter"></i></div></div>
@@ -101,13 +113,14 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <button id="open-workshop" class="secondary workshop-launch">Open model workshop ↗</button>
     <button id="focus-unit" class="secondary">Inspect model ${icon('expand')}</button>
     <details class="event-history"><summary>Battle chronicle</summary><ol id="event-list"></ol></details>
-    <div class="unit-library"><h3>UNIT DESIGNS</h3><div>${UNITS.map((u, i) => `<button data-unit-type="${i}" title="Inspect ${u.name}"><i class="${i < 3 ? 'roman' : 'gaul'}"></i>${u.name}${icon('chevron')}</button>`).join('')}</div></div>
+    <div class="unit-library"><h3>UNIT DESIGNS</h3><div>${UNITS.map((u, i) => `<button data-unit-type="${i}" title="Inspect ${u.name}"><i class="${u.team === 0 ? 'roman' : 'gaul'}"></i>${u.name}${icon('chevron')}</button>`).join('')}</div></div>
     <details class="diagnostics"><summary>Diagnostics <span id="fps">— fps</span></summary><dl><dt>Simulation tick</dt><dd id="diag-tick">0</dd><dt>Worker tick cost</dt><dd id="diag-cost">—</dd><dt>State fingerprint</dt><dd id="diag-hash">—</dd><dt>Draw calls</dt><dd id="diag-draws">—</dd><dt>Projectiles</dt><dd id="diag-projectiles">0</dd><dt>Largest spatial cell</dt><dd id="diag-cell">—</dd></dl><p>Measured on your device. This prototype is not a qualified 2,000-unit performance result.</p></details>
   </aside>
 </main><div id="toast" class="toast" role="status" aria-live="polite" hidden></div>`;
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
-let config = validateConfig(DEFAULT_CONFIG),
+const audio = new BattleAudio();
+let config = validateConfig(SCENARIOS[0].config),
   session = 0,
   running = false,
   replaying = false,
@@ -138,6 +151,9 @@ function readConfig(): BattleConfig {
   const army = (team: 'romans' | 'gauls') => ({
     count: Number($<HTMLInputElement>(`${team}-count`).value),
     skirmishers: Number($<HTMLInputElement>(`${team}-mix`).value),
+    cavalry: Number($<HTMLInputElement>(`${team}-cavalry`).value),
+    horseArchers: Number($<HTMLInputElement>(`${team}-horseArchers`).value),
+    siege: Number($<HTMLInputElement>(`${team}-siege`).value),
     doctrine: $<HTMLSelectElement>(`${team}-doctrine`).value as Doctrine,
     formations: Array.from(
       $(`${team}-formations`).querySelectorAll<HTMLElement>('[data-formation-id]'),
@@ -160,9 +176,27 @@ function writeConfig(): void {
     $<HTMLInputElement>(`${team}-count`).value = String(config[team].count);
     $<HTMLInputElement>(`${team}-mix`).value = String(config[team].skirmishers);
     $<HTMLSelectElement>(`${team}-doctrine`).value = config[team].doctrine;
+    for (const key of ['cavalry', 'horseArchers', 'siege'] as const)
+      $<HTMLInputElement>(`${team}-${key}`).value = String(config[team][key] ?? 0);
     const roster = formationRoster(config[team]);
     $(`${team}-formations`).innerHTML =
-      `<div class="formation-builder-heading">Formations <small>${roster.length}/5</small></div>${roster.map((f) => `<div class="formation-row" data-formation-id="${f.id}"><b>${f.id + 1}</b><select aria-label="${team} formation ${f.id + 1} role"><option value="infantry" ${f.role === 'infantry' ? 'selected' : ''}>Infantry</option><option value="ranged" ${f.role === 'ranged' ? 'selected' : ''}>Javelineers</option></select><input aria-label="${team} formation ${f.id + 1} share" title="Relative share within this troop role" type="number" min="1" max="100" value="${f.weight}" /><output title="Assigned soldiers, including commander">${f.count}</output><input type="checkbox" title="Deploy behind the line and hold as a reserve" aria-label="${team} formation ${f.id + 1} reserve" ${f.reserve ? 'checked' : ''} /><button type="button" data-remove-formation="${f.id}" data-team="${team}" aria-label="Remove ${team} formation ${f.id + 1}">×</button></div>`).join('')}<button type="button" data-add-formation="${team}" ${roster.length === 5 ? 'disabled' : ''}>+ Add formation</button><small>Share divides troops of the same role. Right number: soldiers. Check the box to hold as a rear reserve.</small>`;
+      `<div class="formation-builder-heading">Formations <small>${roster.length}/5</small></div>${roster
+        .map(
+          (f) =>
+            `<div class="formation-row" data-formation-id="${f.id}"><b>${f.id + 1}</b><select aria-label="${team} formation ${f.id + 1} role">${Object.entries(
+              ROLE_LABELS,
+            )
+              .map(
+                ([role, label]) =>
+                  `<option value="${role}" ${f.role === role ? 'selected' : ''}>${label}</option>`,
+              )
+              .join(
+                '',
+              )}</select><input aria-label="${team} formation ${f.id + 1} share" title="Relative share within this troop role" type="number" min="1" max="100" value="${f.weight}" /><output title="Assigned soldiers, including commander">${f.count}</output><input type="checkbox" title="Deploy behind the line and hold as a reserve" aria-label="${team} formation ${f.id + 1} reserve" ${f.reserve ? 'checked' : ''} /><button type="button" data-remove-formation="${f.id}" data-team="${team}" aria-label="Remove ${team} formation ${f.id + 1}">×</button></div>`,
+        )
+        .join(
+          '',
+        )}<button type="button" data-add-formation="${team}" ${roster.length === 5 ? 'disabled' : ''}>+ Add formation</button><small>Share divides troops of the same role. Right number: soldiers. Check the box to hold as a rear reserve.</small>`;
   }
   $<HTMLInputElement>('seed').value = String(config.seed);
   $<HTMLSelectElement>('terrain').value = config.terrain;
@@ -179,14 +213,18 @@ function updateRoster(): void {
     const a = config[team],
       ranged = Math.floor(((a.count - 1) * a.skirmishers) / 100);
     $(`${team}-mix-value`).textContent = `${a.skirmishers}%`;
-    $(`${team}-infantry-count`).textContent = `${a.count - 1 - ranged} infantry`;
-    $(`${team}-ranged-count`).textContent = `${ranged} javelineers + 1 leader`;
+    $(`${team}-infantry-count`).textContent =
+      `${formationRoster(a).find((f) => f.role === 'infantry')?.count ?? 0} in infantry formations`;
+    $(`${team}-ranged-count`).textContent =
+      `${ranged} javelins · ${Math.floor(((a.count - 1) * (a.cavalry ?? 0)) / 100)} cavalry · ${Math.floor(((a.count - 1) * (a.horseArchers ?? 0)) / 100)} mounted bows · ${Math.floor(((a.count - 1) * (a.siege ?? 0)) / 300)} engines`;
   }
   $('scale-note').textContent =
     config.romans.count + config.gauls.count > 1000
       ? 'Large-army experiment · watch Diagnostics'
       : 'Early unit models · no direct hero control';
   $('location').textContent = {
+    'river-valley': 'River frontier',
+    highlands: 'The high ridges',
     meadow: 'Open meadow',
     crossroads: 'Old crossroads',
     'rocky-pass': 'Rocky passage',
@@ -343,8 +381,13 @@ function updateInspector(): void {
   $('unit-state').textContent =
     lastData[b + 2] > 0 && lastData[b + 18] > 0 ? 'Staggered' : STATE_NAMES[lastData[b + 4]];
   $('unit-shield').textContent =
-    lastData[b + 17] > 0 ? `${lastData[b + 17]} / ${shieldDurability(type)}` : 'BROKEN';
-  $('shield-meter').style.width = `${(lastData[b + 17] / shieldDurability(type)) * 100}%`;
+    shieldDurability(type) === 0
+      ? 'NO SHIELD'
+      : lastData[b + 17] > 0
+        ? `${lastData[b + 17]} / ${shieldDurability(type)}`
+        : 'BROKEN';
+  $('shield-meter').style.width =
+    `${(lastData[b + 17] / Math.max(1, shieldDurability(type))) * 100}%`;
   $('unit-id').textContent = `UNIT #${selected + 1}`;
   $('unit-health').textContent = `${lastData[b + 2]} / ${design.hp}`;
   $('health-meter').style.width = `${(lastData[b + 2] / design.hp) * 100}%`;
@@ -354,7 +397,18 @@ function updateInspector(): void {
   $('stamina-meter').style.width = `${lastData[b + 10]}%`;
   $('unit-armor').textContent = String(design.armor);
   $('unit-damage').textContent = String(design.damage);
-  $('unit-ammo').textContent = design.role === 'skirmisher' ? String(lastData[b + 9]) : '—';
+  $('unit-ammo').textContent = ['skirmisher', 'horse-archer'].includes(design.role)
+    ? String(lastData[b + 9])
+    : '—';
+  const engine = summary?.engines.find((e) => e.id === lastData[b + 26]);
+  $('unit-combined-status').textContent =
+    lastData[b + 26] >= 0 && engine
+      ? `Ballista ${engine.hp}/320 · ${engine.ammo} bolts · ${engine.setup}/90 deployment`
+      : ['cavalry', 'horse-archer'].includes(design.role)
+        ? lastData[b + 21] > 0
+          ? `Mount ${lastData[b + 21]}/150 · ${((lastData[b + 22] * 30) / 1024).toFixed(1)} m/s`
+          : 'Unhorsed · fighting on foot'
+        : '';
   $('unit-kills').textContent = String(lastData[b + 11]);
   $('unit-support').textContent = `${lastData[b + 14]} nearby allies`;
   $('unit-impact').textContent = `+${Math.trunc(lastData[b + 13] / 6)} damage`;
@@ -396,6 +450,7 @@ worker.onmessage = (event: MessageEvent<FromWorker>) => {
     const view = new Int32Array(data.buffer);
     lastData = new Int32Array(view);
     renderer?.snapshot(view, running);
+    audio.update(lastData, running);
     worker.postMessage({ kind: 'recycle', session, buffer: data.buffer } satisfies ToWorker, [
       data.buffer,
     ]);
@@ -476,7 +531,7 @@ $('battle-form').addEventListener('click', (event) => {
   }
 });
 $('try-tactics').addEventListener('click', () =>
-  deploy(SCENARIOS.find((s) => s.id === 'hammer')!.config),
+  deploy(SCENARIOS.find((s) => s.id === 'combined')!.config),
 );
 $('battle-form').addEventListener('submit', (e) => e.preventDefault());
 $('battle-form').addEventListener('change', (event) => {
@@ -513,6 +568,11 @@ const toggle = () => {
   send({ kind: running ? 'pause' : 'play', session });
 };
 $('start').addEventListener('click', toggle);
+$('battle-audio').addEventListener('click', async () => {
+  const enabled = await audio.toggle();
+  $('battle-audio').textContent = enabled ? 'Sound on' : 'Sound off';
+  $('battle-audio').setAttribute('aria-pressed', String(enabled));
+});
 $('reset').addEventListener('click', () => deploy());
 $('result-replay').addEventListener('click', () => {
   deploy();
@@ -578,7 +638,9 @@ document.querySelectorAll<HTMLButtonElement>('[data-unit-type]').forEach((button
         break;
       }
     if (found < 0) {
-      toast('No surviving unit of this type. Add javelineers in battle setup if needed.');
+      toast(
+        'No surviving unit of this type. Choose a combined-arms encounter or adjust the troop shares.',
+      );
       return;
     }
     send({ kind: 'pause', session });

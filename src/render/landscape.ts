@@ -1,6 +1,7 @@
+import { terrainHeight, WOODS, riverX, FORDS, fordAt } from '../content/world';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import type { BattleConfig } from '../content/catalog';
+import { SCALE, type BattleConfig } from '../content/catalog';
 
 /** Cosmetic stream only. No terrain decoration changes authoritative walkability. */
 export function cosmeticRandom(seed: number): () => number {
@@ -29,17 +30,20 @@ export function groundTexture(): THREE.CanvasTexture {
     const x = random() * 512,
       y = random() * 512,
       r = 20 + random() * 60;
-    const gradient = c.createRadialGradient(x, y, 0, x, y, r);
-    gradient.addColorStop(0, i % 2 ? '#b4a27b' : '#526b4c');
-    gradient.addColorStop(1, 'transparent');
-    c.globalAlpha = 0.22;
-    c.fillStyle = gradient;
-    c.fillRect(x - r, y - r, r * 2, r * 2);
+    for (const ox of [-512, 0, 512])
+      for (const oy of [-512, 0, 512]) {
+        const gradient = c.createRadialGradient(x + ox, y + oy, 0, x + ox, y + oy, r);
+        gradient.addColorStop(0, i % 2 ? '#b4a27b' : '#526b4c');
+        gradient.addColorStop(1, 'transparent');
+        c.globalAlpha = 0.22;
+        c.fillStyle = gradient;
+        c.fillRect(x + ox - r, y + oy - r, r * 2, r * 2);
+      }
   }
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(12, 12);
+  texture.repeat.set(28, 28);
   texture.anisotropy = 4;
   return texture;
 }
@@ -62,26 +66,37 @@ function batch(
 export function decorateLandscape(group: THREE.Group, config: BattleConfig): void {
   const random = cosmeticRandom(config.seed ^ 0x45d9f3b),
     object = new THREE.Object3D();
-  const trunks = batch(group, new THREE.CylinderGeometry(0.16, 0.35, 3.6, 5), '#55412f', 120);
+  const expanded = ['river-valley', 'highlands'].includes(config.terrain);
+  const treeCount = expanded ? 600 : 120;
+  const height = (x: number, z: number) =>
+    terrainHeight(config.terrain, Math.round(x * SCALE), Math.round(z * SCALE)) / SCALE;
+  const trunks = batch(group, new THREE.CylinderGeometry(0.16, 0.35, 3.6, 5), '#55412f', treeCount);
   const crownParts = [0, 1, 2].map((i) =>
     new THREE.IcosahedronGeometry(1.4, 0).translate((i - 1) * 0.8, i % 2, 0),
   );
-  const crowns = batch(group, mergeGeometries(crownParts)!, '#405c3f', 120);
+  const crowns = batch(group, mergeGeometries(crownParts)!, '#405c3f', treeCount);
   crownParts.forEach((g) => g.dispose());
-  for (let i = 0; i < 120; i++) {
+  for (let i = 0; i < treeCount; i++) {
     // Tree belt and its shadows stay outside the battle bounds.
     const edge = i % 4,
       along = (random() - 0.5) * 162,
       outer = 66 + random() * 15;
-    const x = edge < 2 ? (edge ? -outer : outer) : along;
-    const z = edge >= 2 ? (edge === 2 ? -outer : outer) : along;
+    let x = edge < 2 ? (edge ? -outer : outer) : along;
+    let z = edge >= 2 ? (edge === 2 ? -outer : outer) : along;
+    if (expanded) {
+      const w = WOODS[i % WOODS.length],
+        a = random() * Math.PI * 2,
+        r = (Math.sqrt(random()) * w.r) / SCALE;
+      x = w.x / SCALE + Math.cos(a) * r;
+      z = w.z / SCALE + Math.sin(a) * r;
+    }
     const size = 0.8 + random() * 0.8;
-    object.position.set(x, 1.8, z);
+    object.position.set(x, height(x, z) + 1.8 * size, z);
     object.rotation.set(0, random() * 6.28, 0);
     object.scale.set(size, size, size);
     object.updateMatrix();
     trunks.setMatrixAt(i, object.matrix);
-    object.position.y = 4.4 * size;
+    object.position.y = height(x, z) + 4.4 * size;
     object.scale.set(size, 1.3 * size, size);
     object.updateMatrix();
     crowns.setMatrixAt(i, object.matrix);
@@ -103,7 +118,8 @@ export function decorateLandscape(group: THREE.Group, config: BattleConfig): voi
   const grass = batch(group, tuft, '#69764a', 1800);
   grass.castShadow = false;
   for (let i = 0; i < 1800; i++) {
-    object.position.set((random() - 0.5) * 135, 0, (random() - 0.5) * 135);
+    object.position.set((random() - 0.5) * 640, 0, (random() - 0.5) * 640);
+    object.position.y = height(object.position.x, object.position.z);
     if (
       config.terrain === 'crossroads' &&
       (Math.abs(object.position.x) < 3 || Math.abs(object.position.z) < 3)
@@ -115,6 +131,56 @@ export function decorateLandscape(group: THREE.Group, config: BattleConfig): voi
     object.updateMatrix();
     grass.setMatrixAt(i, object.matrix);
   }
+  if (config.terrain === 'river-valley') {
+    const vertices: number[] = [];
+    for (let z = -320; z < 320; z += 2) {
+      if (fordAt((z + 1) * SCALE)) continue;
+      const x = riverX(z * SCALE) / SCALE,
+        next = riverX((z + 2) * SCALE) / SCALE;
+      vertices.push(
+        x - 8.5,
+        0.06,
+        z,
+        x + 8.5,
+        0.06,
+        z,
+        next - 8.5,
+        0.06,
+        z + 2,
+        x + 8.5,
+        0.06,
+        z,
+        next + 8.5,
+        0.06,
+        z + 2,
+        next - 8.5,
+        0.06,
+        z + 2,
+      );
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    geo.computeVertexNormals();
+    group.add(
+      new THREE.Mesh(
+        geo,
+        new THREE.MeshStandardMaterial({
+          color: '#637f83',
+          metalness: 0.35,
+          roughness: 0.25,
+          side: THREE.DoubleSide,
+        }),
+      ),
+    );
+    for (const z of FORDS) {
+      const ford = new THREE.Mesh(
+        new THREE.BoxGeometry(22, 0.25, 26),
+        new THREE.MeshStandardMaterial({ color: '#b5ac8a', roughness: 1 }),
+      );
+      ford.position.set(riverX(z) / SCALE, 0.27, z / SCALE);
+      group.add(ford);
+    }
+  }
   // Supply camps give the opposing deployments recognizable homes.
   for (const side of [-1, 1]) {
     for (let i = 0; i < 4; i++) {
@@ -122,7 +188,8 @@ export function decorateLandscape(group: THREE.Group, config: BattleConfig): voi
         new THREE.ConeGeometry(2.8, 3.2, 4),
         new THREE.MeshStandardMaterial({ color: side < 0 ? '#c5b794' : '#928d6a', roughness: 1 }),
       );
-      tent.position.set(side * 65, 1.5, (i - 1.5) * 9);
+      tent.position.set(side * (expanded ? 280 : 65), 1.5, (i - 1.5) * 9);
+      tent.position.y += height(tent.position.x, tent.position.z);
       tent.rotation.y = Math.PI / 4;
       tent.scale.z = 1.5;
       tent.castShadow = true;
@@ -131,7 +198,8 @@ export function decorateLandscape(group: THREE.Group, config: BattleConfig): voi
         new THREE.PlaneGeometry(1.1, 1.8),
         new THREE.MeshStandardMaterial({ color: '#3c382c', side: THREE.DoubleSide }),
       );
-      entry.position.set(side * 63.58, 0.8, (i - 1.5) * 9);
+      entry.position.set(side * (expanded ? 278.58 : 63.58), 0.8, (i - 1.5) * 9);
+      entry.position.y += height(entry.position.x, entry.position.z);
       entry.rotation.y = Math.PI / 2;
       group.add(entry);
     }

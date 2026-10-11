@@ -4,7 +4,7 @@ Status: implemented experimental vertical slice, 2026-10-11. It tests architectu
 
 [Play on GitHub Pages](https://karmiphuc.github.io/vibe-banner-band/). Static build is published from the repository `gh-pages` branch; see [deployment details](engineering/DEPLOYMENT.md).
 
-See [ranked combat proof of concept 0.4](REFINEMENT_04.md) for the newest controls, combat rules, model workshop and verification.
+See [combined-arms proof of concept 0.5](REFINEMENT_05.md) for the newest controls, combat rules, model workshop and verification.
 
 ## Run and test
 
@@ -26,15 +26,15 @@ To use an existing Chromium installation: `CHROMIUM_PATH=/usr/bin/chromium npm r
 
 ## What to try
 
-1. Start with the default 80 Romans versus 100 Gauls. Both army counts include one commander.
+1. Start with the default 300 Romans versus 300 Gauls. Both army counts include one commander.
 2. Click **Begin battle**, pause with the same button or Space outside form controls, and use **Step one tick** to inspect action transitions.
 3. Select a soldier on the field or a unit/commander in the inspector. **Inspect model** pauses and zooms to it; **Fit battlefield** restores the view.
 4. Reset, change troop mix/doctrine/terrain/seed, and begin a new experiment. Setup is locked once combat starts; reset is explicit.
 5. Observe ammunition, morale, stamina, casualties and commander skill activations. Javelineers visibly switch to a sidearm when ammo is exhausted.
 6. Export a replay at a coherent worker tick. Import it to re-simulate and compare the saved state fingerprint. Reset cancels a long replay.
-7. Increase to 300, 500 (numeric input) or 1,000 per side. Watch Diagnostics; these are experimental capacity options, not certified device tiers.
+7. Increase to 500, 1,000 or 2,500 per side. Watch Diagnostics; these are experimental capacity options, not certified device tiers.
 
-Default troops are intentionally asymmetric and unbalanced for testing. Doctrine now affects speed, file/target preference, nearby shield support and charge impact; it is not a completed formation order system. Both sides can fight automatically. Up to five independent formations per army can divide infantry and javelineers by integer shares. Tactical orders are optional, and their acknowledged history is recorded in replay files.
+Default troops are intentionally asymmetric and unbalanced for testing. Doctrine now affects speed, file/target preference, nearby shield support and charge impact; it is not a completed formation order system. Both sides can fight automatically. Up to five independent formations per army can divide infantry, javelineers, cavalry, mounted archers and siege crew by integer shares. Tactical orders are optional, and their acknowledged history is recorded in replay files.
 
 ## Unit and commander templates
 
@@ -81,3 +81,5 @@ See [review notes](REVIEW.md), [evidence](evidence/battle-lab-headless.json) and
 ## Ranked combat (0.4)
 
 Choose **Try the reserve & flank battle** to exercise ranked movement, held reserves, facing/frontage and two-leg flank orders. Click formation labels on the field to select them. See the [play guide and explicit navigation limits](REFINEMENT_04.md).
+
+Current combined-arms rules and versioned limits supersede earlier infantry-only details below: see [ADR 0008](decisions/0008-combined-arms-and-terrain.md).

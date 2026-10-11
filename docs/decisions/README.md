@@ -16,3 +16,5 @@ Statuses describe planning commitments, not implementation completion. Add an AD
 Template: context; decision and status; considered alternatives; consequences; validation gate; conditions for revisiting; links to affected contracts. Preserve superseded decisions with a link to the replacement instead of rewriting history.
 
 - [0007: Cohesive formation motion](0007-cohesive-formation-motion.md)
+
+- [0008: Combined arms and expanded terrain](0008-combined-arms-and-terrain.md)

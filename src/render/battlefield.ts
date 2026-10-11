@@ -1,3 +1,6 @@
+import { CombinedView } from './combined-view';
+import { terrainHeight } from '../content/world';
+import { MAX_UNITS, type Terrain } from '../content/catalog';
 import { FormationOverlay } from './formation-overlay';
 import type { BattleSummary } from '../sim/battle';
 import type { Group } from '../sim/orders';
@@ -19,6 +22,9 @@ export class Battlefield {
   readonly camera: THREE.OrthographicCamera;
   readonly controls: OrbitControls;
   private kits: Kit[] = [];
+  private kitKeys = new Map<string, Kit>();
+  private combined?: CombinedView;
+  private terrainType: Terrain = 'meadow';
   private formationOverlay: FormationOverlay;
   onFormation: (team: Team, id: number) => void = () => {};
   private terrain = new THREE.Group();
@@ -98,8 +104,8 @@ export class Battlefield {
     this.formationOverlay = new FormationOverlay(this.scene, container, (team, id) =>
       this.onFormation(team, id),
     );
-    this.camera = new THREE.OrthographicCamera(-40, 40, 30, -30, 0.1, 400);
-    this.camera.position.set(-45, 60, 62);
+    this.camera = new THREE.OrthographicCamera(-40, 40, 30, -30, 0.1, 2000);
+    this.camera.position.set(-150, 200, 205);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableRotate = false;
     this.controls.addEventListener('change', () => {
@@ -110,7 +116,7 @@ export class Battlefield {
     });
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.12;
-    this.controls.minZoom = 0.55;
+    this.controls.minZoom = 0.12;
     this.controls.maxZoom = 7;
     this.controls.mouseButtons = {
       LEFT: THREE.MOUSE.PAN,
@@ -135,7 +141,7 @@ export class Battlefield {
     sun.shadow.bias = -0.0002;
     this.scene.add(sun);
     this.ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(180, 180),
+      new THREE.PlaneGeometry(680, 680, 200, 200),
       new THREE.MeshStandardMaterial({ map: this.groundMap, color: '#c8cfb8', roughness: 1 }),
     );
     this.ground.rotation.x = -Math.PI / 2;
@@ -161,7 +167,7 @@ export class Battlefield {
         depthWrite: false,
         side: THREE.DoubleSide,
       }),
-      2000,
+      MAX_UNITS,
     );
     this.marker.count = 0;
     this.marker.frustumCulled = false;
@@ -215,7 +221,7 @@ export class Battlefield {
       const p = this.groundPoint(e);
       if (p) {
         this.destination.visible = true;
-        this.destination.position.set(p.x, 0.07, p.z);
+        this.destination.position.set(p.x, p.y + 0.07, p.z);
         this.dirty = true;
       }
     });
@@ -275,6 +281,8 @@ export class Battlefield {
     }
   }
   configure(config: BattleConfig): void {
+    this.terrainType = config.terrain;
+    this.formationOverlay.terrain = config.terrain;
     this.count = config.romans.count + config.gauls.count;
     this.current = new Int32Array(0);
     this.lastHits = new Float32Array(this.count).fill(-100);
@@ -290,26 +298,23 @@ export class Battlefield {
         mesh.geometry.dispose();
         mesh.dispose();
       }
-    this.kits = Array.from({ length: 32 }, (_, i) => [0, 1, 2, 3, 4, 5, 1, 4][i % 8]).map(
-      (type, index) => {
-        const model =
-          index < 16
-            ? createUnitModel(type, index % 8 >= 6, index % 16 >= 8)
-            : createCrowdModel(type, index % 8 >= 6, index % 16 >= 8);
-        const meshes = {} as Kit['meshes'];
-        for (const name of Object.keys(model.parts) as PartName[]) {
-          const mesh = new THREE.InstancedMesh(model.parts[name], this.material, this.count);
-          mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-          mesh.frustumCulled = false;
-          mesh.count = 0;
-          mesh.castShadow = true;
-          mesh.receiveShadow = true;
-          this.scene.add(mesh);
-          meshes[name] = mesh;
-        }
-        return { meshes, ids: [] };
-      },
-    );
+    this.kits = [];
+    this.kitKeys.clear();
+    this.combined?.dispose();
+    this.combined = new CombinedView(this.scene, this.material, this.count);
+    const positions = this.ground.geometry.attributes.position;
+    for (let i = 0; i < positions.count; i++)
+      positions.setZ(
+        i,
+        terrainHeight(
+          config.terrain,
+          Math.round(positions.getX(i) * SCALE),
+          Math.round(-positions.getY(i) * SCALE),
+        ) / SCALE,
+      );
+    positions.needsUpdate = true;
+    this.ground.geometry.computeVertexNormals();
+    this.ground.geometry.computeBoundingSphere();
     this.clearTerrain();
     (this.ground.material as THREE.MeshStandardMaterial).color.set(
       config.terrain === 'rocky-pass' ? '#d0c9b4' : '#c8cfb8',
@@ -362,7 +367,11 @@ export class Battlefield {
         new THREE.IcosahedronGeometry(1, 1),
         new THREE.MeshStandardMaterial({ color: '#797d72', roughness: 1, flatShading: true }),
       );
-      rock.position.set(o.x / SCALE, 2, o.z / SCALE);
+      rock.position.set(
+        o.x / SCALE,
+        terrainHeight(config.terrain, o.x, o.z) / SCALE + 2,
+        o.z / SCALE,
+      );
       rock.scale.set(o.radius / SCALE, 5, o.radius / SCALE);
       rock.castShadow = true;
       rock.receiveShadow = true;
@@ -407,17 +416,34 @@ export class Battlefield {
     for (let i = 0; i < this.count; i++) {
       const b = 3 + i * UNIT_STRIDE,
         type = this.current[b + 8];
-      const kit =
-        type === 1 && this.current[b + 19] === 0
-          ? 6
-          : type === 4 && this.current[b + 19] === 0
-            ? 7
-            : type;
-      this.kits[
-        kit +
-          (this.current[b + 17] === 0 ? 8 : 0) +
-          (this.detailMode || i === this.selected ? 0 : 16)
-      ].ids.push(i);
+      const melee = this.current[b + 19] === 0,
+        broken = this.current[b + 17] === 0,
+        detail = this.detailMode || i === this.selected;
+      const key = `${type}:${melee}:${broken}:${detail}`;
+      let kit = this.kitKeys.get(key);
+      if (!kit) {
+        const capacity = Array.from(
+          { length: this.count },
+          (_, id) => this.current[3 + id * UNIT_STRIDE + 8],
+        ).filter((t) => t === type).length;
+        const model = detail
+          ? createUnitModel(type, melee, broken)
+          : createCrowdModel(type, melee, broken);
+        const meshes = {} as Kit['meshes'];
+        for (const name of Object.keys(model.parts) as PartName[]) {
+          const mesh = new THREE.InstancedMesh(model.parts[name], this.material, capacity);
+          mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+          mesh.frustumCulled = false;
+          mesh.count = 0;
+          mesh.castShadow = true;
+          this.scene.add(mesh);
+          meshes[name] = mesh;
+        }
+        kit = { meshes, ids: [] };
+        this.kits.push(kit);
+        this.kitKeys.set(key, kit);
+      }
+      kit.ids.push(i);
     }
   }
   setTactical(value: boolean): void {
@@ -461,7 +487,7 @@ export class Battlefield {
   overview(): void {
     this.follow = false;
     this.controls.target.set(0, 0, 0);
-    this.camera.position.set(-45, 60, 62);
+    this.camera.position.set(-150, 200, 205);
     this.camera.zoom = this.count > 900 ? 0.78 : this.count > 400 ? 1.0 : 1.65;
     this.camera.updateProjectionMatrix();
     this.controls.update();
@@ -482,7 +508,7 @@ export class Battlefield {
         const x = (minX + maxX) / 2,
           z = (minZ + maxZ) / 2;
         this.controls.target.set(x, 0, z);
-        this.camera.position.set(x - 45, 60, z + 62);
+        this.camera.position.set(x - 150, 200, z + 205);
         this.camera.zoom = 1;
         this.camera.updateProjectionMatrix();
         this.controls.update();
@@ -499,7 +525,7 @@ export class Battlefield {
         }
         this.camera.zoom = THREE.MathUtils.clamp(
           Math.min(0.84 / extentX, 0.66 / extentY),
-          0.55,
+          0.12,
           2.2,
         );
         this.camera.updateProjectionMatrix();
@@ -512,14 +538,15 @@ export class Battlefield {
     const base = 3 + id * UNIT_STRIDE;
     const x = this.current[base] / SCALE,
       z = this.current[base + 1] / SCALE;
-    this.controls.target.set(x, 0.8, z);
-    this.camera.position.set(x - 10, 14, z + 15);
+    const y = terrainHeight(this.terrainType, Math.round(x * SCALE), Math.round(z * SCALE)) / SCALE;
+    this.controls.target.set(x, y + 0.8, z);
+    this.camera.position.set(x - 10, y + 14, z + 15);
     this.camera.zoom = 6;
     this.camera.updateProjectionMatrix();
     this.select(id);
   }
   zoomBy(factor: number): void {
-    this.camera.zoom = THREE.MathUtils.clamp(this.camera.zoom * factor, 0.55, 7);
+    this.camera.zoom = THREE.MathUtils.clamp(this.camera.zoom * factor, 0.12, 7);
     this.camera.updateProjectionMatrix();
   }
   setPlacement(active: boolean): void {
@@ -541,8 +568,15 @@ export class Battlefield {
     const hit = new THREE.Vector3();
     if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -height), hit))
       return null;
-    hit.x = THREE.MathUtils.clamp(hit.x, -50, 50);
-    hit.z = THREE.MathUtils.clamp(hit.z, -50, 50);
+    for (let n = 0; n < 8; n++) {
+      const y =
+        terrainHeight(this.terrainType, Math.round(hit.x * SCALE), Math.round(hit.z * SCALE)) /
+          SCALE +
+        height;
+      ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -y), hit);
+    }
+    hit.x = THREE.MathUtils.clamp(hit.x, -300, 300);
+    hit.z = THREE.MathUtils.clamp(hit.z, -300, 300);
     return hit;
   }
   private pick(event: PointerEvent): void {
@@ -613,7 +647,10 @@ export class Battlefield {
           if (state === State.Escaped) continue;
           const x = THREE.MathUtils.lerp(this.previous[b], this.current[b], alpha) / SCALE,
             z = THREE.MathUtils.lerp(this.previous[b + 1], this.current[b + 1], alpha) / SCALE;
-          this.bounds.center.set(x, 1, z);
+          const groundY =
+            terrainHeight(this.terrainType, Math.round(x * SCALE), Math.round(z * SCALE)) / SCALE;
+          const mounted = this.current[b + 21] > 0;
+          this.bounds.center.set(x, groundY + 1.5, z);
           if (!this.frustum.intersectsSphere(this.bounds)) continue;
           const moving =
             Math.abs(this.current[b] - this.previous[b]) +
@@ -632,7 +669,7 @@ export class Battlefield {
           const variation = 0.96 + ((id * 17) % 11) * 0.008;
           this.scale.set(variation, variation, variation);
           const fall = dead ? THREE.MathUtils.smoothstep(phaseTick - this.deaths[id], 0, 14) : 0;
-          this.position.set(x, dead ? 0.16 * fall : 0, z);
+          this.position.set(x, groundY + (dead ? 0.16 * fall : mounted ? 0.68 : 0), z);
           this.rotation.set(
             dead ? (Math.PI / 2) * fall : this.current[b + 13] > 30 ? 0.12 - hitReact : -hitReact,
             angle,
@@ -652,6 +689,12 @@ export class Battlefield {
             this.rotation.set(0, 0, 0);
             if (name === 'leftLeg') this.rotation.x = gait;
             if (name === 'rightLeg') this.rotation.x = -gait;
+            if (mounted && (name === 'leftLeg' || name === 'rightLeg')) {
+              this.position.x *= 2.5;
+              this.rotation.x = -0.35;
+              this.rotation.z = name === 'leftLeg' ? -0.16 : 0.16;
+            }
+
             const recovery =
               state === State.Recovery
                 ? Math.max(0, 1 - this.current[b + 5] / UNITS[this.current[b + 8]].recovery)
@@ -709,7 +752,7 @@ export class Battlefield {
               ),
             );
           }
-          this.temp.position.set(x, 0.015, z);
+          this.temp.position.set(x, groundY + 0.015, z);
           this.temp.rotation.set(-Math.PI / 2, 0, 0);
           this.temp.scale.set(1, dead ? 1.6 : 0.65, 1);
           this.temp.updateMatrix();
@@ -721,7 +764,7 @@ export class Battlefield {
               new THREE.Color(
                 this.current[b + 4] === State.Routing
                   ? '#eee0b5'
-                  : this.current[b + 8] < 3
+                  : UNITS[this.current[b + 8]].team === 0
                     ? '#d9775e'
                     : '#68c9b3',
               ),
@@ -731,7 +774,7 @@ export class Battlefield {
             for (let n = 0; n < 3 && sparkCount < 600; n++) {
               this.temp.position.set(
                 x + Math.sin(angle) * 0.5 + (n - 1) * blockAge * 0.025,
-                0.9 + blockAge * 0.03,
+                groundY + 0.9 + blockAge * 0.03,
                 z + Math.cos(angle) * 0.5,
               );
               this.temp.rotation.set(blockAge, n, 0);
@@ -747,7 +790,7 @@ export class Battlefield {
             rallyPhase >= 0 &&
             rallyPhase < 1
           ) {
-            this.temp.position.set(x, 0.04, z);
+            this.temp.position.set(x, groundY + 0.04, z);
             this.temp.rotation.set(-Math.PI / 2, 0, 0);
             this.temp.scale.setScalar(2 + rallyPhase * 12);
             this.temp.updateMatrix();
@@ -755,12 +798,12 @@ export class Battlefield {
             (this.rally.material as THREE.MeshBasicMaterial).opacity = (1 - rallyPhase) * 0.6;
           }
           if (id === this.selected) {
-            this.selection.position.set(x, 0.06, z);
+            this.selection.position.set(x, groundY + 0.06, z);
             this.aura.visible = UNITS[this.current[b + 8]].role === 'commander' && !dead;
-            this.aura.position.set(x, 0.025, z);
+            this.aura.position.set(x, groundY + 0.025, z);
             if (this.follow && !dead) {
               const offset = this.camera.position.clone().sub(this.controls.target);
-              this.controls.target.lerp(new THREE.Vector3(x, 0.8, z), 0.1);
+              this.controls.target.lerp(new THREE.Vector3(x, groundY + 0.8, z), 0.1);
               this.camera.position.copy(this.controls.target).add(offset);
             }
           }
@@ -794,18 +837,23 @@ export class Battlefield {
         const b = pbase + i * PROJECTILE_STRIDE;
         this.temp.position.set(
           this.current[b] / SCALE,
-          1.25 + Math.sin((this.current[b + 4] / 36) * Math.PI) * 1.8,
+          this.current[b + 7] / SCALE,
           this.current[b + 1] / SCALE,
         );
         this.temp.quaternion.setFromUnitVectors(
           new THREE.Vector3(0, 1, 0),
-          new THREE.Vector3(this.current[b + 2], 0, this.current[b + 3]).normalize(),
+          new THREE.Vector3(
+            this.current[b + 2],
+            this.current[b + 9],
+            this.current[b + 3],
+          ).normalize(),
         );
         this.temp.scale.set(1, 1, 1);
         this.temp.updateMatrix();
         this.projectiles.setMatrixAt(i, this.temp.matrix);
       }
       this.projectiles.instanceMatrix.needsUpdate = true;
+      this.combined?.update(this.current, this.previous, alpha, phaseTick, this.terrainType);
     }
     if (this.follow) this.controls.update();
     this.formationOverlay.update(
@@ -817,6 +865,7 @@ export class Battlefield {
     this.renderer.render(this.scene, this.camera);
   };
   dispose(): void {
+    this.combined?.dispose();
     cancelAnimationFrame(this.frame);
     this.observer.disconnect();
     this.controls.dispose();

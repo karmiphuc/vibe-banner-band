@@ -1,0 +1,276 @@
+{
+  "version": "battle-lab-5",
+  "runtime": "v24.19.0",
+  "cpu": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+  "platform": "linux",
+  "note": "Headless single run, 1500 ticks max, 30 tick warmup. Shared cloud CPU; no browser FPS or device qualification. Final capture run after browser tests completed; no concurrent test runner.",
+  "results": [
+    {
+      "config": {
+        "seed": 7541,
+        "terrain": "highlands",
+        "romans": {
+          "count": 300,
+          "skirmishers": 18,
+          "cavalry": 24,
+          "horseArchers": 14,
+          "siege": 6,
+          "doctrine": "balanced",
+          "formations": [
+            {
+              "id": 0,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "id": 2,
+              "role": "cavalry",
+              "weight": 1
+            },
+            {
+              "id": 3,
+              "role": "horse-archer",
+              "weight": 1
+            },
+            {
+              "id": 4,
+              "role": "siege",
+              "weight": 1
+            }
+          ]
+        },
+        "gauls": {
+          "count": 300,
+          "skirmishers": 18,
+          "cavalry": 24,
+          "horseArchers": 14,
+          "siege": 6,
+          "doctrine": "balanced",
+          "formations": [
+            {
+              "id": 0,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "id": 2,
+              "role": "cavalry",
+              "weight": 1
+            },
+            {
+              "id": 3,
+              "role": "horse-archer",
+              "weight": 1
+            },
+            {
+              "id": 4,
+              "role": "siege",
+              "weight": 1
+            }
+          ]
+        }
+      },
+      "ticks": 1500,
+      "p50ms": 2.531,
+      "p95ms": 5.034,
+      "p99ms": 7.081,
+      "hash": "5627e958",
+      "standing": [
+        225,
+        197
+      ],
+      "engines": 10,
+      "boltsFired": 87,
+      "arrowsRemaining": 2096,
+      "snapshotBytes": 244656
+    },
+    {
+      "config": {
+        "seed": 7541,
+        "terrain": "highlands",
+        "romans": {
+          "count": 1000,
+          "skirmishers": 18,
+          "cavalry": 24,
+          "horseArchers": 14,
+          "siege": 6,
+          "doctrine": "balanced",
+          "formations": [
+            {
+              "id": 0,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "id": 2,
+              "role": "cavalry",
+              "weight": 1
+            },
+            {
+              "id": 3,
+              "role": "horse-archer",
+              "weight": 1
+            },
+            {
+              "id": 4,
+              "role": "siege",
+              "weight": 1
+            }
+          ]
+        },
+        "gauls": {
+          "count": 1000,
+          "skirmishers": 18,
+          "cavalry": 24,
+          "horseArchers": 14,
+          "siege": 6,
+          "doctrine": "balanced",
+          "formations": [
+            {
+              "id": 0,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "id": 2,
+              "role": "cavalry",
+              "weight": 1
+            },
+            {
+              "id": 3,
+              "role": "horse-archer",
+              "weight": 1
+            },
+            {
+              "id": 4,
+              "role": "siege",
+              "weight": 1
+            }
+          ]
+        }
+      },
+      "ticks": 1500,
+      "p50ms": 9.424,
+      "p95ms": 14.144,
+      "p99ms": 20.968,
+      "hash": "679432b7",
+      "standing": [
+        838,
+        791
+      ],
+      "engines": 38,
+      "boltsFired": 305,
+      "arrowsRemaining": 7678,
+      "snapshotBytes": 407056
+    },
+    {
+      "config": {
+        "seed": 7541,
+        "terrain": "highlands",
+        "romans": {
+          "count": 2500,
+          "skirmishers": 18,
+          "cavalry": 24,
+          "horseArchers": 14,
+          "siege": 6,
+          "doctrine": "balanced",
+          "formations": [
+            {
+              "id": 0,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "id": 2,
+              "role": "cavalry",
+              "weight": 1
+            },
+            {
+              "id": 3,
+              "role": "horse-archer",
+              "weight": 1
+            },
+            {
+              "id": 4,
+              "role": "siege",
+              "weight": 1
+            }
+          ]
+        },
+        "gauls": {
+          "count": 2500,
+          "skirmishers": 18,
+          "cavalry": 24,
+          "horseArchers": 14,
+          "siege": 6,
+          "doctrine": "balanced",
+          "formations": [
+            {
+              "id": 0,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "id": 2,
+              "role": "cavalry",
+              "weight": 1
+            },
+            {
+              "id": 3,
+              "role": "horse-archer",
+              "weight": 1
+            },
+            {
+              "id": 4,
+              "role": "siege",
+              "weight": 1
+            }
+          ]
+        }
+      },
+      "ticks": 1500,
+      "p50ms": 27.282,
+      "p95ms": 33.197,
+      "p99ms": 45.726,
+      "hash": "5c2f6e50",
+      "standing": [
+        2154,
+        2030
+      ],
+      "engines": 98,
+      "boltsFired": 446,
+      "arrowsRemaining": 20955,
+      "snapshotBytes": 755056
+    }
+  ]
+}

@@ -33,3 +33,7 @@ The current cap is 1,000 soldiers per side, including commanders, with up to ten
 Benchmark every new body/attack type in representative mixes, not only all-infantry battles: dense cavalry collision, mounted ranged crossfire, siege projectiles and crews, ten active formations, and mass routing. Record seed, full roster, runtime/hardware, warm-up, tick and render percentiles, memory and replay hash. A 2,000-soldier Node simulation result does not qualify 2,000 mounted actors or a browser renderer. Require repeatable outcomes across stepped/batched simulation and worker replay, conservation of linked entities, bounded projectile/command capacity and target-device frame budgets before raising advertised scale.
 
 See [tactical order ADR](../decisions/0006-recorded-tactical-orders.md), [combat rules](COMBAT.md), [navigation](../architecture/NAVIGATION.md) and [runtime evidence](../REFINEMENT_03.md).
+
+## Implemented combined-arms extension (0.5)
+
+The five-ID limit is unchanged. Roles now include `cavalry`, `horse-archer` and `siege`; composition shares require a matching formation. Siege shares count crew soldiers and round down to complete triplets. Formation weights split each role's pool; the commander remains in the first infantry formation. Engine crew membership and slots survive casualty reformation. `skirmish` and `brace` orders use the same recorded-command path as existing movement orders. See [ADR 0008](../decisions/0008-combined-arms-and-terrain.md) for current behavior and limits.

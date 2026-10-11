@@ -1,12 +1,6 @@
 /// <reference lib="webworker" />
 import { SIM_VERSION, TICK_RATE } from '../content/catalog';
-import {
-  Battle,
-  CONTENT_HASH,
-  MAX_PROJECTILES,
-  PROJECTILE_STRIDE,
-  UNIT_STRIDE,
-} from '../sim/battle';
+import { Battle, CONTENT_HASH } from '../sim/battle';
 import { validateReplay } from '../sim/replay';
 import { PROTOCOL_VERSION, type FromWorker, type ToWorker } from './protocol';
 
@@ -38,7 +32,7 @@ function initialize(config: import('../content/catalog').BattleConfig): void {
   battle = new Battle(config);
   speed = 1;
   simMs = 0;
-  expectedBytes = (3 + battle.count * UNIT_STRIDE + MAX_PROJECTILES * PROJECTILE_STRIDE) * 4;
+  expectedBytes = battle.snapshotBytes();
   pool = Array.from({ length: 3 }, () => new ArrayBuffer(expectedBytes));
 }
 scope.onmessage = (event: MessageEvent<ToWorker>) => {

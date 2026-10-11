@@ -4,6 +4,7 @@ Updated 2026-10-11. All engine subsystems below are specified/planned unless a d
 
 | Document | Responsibility |
 | --- | --- |
+| [Combined arms 0.5](REFINEMENT_05.md) | Cavalry, mounted archers, crewed ballistae, 640 m terrain and 5,000-soldier capacity |
 | [Combat PoC 0.4](REFINEMENT_04.md) | Cohesive ranks, reserves, frontage/facing and visible flank routes |
 | [Combat PoC 0.3](REFINEMENT_03.md) | Tactical commands, recorded orders, directional defense and shield destruction |
 | [Proof of concept 0.2](REFINEMENT_02.md) | Refined combat, equipment workshop, scenarios and verification |

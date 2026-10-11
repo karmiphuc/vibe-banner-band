@@ -2017,3 +2017,32 @@ select {
     gap: 6px;
   }
 }
+
+.specialist-mix {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+.specialist-mix label {
+  font-size: 10px;
+  color: var(--muted);
+  display: grid;
+  gap: 5px;
+}
+.specialist-mix input {
+  width: 100%;
+  min-width: 0;
+  padding: 7px;
+}
+.movement-orders {
+  flex-wrap: wrap;
+}
+.formation-banner {
+  max-width: 155px;
+  font-size: 10px;
+}
+.roster-breakdown {
+  flex-wrap: wrap;
+  line-height: 1.6;
+}

@@ -163,8 +163,8 @@ test('large loose formations fit their complete footprint inside the battle boun
   b.issueOrder({ team: 0, group: 'all', kind: 'hold', x: 50 * SCALE, z: 50 * SCALE });
   for (let i = 0; i < 1000; i++) {
     const f = b.formationOf(i);
-    assert(Math.abs(f.x + b.slotX[i]) <= 62 * SCALE - 430);
-    assert(Math.abs(f.z + b.slotZ[i]) <= 62 * SCALE - 430);
+    assert(Math.abs(f.x + b.slotX[i]) <= 320 * SCALE - 430);
+    assert(Math.abs(f.z + b.slotZ[i]) <= 320 * SCALE - 430);
   }
 });
 test('fire discipline does not erase an infantry charge', () => {

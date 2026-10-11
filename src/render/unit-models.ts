@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 /** Original, deterministic articulated prototype recipes; not skinned production assets. */
-export const ASSET_RECIPE_VERSION = 'rome-gaul-articulated-3';
+export const ASSET_RECIPE_VERSION = 'rome-gaul-combined-4';
 export type PartName = 'body' | 'leftLeg' | 'rightLeg' | 'leftArm' | 'rightArm';
 export interface UnitModel {
   parts: Record<PartName, THREE.BufferGeometry>;
@@ -13,7 +13,7 @@ const skin = '#c69e78',
   bronze = '#b99a58',
   dark = '#332c24',
   leather = '#66503b';
-function colored(
+export function colored(
   geometry: THREE.BufferGeometry,
   color: string,
   x = 0,
@@ -46,7 +46,7 @@ function colored(
   geometry.deleteAttribute('uv');
   return geometry.index ? geometry.toNonIndexed() : geometry;
 }
-const box = (
+export const box = (
   color: string,
   x: number,
   y: number,
@@ -58,7 +58,7 @@ const box = (
   ry = 0,
   rz = 0,
 ) => colored(new THREE.BoxGeometry(1, 1, 1), color, x, y, z, sx, sy, sz, rx, ry, rz);
-const sphere = (
+export const sphere = (
   color: string,
   x: number,
   y: number,
@@ -67,7 +67,7 @@ const sphere = (
   sy: number,
   sz: number,
 ) => colored(new THREE.SphereGeometry(1, 10, 7), color, x, y, z, sx, sy, sz);
-const cylinder = (
+export const cylinder = (
   color: string,
   x: number,
   y: number,
@@ -87,7 +87,7 @@ const cylinder = (
     1,
     rx,
   );
-const merge = (parts: THREE.BufferGeometry[]) => {
+export const merge = (parts: THREE.BufferGeometry[]) => {
   const geometry = mergeGeometries(parts, false)!;
   for (const p of parts) p.dispose();
   geometry.computeBoundingSphere();
@@ -99,6 +99,12 @@ export function createUnitModel(
   meleeSidearm = false,
   brokenShield = false,
 ): UnitModel {
+  const originalType = type;
+  if (type >= 6) type = [0, 3, 1, 4, 1, 4][type - 6];
+  const mounted = originalType >= 6 && originalType <= 9,
+    bow = originalType === 8 || originalType === 9,
+    crew = originalType >= 10;
+  brokenShield = brokenShield || bow || crew;
   const roman = type < 3,
     leader = type % 3 === 2,
     ranged = type % 3 === 1;
@@ -278,10 +284,28 @@ export function createUnitModel(
     for (let i = -2; i <= 2; i++)
       torso.push(box('#b6ac88', 0, 0.75 + i * 0.045, 0.18, 0.37, 0.01, 0.009));
   }
-  if (ranged) {
+  if (ranged && !crew) {
     for (let i = 0; i < 3; i++)
-      torso.push(cylinder('#695339', -0.12 + i * 0.07, 1.16, -0.2, 0.014, 1.25));
+      torso.push(cylinder('#695339', -0.12 + i * 0.07, 1.16, -0.2, 0.014, bow ? 0.65 : 1.25));
     torso.push(box(leather, 0, 1.08, -0.23, 0.32, 0.13, 0.035));
+  }
+  if (bow) {
+    torso.push(cylinder(leather, 0.15, 1.22, -0.23, 0.09, 0.47));
+    for (let i = 0; i < 5; i++)
+      torso.push(cylinder('#c5ae77', 0.1 + i * 0.025, 1.52, -0.23, 0.009, 0.38));
+    for (let row = 0; row < 6; row++)
+      for (let col = 0; col < 5; col++)
+        torso.push(
+          box(
+            roman ? '#9d9468' : '#72533c',
+            (col - 2) * 0.068,
+            1.04 + row * 0.057,
+            0.177,
+            0.06,
+            0.045,
+            0.018,
+          ),
+        );
   }
   const leg = (right: boolean) =>
     merge([
@@ -305,7 +329,7 @@ export function createUnitModel(
     right = arm();
   const shieldColor = roman ? '#9e3a2f' : leader ? '#22544c' : '#3c6b62';
   if (!brokenShield) {
-    if (roman && !ranged) {
+    if (roman && !ranged && !mounted) {
       // Continuous convex hide face; separate rim and boss preserve silhouette.
       const arc = Math.asin(0.27 / 0.48);
       left.push(
@@ -399,7 +423,24 @@ export function createUnitModel(
   const bladeLength = ranged ? 0.38 : roman ? 0.48 : 0.73;
   right.push(cylinder(leather, 0, -0.55, 0.18, 0.025, 0.16, Math.PI / 2));
   right.push(box(bronze, 0, -0.55, 0.27, 0.14, 0.024, 0.027));
-  if (ranged && !meleeSidearm) {
+  if (crew) {
+    right.push(
+      cylinder(leather, 0, -0.55, 0.2, 0.026, 0.45),
+      box(iron, 0, -0.32, 0.2, 0.17, 0.08, 0.06),
+    );
+  } else if (bow && !meleeSidearm) {
+    for (const sign of [-1, 1]) {
+      left.push(box('#b18c51', 0, -0.33 + sign * 0.22, 0.27, 0.035, 0.46, 0.035, sign * 0.3));
+      left.push(box('#694727', 0, -0.33 + sign * 0.46, 0.34, 0.038, 0.1, 0.035, -sign * 0.55));
+    }
+    left.push(box('#ddd0a9', 0, -0.33, 0.4, 0.009, 1.02, 0.009));
+    right.push(cylinder('#9e8254', 0, -0.55, 0.5, 0.009, 0.7, Math.PI / 2));
+  } else if (mounted && !bow) {
+    right.push(
+      cylinder('#8b633a', 0, -0.55, 0.85, 0.025, 2.7, Math.PI / 2),
+      colored(new THREE.ConeGeometry(0.045, 0.27, 4), iron, 0, -0.55, 2.33, 1, 1, 1, Math.PI / 2),
+    );
+  } else if (ranged && !meleeSidearm) {
     right.push(cylinder('#86734d', 0, -0.55, 0.51, 0.018, 1.25, Math.PI / 2));
     right.push(
       colored(new THREE.ConeGeometry(0.03, 0.2, 4), iron, 0, -0.55, 1.22, 1, 1, 1, Math.PI / 2),
@@ -446,6 +487,12 @@ export function createCrowdModel(
   meleeSidearm = false,
   brokenShield = false,
 ): UnitModel {
+  const originalType = type;
+  if (type >= 6) type = [0, 3, 1, 4, 1, 4][type - 6];
+  const mounted = originalType >= 6 && originalType <= 9,
+    bow = originalType === 8 || originalType === 9,
+    crew = originalType >= 10;
+  brokenShield = brokenShield || bow || crew;
   const roman = type < 3,
     leader = type % 3 === 2,
     ranged = type % 3 === 1;
@@ -481,7 +528,7 @@ export function createCrowdModel(
   const left = [box(cloth, 0, -0.22, 0.03, 0.13, 0.45, 0.14)];
   if (!brokenShield) {
     left.push(
-      roman && !ranged
+      roman && !ranged && !mounted
         ? box('#9e3a2f', 0, -0.33, 0.33, 0.54, 0.8, 0.055)
         : colored(
             new THREE.CylinderGeometry(1, 1, 0.045, 8),
@@ -501,6 +548,11 @@ export function createCrowdModel(
     );
   }
   const right = [box(skin, 0, -0.29, 0.08, 0.12, 0.54, 0.13)];
+  if (bow && !meleeSidearm)
+    left.push(
+      box('#b18c51', 0, -0.33, 0.3, 0.035, 1.05, 0.08),
+      box('#ddd0a9', 0, -0.33, 0.4, 0.01, 1.0, 0.01),
+    );
   right.push(
     box(
       ranged && !meleeSidearm ? '#8e7953' : iron,
@@ -509,7 +561,17 @@ export function createCrowdModel(
       0.55,
       0.035,
       0.025,
-      ranged && !meleeSidearm ? 1.3 : roman ? 0.5 : 0.75,
+      mounted && !bow
+        ? 2.7
+        : bow
+          ? 0.65
+          : crew
+            ? 0.3
+            : ranged && !meleeSidearm
+              ? 1.3
+              : roman
+                ? 0.5
+                : 0.75,
     ),
   );
   return {

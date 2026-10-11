@@ -1,4 +1,5 @@
-import { SCALE, obstaclesFor, type BattleConfig } from '../content/catalog';
+import { WOODS, FORDS, riverX } from '../content/world';
+import { SCALE, UNITS, obstaclesFor, type BattleConfig } from '../content/catalog';
 import type { FormationState } from '../sim/orders';
 import { State, UNIT_STRIDE } from '../sim/battle';
 /** Snapshot-only view. Painting and camera navigation never issue combat commands. */
@@ -13,9 +14,34 @@ export function drawMinimap(
   if (!c || !data.length) return;
   const w = canvas.width,
     h = canvas.height,
-    project = (v: number, size: number) => ((v / SCALE + 72) / 144) * size;
+    project = (v: number, size: number) => ((v / SCALE + 320) / 640) * size;
   c.fillStyle = '#17241de8';
   c.fillRect(0, 0, w, h);
+  if (['river-valley', 'highlands'].includes(config.terrain))
+    for (const forest of WOODS) {
+      c.fillStyle = '#344c37';
+      c.beginPath();
+      c.ellipse(
+        project(forest.x, w),
+        project(forest.z, h),
+        (forest.r / SCALE / 640) * w,
+        (forest.r / SCALE / 640) * h,
+        0,
+        0,
+        Math.PI * 2,
+      );
+      c.fill();
+    }
+  if (config.terrain === 'river-valley') {
+    c.strokeStyle = '#6a939b';
+    c.lineWidth = 5;
+    c.beginPath();
+    c.moveTo(project(riverX(-320 * SCALE), w), 0);
+    c.lineTo(project(riverX(320 * SCALE), w), h);
+    c.stroke();
+    c.fillStyle = '#c4b88d';
+    for (const z of FORDS) c.fillRect(project(riverX(z), w) - 4, project(z, h) - 3, 8, 6);
+  }
   c.strokeStyle = '#73816b';
   c.lineWidth = 1;
   c.strokeRect(10, 10, w - 20, h - 20);
@@ -25,8 +51,8 @@ export function drawMinimap(
     c.ellipse(
       project(o.x, w),
       project(o.z, h),
-      (o.radius / SCALE / 144) * w,
-      (o.radius / SCALE / 144) * h,
+      (o.radius / SCALE / 640) * w,
+      (o.radius / SCALE / 640) * h,
       0,
       0,
       Math.PI * 2,
@@ -37,7 +63,8 @@ export function drawMinimap(
     const b = 3 + i * UNIT_STRIDE,
       state = data[b + 4];
     if (state >= State.Dead) continue;
-    c.fillStyle = state === State.Routing ? '#cfbf8f' : data[b + 8] < 3 ? '#de8167' : '#86c9b0';
+    c.fillStyle =
+      state === State.Routing ? '#cfbf8f' : UNITS[data[b + 8]].team === 0 ? '#de8167' : '#86c9b0';
     c.fillRect(project(data[b], w) - 1, project(data[b + 1], h) - 1, 2.4, 2.4);
   }
   for (const f of formations)

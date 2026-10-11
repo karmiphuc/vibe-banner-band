@@ -7,7 +7,7 @@ description: Generate and qualify reproducible medieval equipment and modular ch
 
 Produce reviewable game assets with provenance and repeatable builds. Read [asset pipeline](../../docs/assets/PIPELINE.md), [asset contracts](../../docs/assets/CONTRACTS.md), [content](../../docs/design/CONTENT.md) and applicable repository instructions before work.
 
-This repository currently contains a working procedural sword/shield experiment and six original articulated [Roman–Gallic runtime model recipes](../../docs/assets/ROMAN_GAUL_RECIPES.md). These are explicitly experimental. It does not contain a production humanoid generator, approved base-body library, combat-animation library, formal recipe schema, LOD compiler or complete automated quality validator. Do not claim these capabilities exist merely because this skill describes them.
+This repository currently contains a working procedural sword/shield experiment and twelve original articulated [Roman–Gallic runtime model recipes](../../docs/assets/ROMAN_GAUL_RECIPES.md). The combined-arms extension also includes original horse and ballista recipes. These are explicitly experimental. It does not contain a production humanoid generator, approved base-body library, combat-animation library, formal recipe schema, LOD compiler or complete automated quality validator. Do not claim these capabilities exist merely because this skill describes them.
 
 # Required inputs
 
