@@ -1,6 +1,8 @@
 # GitHub Pages and release design
 
-Status: deployment plan only. No playable site or Pages deployment workflow is configured by this documentation change.
+Status: the experimental custom battle builds to `dist/` with Vite base `/vibe-banner-band/`. Preview publication uses the `gh-pages` branch with `.nojekyll`; source remains reviewable in its feature PR. GitHub Pages serves only static client files. The production release gates below remain future requirements.
+
+To update the preview, run all runtime checks, build from the reviewed source revision, then publish only `dist/`, license and source-revision metadata to `gh-pages`. Never overwrite source history. GitHub Pages is configured to deploy that branch root. No service worker or offline cache is shipped yet.
 
 ## Static delivery
 

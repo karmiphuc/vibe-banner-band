@@ -7,6 +7,8 @@
 | [0003](0003-content-and-assets.md) | Accepted architecture | Versioned content and reproducible asset compilation |
 | [0004](0004-world-and-hosting.md) | Accepted initial scope | Campaign + tactical encounters, static hosting |
 
+| [0005](0005-custom-battle-slice.md) | Accepted experiment | Roman–Gallic battle slice and explicit limits |
+
 Statuses describe planning commitments, not implementation completion. Add an ADR for changes to these boundaries, authoritative numeric formats, runtime animation strategy, executable mods, multiplayer, or persisted compatibility.
 
 Template: context; decision and status; considered alternatives; consequences; validation gate; conditions for revisiting; links to affected contracts. Preserve superseded decisions with a link to the replacement instead of rewriting history.

@@ -1,6 +1,6 @@
 # Implementation roadmap
 
-Updated 2026-10-11. **All engine milestones are unstarted.** Completed planning artifacts: subsystem contracts, ADRs, reusable asset skill, documentation checks, and a narrow Blender equipment experiment. No milestone is complete because its plan exists.
+Updated 2026-10-11. **M0–M3 have partial experimental implementation; no full milestone gate is complete.** See [custom battle](CUSTOM_BATTLE.md) and [ADR 0005](decisions/0005-custom-battle-slice.md). Completed planning artifacts: subsystem contracts, ADRs, reusable asset skill, documentation checks, and a narrow Blender equipment experiment. No milestone is complete because its plan exists.
 
 Schedule by evidence and dependencies rather than promised calendar dates; team capacity and source-art availability are unknown. One implemented vertical slice is more valuable than scaffolding every package. Task IDs below can become repository issues later; they are not existing GitHub issues.
 

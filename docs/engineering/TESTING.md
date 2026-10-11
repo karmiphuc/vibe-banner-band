@@ -2,6 +2,8 @@
 
 ## Current checks
 
+The [custom battle](../CUSTOM_BATTLE.md) has 13 headless/model tests and three production-build Chromium tests, including worker backpressure and headless/worker replay agreement. `runtime.yml` runs boundaries, tests, typecheck/build and browser tests. Firefox/Safari and real-device GPU performance remain open.
+
 `python3 tools/check_docs.py` checks local Markdown file links, JSON syntax and limited reference/timing integrity in the illustrative catalog. The documentation workflow runs it on pushes and pull requests. It does not validate a game engine, external URL availability, asset quality, or the full future schema.
 
 The procedural equipment experiment has [recorded repeat-build evidence](../../tools/assets/evidence/repeat-build.json). It has no production rig or gameplay and has not run the Khronos validator or a browser engine import.
@@ -38,7 +40,7 @@ Worker crash; full snapshot pool; corrupted/wrong-version catalog; missing mesh 
 
 ## CI evolution
 
-Current: documentation checks only. M0: pinned toolchain/install/build/type/import checks and artifact reporting. M1: fast headless determinism suite. M2: schemas/compiler and small asset fixture checks; full Blender jobs can be separate because they are heavier. M3–M5: browser integration and replay matrix. M6: release build/base-path smoke and signed-off benchmark reports on named devices.
+Current: documentation, pinned runtime build, core/model tests, and Chromium integration checks. Remaining milestone requirements: M0: pinned toolchain/install/build/type/import checks and artifact reporting. M1: fast headless determinism suite. M2: schemas/compiler and small asset fixture checks; full Blender jobs can be separate because they are heavier. M3–M5: browser integration and replay matrix. M6: release build/base-path smoke and signed-off benchmark reports on named devices.
 
 Run GPU benchmarks on suitable controlled hardware when available; never use shared CI timing as a strict real-device FPS gate. Use relative regression thresholds only after observing runner variability. Keep dependency/action versions pinned at runtime bootstrap, update intentionally, and grant CI least required permissions. Pull-request checks do not deploy the game.
 

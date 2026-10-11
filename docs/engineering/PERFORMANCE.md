@@ -1,6 +1,6 @@
 # Performance targets and measurement
 
-Status: no game benchmark exists. Targets below are engineering budgets to test, not achieved results. Equipment repeat-build evidence is not a crowd benchmark.
+Status: [one-run headless battle evidence](../evidence/battle-lab-headless.json) now exists. On the recorded Xeon/Node environment, p95 tick times were 1.050 ms at 100/side, 6.659 ms at 500/side and 26.351 ms at 1,000/side. The largest run had a 34.628 ms p99, above the 33.3 ms tick budget. These are simulation diagnostics, not browser FPS or device qualification. Targets below remain engineering budgets to test.
 
 ## Workload definition
 
