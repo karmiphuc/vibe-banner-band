@@ -206,7 +206,7 @@ export function createUnitModel(type: number, meleeSidearm = false): UnitModel {
           box(
             i % 2 ? '#b63c2a' : '#862c26',
             Math.sin(a) * 0.23,
-            1.74 + Math.cos(a) * 0.19,
+            1.685 + Math.cos(a) * 0.19,
             0,
             0.032,
             0.13,
