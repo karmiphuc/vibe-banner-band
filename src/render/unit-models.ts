@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 /** Original, deterministic articulated prototype recipes; not skinned production assets. */
-export const ASSET_RECIPE_VERSION = 'rome-gaul-combined-4';
+export const ASSET_RECIPE_VERSION = 'rome-gaul-combined-5';
 export type PartName = 'body' | 'leftLeg' | 'rightLeg' | 'leftArm' | 'rightArm';
 export interface UnitModel {
   parts: Record<PartName, THREE.BufferGeometry>;
@@ -123,7 +123,7 @@ export function createUnitModel(
   const torso: THREE.BufferGeometry[] = [
     colored(
       new THREE.CylinderGeometry(0.22, 0.26, 0.49, 8),
-      !ranged && (roman || leader) ? iron : cloth,
+      !ranged && (roman || leader || mounted) ? iron : cloth,
       0,
       1.18,
       0,
@@ -141,11 +141,11 @@ export function createUnitModel(
     box(dark, 0.047, 1.65, 0.126, 0.032, 0.016, 0.012),
   ];
   // Mail hems and separate leather shoulder straps, legible even without textures.
-  if (!ranged && (roman || leader))
+  if (!ranged && (roman || leader || mounted))
     for (let r = 0; r < 5; r++)
       torso.push(box('#626e6d', 0, 1.04 + r * 0.06, 0.174, 0.37, 0.012, 0.012));
   torso.push(box(leather, 0.14, 1.22, 0.184, 0.035, 0.4, 0.025, 0, 0, -0.1));
-  if (roman || leader) {
+  if (roman || leader || mounted) {
     torso.push(
       colored(
         new THREE.SphereGeometry(0.15, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2),
@@ -245,7 +245,7 @@ export function createUnitModel(
   torso.push(box(bronze, 0.2, 1.09, -0.04, 0.085, 0.025, 0.075, 0, 0, -0.18));
   for (const side of [-1, 1]) {
     torso.push(sphere(cloth, side * 0.215, 1.35, 0, 0.13, 0.095, 0.15));
-    if (!ranged && (roman || leader)) {
+    if (!ranged && (roman || leader || mounted)) {
       torso.push(box(iron, side * 0.17, 1.39, -0.035, 0.17, 0.055, 0.29));
       for (let row = 0; row < 7; row++)
         for (let col = 0; col < 7; col++)
@@ -498,11 +498,11 @@ export function createCrowdModel(
     ranged = type % 3 === 1;
   const cloth = roman ? '#953d32' : '#416d61';
   const body = [
-    box(!ranged && (roman || leader) ? iron : cloth, 0, 1.18, 0, 0.43, 0.48, 0.3),
+    box(!ranged && (roman || leader || mounted) ? iron : cloth, 0, 1.18, 0, 0.43, 0.48, 0.3),
     colored(new THREE.CylinderGeometry(0.2, 0.29, 0.32, 5), cloth, 0, 0.84, 0, 1, 1, 0.65),
     colored(
       new THREE.IcosahedronGeometry(0.17, 0),
-      roman || leader ? bronze : '#9c7251',
+      roman ? bronze : leader || mounted ? iron : '#9c7251',
       0,
       1.63,
       0,

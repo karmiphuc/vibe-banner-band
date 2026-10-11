@@ -1,5 +1,5 @@
 {
-  "recipe": "rome-gaul-combined-4",
+  "recipe": "rome-gaul-combined-5",
   "runtime": "v24.19.0",
   "source": "src/render/unit-models.ts",
   "license": "Repository GPL v3; geometry authored in this repository",
@@ -271,7 +271,7 @@
       "sidearm": false,
       "brokenShield": false,
       "lod": "crowd",
-      "sha256": "7d28d2f9f6c4cda346574ea127076798c13e9277c38e623cd686f061e4b5637a",
+      "sha256": "450e4ce31595873c1bde9e95c640d68d7fb53d71043b23e2ed456371ca4d3411",
       "triangles": 368,
       "repeatBuild": true
     },
@@ -289,7 +289,7 @@
       "sidearm": false,
       "brokenShield": true,
       "lod": "crowd",
-      "sha256": "16ba49690987a8b9d75f50d7c8a4e01eb31abcb6becd31907dc42d4806431a65",
+      "sha256": "681036e7b5176c24576199c598f5945f597176409ba3583f69325cc9b56797a7",
       "triangles": 204,
       "repeatBuild": true
     },
@@ -334,8 +334,8 @@
       "sidearm": false,
       "brokenShield": false,
       "lod": "near",
-      "sha256": "89fe08446d8d090465975f4ecb13f0c71e9d7c3650aa8c0a3bd98cc8ec33a36b",
-      "triangles": 3918,
+      "sha256": "a02f5e88e2db8ad604440bc7239cb850165b1ec768d6842bd5aea8daf1a31fe1",
+      "triangles": 5224,
       "repeatBuild": true
     },
     {
@@ -343,7 +343,7 @@
       "sidearm": false,
       "brokenShield": false,
       "lod": "crowd",
-      "sha256": "4c530c983fde7cdf1b084102e7997839d7819e64870d7676c663b5f50cad319e",
+      "sha256": "eeeddb11a1a2db11f88a774601a133e27f22c56f1d2c15778e737e9e6a33be39",
       "triangles": 312,
       "repeatBuild": true
     },
@@ -352,8 +352,8 @@
       "sidearm": false,
       "brokenShield": true,
       "lod": "near",
-      "sha256": "bb41dba33ca05edbc998b6c082fa9c9b9fabf7378ecc26a4bd5401cfd060f766",
-      "triangles": 2246,
+      "sha256": "51bf44521ae79ffd1217349cc270291751e2d27e47ed2a32722939b539378e1c",
+      "triangles": 3552,
       "repeatBuild": true
     },
     {
@@ -361,7 +361,7 @@
       "sidearm": false,
       "brokenShield": true,
       "lod": "crowd",
-      "sha256": "d547665a490dba1efd12921dc22ada4a377ba6d710ca5760248b810d2a2f1871",
+      "sha256": "11649f24364dd78f1331ce2e06532687bfed6f11b4bad13223833812b7d3bb56",
       "triangles": 148,
       "repeatBuild": true
     },
@@ -442,8 +442,8 @@
       "sidearm": false,
       "brokenShield": false,
       "lod": "near",
-      "sha256": "988f619f2a586cfd4dbe9d58bd754822bd89e1a2799b0e1ac7975089ce26c5a3",
-      "triangles": 2922,
+      "sha256": "74dbeed50f893e6be953334805b15476fea3b25c54ff42a0e5cc2f3690b8b7c7",
+      "triangles": 2968,
       "repeatBuild": true
     },
     {
@@ -451,7 +451,7 @@
       "sidearm": false,
       "brokenShield": false,
       "lod": "crowd",
-      "sha256": "be1c9e4664f84c6e389609595841b63331af2e36f2a7a11d26041e0a36e18c85",
+      "sha256": "b85100f4cc8071b92c9a4b58fa843e5b5142e4d0931f39389841c7bf89561fd9",
       "triangles": 172,
       "repeatBuild": true
     },
@@ -460,8 +460,8 @@
       "sidearm": false,
       "brokenShield": true,
       "lod": "near",
-      "sha256": "988f619f2a586cfd4dbe9d58bd754822bd89e1a2799b0e1ac7975089ce26c5a3",
-      "triangles": 2922,
+      "sha256": "74dbeed50f893e6be953334805b15476fea3b25c54ff42a0e5cc2f3690b8b7c7",
+      "triangles": 2968,
       "repeatBuild": true
     },
     {
@@ -469,7 +469,7 @@
       "sidearm": false,
       "brokenShield": true,
       "lod": "crowd",
-      "sha256": "be1c9e4664f84c6e389609595841b63331af2e36f2a7a11d26041e0a36e18c85",
+      "sha256": "b85100f4cc8071b92c9a4b58fa843e5b5142e4d0931f39389841c7bf89561fd9",
       "triangles": 172,
       "repeatBuild": true
     },
@@ -478,8 +478,8 @@
       "sidearm": true,
       "brokenShield": false,
       "lod": "near",
-      "sha256": "25b1d4417869977802e0661269fad6f1bee8a7fdabc48375beed2382bcb20656",
-      "triangles": 2850,
+      "sha256": "8e38571ecec41742a198aeb1f0bcc67f4f21322ce7c12526710cdf5911a5cc67",
+      "triangles": 2896,
       "repeatBuild": true
     },
     {
@@ -487,7 +487,7 @@
       "sidearm": true,
       "brokenShield": false,
       "lod": "crowd",
-      "sha256": "652ee5e826ae606e68839846aaf177f2c76de036efa242f553f551f7bb2b14f5",
+      "sha256": "74346b108c69edd1d43d5c279de5f7b8620a8a7dd033c60e9854e7009fbc8b93",
       "triangles": 148,
       "repeatBuild": true
     },
@@ -496,8 +496,8 @@
       "sidearm": true,
       "brokenShield": true,
       "lod": "near",
-      "sha256": "25b1d4417869977802e0661269fad6f1bee8a7fdabc48375beed2382bcb20656",
-      "triangles": 2850,
+      "sha256": "8e38571ecec41742a198aeb1f0bcc67f4f21322ce7c12526710cdf5911a5cc67",
+      "triangles": 2896,
       "repeatBuild": true
     },
     {
@@ -505,7 +505,7 @@
       "sidearm": true,
       "brokenShield": true,
       "lod": "crowd",
-      "sha256": "652ee5e826ae606e68839846aaf177f2c76de036efa242f553f551f7bb2b14f5",
+      "sha256": "74346b108c69edd1d43d5c279de5f7b8620a8a7dd033c60e9854e7009fbc8b93",
       "triangles": 148,
       "repeatBuild": true
     },

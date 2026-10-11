@@ -1,6 +1,6 @@
 # Early Roman–Gallic unit recipes
 
-Status: original runtime-generated articulated prototype models. Implemented in [unit-models.ts](../../src/render/unit-models.ts), consumed by [battlefield.ts](../../src/render/battlefield.ts). Recipe version `rome-gaul-combined-4`.
+Status: original runtime-generated articulated prototype models. Implemented in [unit-models.ts](../../src/render/unit-models.ts), consumed by [battlefield.ts](../../src/render/battlefield.ts). Recipe version `rome-gaul-combined-5`.
 
 The [0.2 refinement](../REFINEMENT_02.md) adds a disposable model workshop, detailed near recipes and a simpler crowd tier. [Recipe evidence](../evidence/model-recipes-v2.json) reports both builds, variant hashes and triangle counts.
 

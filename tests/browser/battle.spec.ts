@@ -347,7 +347,7 @@ test('combined arms expose mounted and siege equipment, terrain and recorded rol
   expect(state.hash).toBe(b.hash());
   await page.locator('#open-workshop').click();
   await page.locator('#workshop-turntable').uncheck();
-  for (const type of ['6', '8', '10']) {
+  for (const type of ['6', '7', '8', '9', '10']) {
     await page.locator('#workshop-unit').selectOption(type);
     await expect(page.locator('#workshop-metrics')).toContainText(
       type === '10' ? '6 parts' : '10 parts',
@@ -401,23 +401,21 @@ test('mixed mounted combat and artillery replay match Node after 300 active tick
   for (let i = 0; i < 300; i++) b.step();
   await page.goto('./');
   await expect(page.locator('#loading')).toBeHidden();
-  await page
-    .locator('#replay-file')
-    .setInputFiles({
-      name: 'combined-v5.json',
-      mimeType: 'application/json',
-      buffer: Buffer.from(
-        JSON.stringify({
-          format: 'banner-band-replay',
-          version: SIM_VERSION,
-          content: CONTENT_HASH,
-          config,
-          tick: b.tick,
-          expectedHash: b.hash(),
-          orders: b.orders,
-        }),
-      ),
-    });
+  await page.locator('#replay-file').setInputFiles({
+    name: 'combined-v5.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(
+      JSON.stringify({
+        format: 'banner-band-replay',
+        version: SIM_VERSION,
+        content: CONTENT_HASH,
+        config,
+        tick: b.tick,
+        expectedHash: b.hash(),
+        orders: b.orders,
+      }),
+    ),
+  });
   await expect(page.locator('#battle-status')).toHaveText('REPLAY VERIFIED', { timeout: 60000 });
   expect(await page.evaluate(() => (window as unknown as LabWindow).battleLab.summary!.hash)).toBe(
     b.hash(),
