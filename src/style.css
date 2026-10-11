@@ -1945,3 +1945,75 @@ select {
     padding: 9px 5px;
   }
 }
+.formation-overlays {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+}
+.formation-banner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: auto;
+  padding: 5px 9px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  border: 1px solid #dd9e83;
+  background: #352721e8;
+  color: #ffe6cf;
+  border-radius: 3px;
+  box-shadow: 0 3px 8px #0005;
+  white-space: nowrap;
+}
+.formation-banner.gaul {
+  color: #bee6d4;
+}
+.formation-banner.gaul.selected {
+  border-color: #fff0b5;
+}
+.formation-banner.gaul,
+.formation-banner.gaul:hover {
+  background: #18392be8;
+}
+.formation-banner.gaul {
+  border-color: #83bea8;
+}
+.formation-banner.selected {
+  outline: 2px solid #e5cd90;
+  outline-offset: 2px;
+}
+.formation-banner[hidden] {
+  display: none;
+}
+#command-files {
+  width: 52px;
+  padding: 6px;
+  font-size: 11px;
+}
+#command-facing {
+  width: 64px;
+}
+#try-tactics {
+  margin-top: 8px;
+  padding: 8px 0;
+  color: var(--gold);
+  text-align: left;
+  font-size: 11px;
+}
+.formation-row {
+  grid-template-columns: 14px minmax(0, 1fr) 36px 25px 17px 20px;
+}
+.formation-row input[type='checkbox'] {
+  width: 15px;
+  height: 15px;
+  accent-color: #c9b57b;
+}
+@media (max-width: 600px) {
+  .formation-row {
+    grid-template-columns: 20px minmax(0, 1fr) 48px 32px 20px 26px;
+    gap: 6px;
+  }
+}

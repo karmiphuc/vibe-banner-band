@@ -2,13 +2,13 @@
 
 A browser-first, isometric historical sandbox in development: command formations and fight as a character in battles targeting **100–1,000 simultaneously active soldiers per side**. Travel, recruit, trade, and develop a company in a persistent campaign. Deploy the client as static files on GitHub Pages.
 
-**Status: Roman–Gallic combat proof of concept 0.3, 2026-10-11.** Choose an encounter, command up to five formations per army, test directional defense and shield destruction, inspect equipped units in the model workshop, and verify replays with recorded orders. Campaign, production character assets, and full device qualification remain planned.
+**Status: Roman–Gallic combat proof of concept 0.4, 2026-10-11.** Choose an encounter, command up to five formations per army, test directional defense and shield destruction, inspect equipped units in the model workshop, and verify replays with recorded orders. Campaign, production character assets, and full device qualification remain planned.
 
 [Play the battle laboratory](https://karmiphuc.github.io/vibe-banner-band/) · [Controls, capabilities and limits](docs/CUSTOM_BATTLE.md) · [Double-check findings](docs/REVIEW.md)
 
 The live experimental preview is deployed from `gh-pages`; source changes remain in the feature PR. Local play works with the commands below.
 
-See [what changed in 0.3 and what to try](docs/REFINEMENT_03.md).
+See [ranked movement, reserves and flanking in 0.4](docs/REFINEMENT_04.md).
 
 ## Start here
 

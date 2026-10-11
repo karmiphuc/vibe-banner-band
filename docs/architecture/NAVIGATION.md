@@ -1,6 +1,6 @@
 # Navigation, formations and crowds
 
-Status: planned. The difficult target is mixed-arms combat at density and chokepoints, not merely moving 2,000 dots on open ground.
+Status: formation anchors, ranked slots, eight-way facing, frontage, rank refill and two-leg flank approaches exist in [PoC 0.4](../REFINEMENT_04.md). The hierarchy and general pathfinding below remain planned. The difficult target is mixed-arms combat at density and chokepoints, not merely moving 2,000 dots on open ground.
 
 ## Hierarchy
 

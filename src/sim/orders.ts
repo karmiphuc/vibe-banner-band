@@ -1,11 +1,13 @@
 import { SCALE, type Team } from '../content/catalog';
 export type Group = 'all' | number;
 export type Formation = 'line' | 'shieldwall' | 'loose';
-export type Movement = 'advance' | 'charge' | 'hold' | 'fallback';
+export type Movement = 'advance' | 'charge' | 'hold' | 'fallback' | 'flank-left' | 'flank-right';
 export type Order = { team: Team; group: Group } & (
   | { kind: Movement; x?: number; z?: number }
   | { kind: 'formation'; formation: Formation }
   | { kind: 'fire'; enabled: boolean }
+  | { kind: 'face'; heading: number }
+  | { kind: 'frontage'; files: number }
 );
 export interface RecordedOrder {
   tick: number;
@@ -19,6 +21,10 @@ export interface FormationState {
   movement: Movement;
   formation: Formation;
   fireAtWill: boolean;
+  heading: number;
+  files: number;
+  strength: number;
+  route: { x: number; z: number }[];
   x: number;
   z: number;
 }
@@ -33,6 +39,18 @@ export function validateOrder(input: unknown): Order {
   )
     throw Error('Unknown formation group.');
   const base = { team: d.team as Team, group: d.group as Group };
+  if (d.kind === 'face' || d.kind === 'frontage') {
+    const value = d.kind === 'face' ? d.heading : d.files;
+    if (
+      !Number.isInteger(value) ||
+      Number(value) < (d.kind === 'face' ? 0 : 2) ||
+      Number(value) > (d.kind === 'face' ? 7 : 64)
+    )
+      throw Error('Invalid facing or frontage.');
+    return d.kind === 'face'
+      ? { ...base, kind: 'face', heading: Number(value) }
+      : { ...base, kind: 'frontage', files: Number(value) };
+  }
   if (d.kind === 'fire') {
     if (typeof d.enabled !== 'boolean') throw Error('Invalid fire order.');
     return { ...base, kind: 'fire', enabled: d.enabled };
@@ -42,7 +60,11 @@ export function validateOrder(input: unknown): Order {
       throw Error('Unknown formation.');
     return { ...base, kind: 'formation', formation: d.formation as Formation };
   }
-  if (!['advance', 'charge', 'hold', 'fallback'].includes(d.kind as string))
+  if (
+    !['advance', 'charge', 'hold', 'fallback', 'flank-left', 'flank-right'].includes(
+      d.kind as string,
+    )
+  )
     throw Error('Unknown movement order.');
   const kind = d.kind as Movement;
   if (d.x !== undefined || d.z !== undefined) {

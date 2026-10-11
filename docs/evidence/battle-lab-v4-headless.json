@@ -1,0 +1,455 @@
+{
+  "version": "battle-lab-4",
+  "runtime": "v24.19.0",
+  "platform": "linux",
+  "arch": "x64",
+  "cpu": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+  "seed": 7541,
+  "terrain": "meadow",
+  "results": [
+    {
+      "perSide": 100,
+      "formationsPerArmy": 2,
+      "config": {
+        "seed": 7541,
+        "terrain": "meadow",
+        "romans": {
+          "formations": [
+            {
+              "reserve": false,
+              "id": 0,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            }
+          ],
+          "count": 100,
+          "skirmishers": 20,
+          "doctrine": "shieldwall"
+        },
+        "gauls": {
+          "formations": [
+            {
+              "reserve": false,
+              "id": 0,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            }
+          ],
+          "count": 100,
+          "skirmishers": 15,
+          "doctrine": "charge"
+        }
+      },
+      "ticks": 600,
+      "p50ms": 0.788,
+      "p95ms": 2.372,
+      "p99ms": 3.243,
+      "hash": "91219c72",
+      "standing": [
+        60,
+        53
+      ],
+      "note": "Headless simulation only, one run, 30-tick warm-up. Not a browser/rendering or real-device qualification."
+    },
+    {
+      "perSide": 500,
+      "formationsPerArmy": 2,
+      "config": {
+        "seed": 7541,
+        "terrain": "meadow",
+        "romans": {
+          "formations": [
+            {
+              "reserve": false,
+              "id": 0,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            }
+          ],
+          "count": 500,
+          "skirmishers": 20,
+          "doctrine": "shieldwall"
+        },
+        "gauls": {
+          "formations": [
+            {
+              "reserve": false,
+              "id": 0,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            }
+          ],
+          "count": 500,
+          "skirmishers": 15,
+          "doctrine": "charge"
+        }
+      },
+      "ticks": 600,
+      "p50ms": 4.133,
+      "p95ms": 5.83,
+      "p99ms": 6.897,
+      "hash": "e385955e",
+      "standing": [
+        417,
+        325
+      ],
+      "note": "Headless simulation only, one run, 30-tick warm-up. Not a browser/rendering or real-device qualification."
+    },
+    {
+      "perSide": 1000,
+      "formationsPerArmy": 2,
+      "config": {
+        "seed": 7541,
+        "terrain": "meadow",
+        "romans": {
+          "formations": [
+            {
+              "reserve": false,
+              "id": 0,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            }
+          ],
+          "count": 1000,
+          "skirmishers": 20,
+          "doctrine": "shieldwall"
+        },
+        "gauls": {
+          "formations": [
+            {
+              "reserve": false,
+              "id": 0,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            }
+          ],
+          "count": 1000,
+          "skirmishers": 15,
+          "doctrine": "charge"
+        }
+      },
+      "ticks": 600,
+      "p50ms": 10.72,
+      "p95ms": 15.908,
+      "p99ms": 21.871,
+      "hash": "e84ee5ca",
+      "standing": [
+        872,
+        780
+      ],
+      "note": "Headless simulation only, one run, 30-tick warm-up. Not a browser/rendering or real-device qualification."
+    },
+    {
+      "perSide": 100,
+      "formationsPerArmy": 5,
+      "config": {
+        "seed": 7541,
+        "terrain": "meadow",
+        "romans": {
+          "formations": [
+            {
+              "reserve": false,
+              "id": 0,
+              "role": "infantry",
+              "weight": 2
+            },
+            {
+              "reserve": false,
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 2,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 3,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 4,
+              "role": "infantry",
+              "weight": 1
+            }
+          ],
+          "count": 100,
+          "skirmishers": 20,
+          "doctrine": "shieldwall"
+        },
+        "gauls": {
+          "formations": [
+            {
+              "reserve": false,
+              "id": 0,
+              "role": "infantry",
+              "weight": 2
+            },
+            {
+              "reserve": false,
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 2,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 3,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 4,
+              "role": "infantry",
+              "weight": 1
+            }
+          ],
+          "count": 100,
+          "skirmishers": 15,
+          "doctrine": "charge"
+        }
+      },
+      "ticks": 600,
+      "p50ms": 0.533,
+      "p95ms": 0.964,
+      "p99ms": 1.465,
+      "hash": "ee7fab0f",
+      "standing": [
+        61,
+        56
+      ],
+      "note": "Headless simulation only, one run, 30-tick warm-up. Not a browser/rendering or real-device qualification."
+    },
+    {
+      "perSide": 500,
+      "formationsPerArmy": 5,
+      "config": {
+        "seed": 7541,
+        "terrain": "meadow",
+        "romans": {
+          "formations": [
+            {
+              "reserve": false,
+              "id": 0,
+              "role": "infantry",
+              "weight": 2
+            },
+            {
+              "reserve": false,
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 2,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 3,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 4,
+              "role": "infantry",
+              "weight": 1
+            }
+          ],
+          "count": 500,
+          "skirmishers": 20,
+          "doctrine": "shieldwall"
+        },
+        "gauls": {
+          "formations": [
+            {
+              "reserve": false,
+              "id": 0,
+              "role": "infantry",
+              "weight": 2
+            },
+            {
+              "reserve": false,
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 2,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 3,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 4,
+              "role": "infantry",
+              "weight": 1
+            }
+          ],
+          "count": 500,
+          "skirmishers": 15,
+          "doctrine": "charge"
+        }
+      },
+      "ticks": 600,
+      "p50ms": 4.132,
+      "p95ms": 5.519,
+      "p99ms": 6.475,
+      "hash": "9218a711",
+      "standing": [
+        396,
+        341
+      ],
+      "note": "Headless simulation only, one run, 30-tick warm-up. Not a browser/rendering or real-device qualification."
+    },
+    {
+      "perSide": 1000,
+      "formationsPerArmy": 5,
+      "config": {
+        "seed": 7541,
+        "terrain": "meadow",
+        "romans": {
+          "formations": [
+            {
+              "reserve": false,
+              "id": 0,
+              "role": "infantry",
+              "weight": 2
+            },
+            {
+              "reserve": false,
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 2,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 3,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 4,
+              "role": "infantry",
+              "weight": 1
+            }
+          ],
+          "count": 1000,
+          "skirmishers": 20,
+          "doctrine": "shieldwall"
+        },
+        "gauls": {
+          "formations": [
+            {
+              "reserve": false,
+              "id": 0,
+              "role": "infantry",
+              "weight": 2
+            },
+            {
+              "reserve": false,
+              "id": 1,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 2,
+              "role": "infantry",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 3,
+              "role": "ranged",
+              "weight": 1
+            },
+            {
+              "reserve": false,
+              "id": 4,
+              "role": "infantry",
+              "weight": 1
+            }
+          ],
+          "count": 1000,
+          "skirmishers": 15,
+          "doctrine": "charge"
+        }
+      },
+      "ticks": 600,
+      "p50ms": 9.735,
+      "p95ms": 12.329,
+      "p99ms": 14.484,
+      "hash": "df138423",
+      "standing": [
+        855,
+        748
+      ],
+      "note": "Headless simulation only, one run, 30-tick warm-up. Not a browser/rendering or real-device qualification."
+    }
+  ]
+}

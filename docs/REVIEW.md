@@ -34,3 +34,7 @@ See [0.2 refinement](REFINEMENT_02.md). Added a regression fixture for rear-rank
 ## Tactical combat review
 
 [PoC 0.3](REFINEMENT_03.md) introduces command/replay semantics and directional defense. Regression fixtures protect endpoint orders, atomic validation, formation footprints, fire discipline without charge resets, stagger and permanent shield loss. Tests also cover the broken-shield visual variants. Browser tests issue paused/live orders, export them, and verify their exact replay result.
+
+## Formation behavior review
+
+[PoC 0.4](REFINEMENT_04.md) replaces per-soldier advance pursuit with shared anchors. A new opposing-line fixture caught and fixed an approach deadlock outside weapon range. Other fixtures verify reserve route completion, rotated fallback, rank refill, short-weapon body obstruction and deep-copied route state. A seeded three-way reserve comparison records behavior without claiming guaranteed tactical advantage.

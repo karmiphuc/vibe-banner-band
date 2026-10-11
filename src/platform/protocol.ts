@@ -3,7 +3,7 @@ import type { BattleSummary } from '../sim/battle';
 import type { Order } from '../sim/orders';
 import type { Replay } from '../sim/replay';
 
-export const PROTOCOL_VERSION = 3;
+export const PROTOCOL_VERSION = 4;
 export type ToWorker =
   | { kind: 'init'; session: number; protocol: number; config: BattleConfig }
   | { kind: 'play' | 'pause' | 'step' | 'export'; session: number }

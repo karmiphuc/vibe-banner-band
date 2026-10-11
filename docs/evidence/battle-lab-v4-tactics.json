@@ -1,0 +1,443 @@
+{
+  "version": "battle-lab-4",
+  "config": {
+    "seed": 19241,
+    "terrain": "meadow",
+    "romans": {
+      "count": 180,
+      "skirmishers": 20,
+      "doctrine": "shieldwall",
+      "formations": [
+        {
+          "id": 0,
+          "role": "infantry",
+          "weight": 3
+        },
+        {
+          "id": 1,
+          "role": "ranged",
+          "weight": 1
+        },
+        {
+          "id": 2,
+          "role": "infantry",
+          "weight": 1,
+          "reserve": true
+        }
+      ]
+    },
+    "gauls": {
+      "count": 220,
+      "skirmishers": 15,
+      "doctrine": "charge",
+      "formations": [
+        {
+          "id": 0,
+          "role": "infantry",
+          "weight": 3
+        },
+        {
+          "id": 1,
+          "role": "ranged",
+          "weight": 1
+        },
+        {
+          "id": 2,
+          "role": "infantry",
+          "weight": 1
+        }
+      ]
+    }
+  },
+  "description": "One seeded behavioral comparison, not balance proof or a performance measurement. Identical initial armies; only reserve orders differ.",
+  "results": [
+    {
+      "tactic": "reserve",
+      "orders": [
+        {
+          "tick": 0,
+          "sequence": 1,
+          "order": {
+            "team": 0,
+            "group": 0,
+            "kind": "hold"
+          }
+        }
+      ],
+      "committedAt": null,
+      "tick": 1171,
+      "winner": 1,
+      "armies": [
+        {
+          "standing": 0,
+          "fallen": 143,
+          "routing": 37,
+          "escaped": 0,
+          "morale": 0,
+          "commanderAlive": false,
+          "damage": 13272
+        },
+        {
+          "standing": 80,
+          "fallen": 108,
+          "routing": 32,
+          "escaped": 0,
+          "morale": 70,
+          "commanderAlive": true,
+          "damage": 13990
+        }
+      ],
+      "hash": "bb90d8ed",
+      "samples": [
+        {
+          "tick": 300,
+          "armies": [
+            {
+              "standing": 180,
+              "fallen": 0,
+              "routing": 0,
+              "escaped": 0,
+              "morale": 92,
+              "commanderAlive": true,
+              "damage": 1257
+            },
+            {
+              "standing": 217,
+              "fallen": 3,
+              "routing": 0,
+              "escaped": 0,
+              "morale": 87,
+              "commanderAlive": true,
+              "damage": 452
+            }
+          ],
+          "reserveMovement": "hold",
+          "remainingWaypoints": 0
+        },
+        {
+          "tick": 600,
+          "armies": [
+            {
+              "standing": 129,
+              "fallen": 51,
+              "routing": 0,
+              "escaped": 0,
+              "morale": 89,
+              "commanderAlive": true,
+              "damage": 8720
+            },
+            {
+              "standing": 150,
+              "fallen": 70,
+              "routing": 0,
+              "escaped": 0,
+              "morale": 86,
+              "commanderAlive": true,
+              "damage": 6408
+            }
+          ],
+          "reserveMovement": "hold",
+          "remainingWaypoints": 0
+        },
+        {
+          "tick": 900,
+          "armies": [
+            {
+              "standing": 66,
+              "fallen": 114,
+              "routing": 0,
+              "escaped": 0,
+              "morale": 80,
+              "commanderAlive": true,
+              "damage": 12670
+            },
+            {
+              "standing": 111,
+              "fallen": 104,
+              "routing": 5,
+              "escaped": 0,
+              "morale": 71,
+              "commanderAlive": true,
+              "damage": 11818
+            }
+          ],
+          "reserveMovement": "hold",
+          "remainingWaypoints": 0
+        }
+      ]
+    },
+    {
+      "tactic": "charge",
+      "orders": [
+        {
+          "tick": 0,
+          "sequence": 1,
+          "order": {
+            "team": 0,
+            "group": 0,
+            "kind": "hold"
+          }
+        },
+        {
+          "tick": 0,
+          "sequence": 2,
+          "order": {
+            "team": 0,
+            "group": 2,
+            "kind": "charge"
+          }
+        }
+      ],
+      "committedAt": 1,
+      "tick": 1317,
+      "winner": 1,
+      "armies": [
+        {
+          "standing": 0,
+          "fallen": 174,
+          "routing": 3,
+          "escaped": 3,
+          "morale": 0,
+          "commanderAlive": false,
+          "damage": 15205
+        },
+        {
+          "standing": 53,
+          "fallen": 128,
+          "routing": 39,
+          "escaped": 0,
+          "morale": 58,
+          "commanderAlive": true,
+          "damage": 16759
+        }
+      ],
+      "hash": "840f500d",
+      "samples": [
+        {
+          "tick": 300,
+          "armies": [
+            {
+              "standing": 178,
+              "fallen": 2,
+              "routing": 0,
+              "escaped": 0,
+              "morale": 94,
+              "commanderAlive": true,
+              "damage": 1399
+            },
+            {
+              "standing": 217,
+              "fallen": 3,
+              "routing": 0,
+              "escaped": 0,
+              "morale": 87,
+              "commanderAlive": true,
+              "damage": 334
+            }
+          ],
+          "reserveMovement": "charge",
+          "remainingWaypoints": 0
+        },
+        {
+          "tick": 600,
+          "armies": [
+            {
+              "standing": 135,
+              "fallen": 45,
+              "routing": 0,
+              "escaped": 0,
+              "morale": 89,
+              "commanderAlive": true,
+              "damage": 8391
+            },
+            {
+              "standing": 154,
+              "fallen": 66,
+              "routing": 0,
+              "escaped": 0,
+              "morale": 88,
+              "commanderAlive": true,
+              "damage": 6488
+            }
+          ],
+          "reserveMovement": "charge",
+          "remainingWaypoints": 0
+        },
+        {
+          "tick": 900,
+          "armies": [
+            {
+              "standing": 66,
+              "fallen": 112,
+              "routing": 2,
+              "escaped": 0,
+              "morale": 80,
+              "commanderAlive": true,
+              "damage": 12677
+            },
+            {
+              "standing": 110,
+              "fallen": 105,
+              "routing": 5,
+              "escaped": 0,
+              "morale": 75,
+              "commanderAlive": true,
+              "damage": 11818
+            }
+          ],
+          "reserveMovement": "charge",
+          "remainingWaypoints": 0
+        },
+        {
+          "tick": 1200,
+          "armies": [
+            {
+              "standing": 12,
+              "fallen": 162,
+              "routing": 6,
+              "escaped": 0,
+              "morale": 51,
+              "commanderAlive": true,
+              "damage": 14998
+            },
+            {
+              "standing": 59,
+              "fallen": 127,
+              "routing": 34,
+              "escaped": 0,
+              "morale": 69,
+              "commanderAlive": true,
+              "damage": 15916
+            }
+          ],
+          "reserveMovement": "charge",
+          "remainingWaypoints": 0
+        }
+      ]
+    },
+    {
+      "tactic": "flank-left",
+      "orders": [
+        {
+          "tick": 0,
+          "sequence": 1,
+          "order": {
+            "team": 0,
+            "group": 0,
+            "kind": "hold"
+          }
+        },
+        {
+          "tick": 0,
+          "sequence": 2,
+          "order": {
+            "team": 0,
+            "group": 2,
+            "kind": "flank-left"
+          }
+        }
+      ],
+      "committedAt": 303,
+      "tick": 1171,
+      "winner": 1,
+      "armies": [
+        {
+          "standing": 0,
+          "fallen": 133,
+          "routing": 47,
+          "escaped": 0,
+          "morale": 0,
+          "commanderAlive": false,
+          "damage": 15446
+        },
+        {
+          "standing": 59,
+          "fallen": 128,
+          "routing": 33,
+          "escaped": 0,
+          "morale": 58,
+          "commanderAlive": true,
+          "damage": 14450
+        }
+      ],
+      "hash": "c4c71c22",
+      "samples": [
+        {
+          "tick": 300,
+          "armies": [
+            {
+              "standing": 180,
+              "fallen": 0,
+              "routing": 0,
+              "escaped": 0,
+              "morale": 92,
+              "commanderAlive": true,
+              "damage": 1396
+            },
+            {
+              "standing": 216,
+              "fallen": 4,
+              "routing": 0,
+              "escaped": 0,
+              "morale": 87,
+              "commanderAlive": true,
+              "damage": 397
+            }
+          ],
+          "reserveMovement": "flank-left",
+          "remainingWaypoints": 0
+        },
+        {
+          "tick": 600,
+          "armies": [
+            {
+              "standing": 138,
+              "fallen": 42,
+              "routing": 0,
+              "escaped": 0,
+              "morale": 91,
+              "commanderAlive": true,
+              "damage": 9067
+            },
+            {
+              "standing": 151,
+              "fallen": 69,
+              "routing": 0,
+              "escaped": 0,
+              "morale": 85,
+              "commanderAlive": true,
+              "damage": 5806
+            }
+          ],
+          "reserveMovement": "charge",
+          "remainingWaypoints": 0
+        },
+        {
+          "tick": 900,
+          "armies": [
+            {
+              "standing": 78,
+              "fallen": 102,
+              "routing": 0,
+              "escaped": 0,
+              "morale": 55,
+              "commanderAlive": false,
+              "damage": 13888
+            },
+            {
+              "standing": 100,
+              "fallen": 118,
+              "routing": 2,
+              "escaped": 0,
+              "morale": 67,
+              "commanderAlive": true,
+              "damage": 11231
+            }
+          ],
+          "reserveMovement": "charge",
+          "remainingWaypoints": 0
+        }
+      ]
+    }
+  ]
+}

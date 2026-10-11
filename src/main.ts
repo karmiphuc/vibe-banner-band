@@ -56,11 +56,11 @@ const armyForm = (
 </section>`;
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-<header class="topbar"><a class="brand" href="./" aria-label="Banner Band home"><span class="brand-symbol">${icon('flag')}</span><span>BANNER<span class="brand-slash">/</span>BAND</span></a><div class="page-title">CUSTOM BATTLE <span class="title-divider">/</span> <span>THE GALLIC FRONTIER</span></div><a class="build-tag" href="https://github.com/karmiphuc/vibe-banner-band" target="_blank" rel="noopener" title="Source code and project documentation"><i></i> PROOF OF CONCEPT <b>0.3 ↗</b></a></header>
+<header class="topbar"><a class="brand" href="./" aria-label="Banner Band home"><span class="brand-symbol">${icon('flag')}</span><span>BANNER<span class="brand-slash">/</span>BAND</span></a><div class="page-title">CUSTOM BATTLE <span class="title-divider">/</span> <span>THE GALLIC FRONTIER</span></div><a class="build-tag" href="https://github.com/karmiphuc/vibe-banner-band" target="_blank" rel="noopener" title="Source code and project documentation"><i></i> PROOF OF CONCEPT <b>0.4 ↗</b></a></header>
 <main class="workspace">
   <aside class="setup-panel"><div class="panel-intro"><span class="eyebrow">01 / BATTLE SETUP</span><h1>Set the field.</h1><p>Build two armies. Watch their commanders lead.</p></div>
   <form id="battle-form"><fieldset id="setup-fields"><legend class="sr-only">Battle configuration</legend>
-    <section class="scenario-picker"><label for="scenario">CHOOSE AN ENCOUNTER</label><select id="scenario">${SCENARIOS.map((s) => `<option value="${s.id}">${s.name}</option>`).join('')}<option value="custom">Custom battle</option></select><p id="scenario-detail">${SCENARIOS[0].description}</p></section>
+    <section class="scenario-picker"><label for="scenario">CHOOSE AN ENCOUNTER</label><select id="scenario">${SCENARIOS.map((s) => `<option value="${s.id}">${s.name}</option>`).join('')}<option value="custom">Custom battle</option></select><p id="scenario-detail">${SCENARIOS.find((s) => s.id === 'frontier')!.description}</p><button type="button" id="try-tactics">Try the reserve &amp; flank battle →</button></section>
     ${armyForm('romans', 'Roman Republic', 'Discipline. Armor. Resolve.', 'roman')}
     ${armyForm('gauls', 'Gallic warband', 'Momentum. Reach. Ferocity.', 'gaul')}
     <section class="world-settings"><div class="field"><label for="terrain">Battlefield</label><select id="terrain"><option value="meadow">Open meadow</option><option value="crossroads">Old crossroads</option><option value="rocky-pass">Rocky passage</option></select></div><div class="field seed-field"><label for="seed">World seed</label><input id="seed" type="number" min="0" max="4294967295" step="1" value="7541" /><button type="button" id="new-seed" aria-label="Use next seed" title="Use next seed">↻</button></div></section>
@@ -126,6 +126,7 @@ const commands = new CommandPanel(
   $('command-panel'),
   (order) => send({ kind: 'order', session, order }),
   (active) => renderer?.setPlacement(active),
+  (team, group) => renderer?.setCommandSelection(team, group),
 );
 function toast(text: string): void {
   $('toast').textContent = text;
@@ -143,7 +144,8 @@ function readConfig(): BattleConfig {
     ).map((row) => ({
       id: Number(row.dataset.formationId),
       role: row.querySelector<HTMLSelectElement>('select')!.value as FormationRole,
-      weight: Number(row.querySelector<HTMLInputElement>('input')!.value),
+      reserve: row.querySelector<HTMLInputElement>('input[type="checkbox"]')!.checked,
+      weight: Number(row.querySelector<HTMLInputElement>('input[type="number"]')!.value),
     })),
   });
   return validateConfig({
@@ -160,7 +162,7 @@ function writeConfig(): void {
     $<HTMLSelectElement>(`${team}-doctrine`).value = config[team].doctrine;
     const roster = formationRoster(config[team]);
     $(`${team}-formations`).innerHTML =
-      `<div class="formation-builder-heading">Formations <small>${roster.length}/5</small></div>${roster.map((f) => `<div class="formation-row" data-formation-id="${f.id}"><b>${f.id + 1}</b><select aria-label="${team} formation ${f.id + 1} role"><option value="infantry" ${f.role === 'infantry' ? 'selected' : ''}>Infantry</option><option value="ranged" ${f.role === 'ranged' ? 'selected' : ''}>Javelineers</option></select><input aria-label="${team} formation ${f.id + 1} share" title="Relative share within this troop role" type="number" min="1" max="100" value="${f.weight}" /><output title="Assigned soldiers, including commander">${f.count}</output><button type="button" data-remove-formation="${f.id}" data-team="${team}" aria-label="Remove ${team} formation ${f.id + 1}">×</button></div>`).join('')}<button type="button" data-add-formation="${team}" ${roster.length === 5 ? 'disabled' : ''}>+ Add formation</button><small>Share divides troops of the same role. Right number: soldiers. Leader joins the first infantry formation.</small>`;
+      `<div class="formation-builder-heading">Formations <small>${roster.length}/5</small></div>${roster.map((f) => `<div class="formation-row" data-formation-id="${f.id}"><b>${f.id + 1}</b><select aria-label="${team} formation ${f.id + 1} role"><option value="infantry" ${f.role === 'infantry' ? 'selected' : ''}>Infantry</option><option value="ranged" ${f.role === 'ranged' ? 'selected' : ''}>Javelineers</option></select><input aria-label="${team} formation ${f.id + 1} share" title="Relative share within this troop role" type="number" min="1" max="100" value="${f.weight}" /><output title="Assigned soldiers, including commander">${f.count}</output><input type="checkbox" title="Deploy behind the line and hold as a reserve" aria-label="${team} formation ${f.id + 1} reserve" ${f.reserve ? 'checked' : ''} /><button type="button" data-remove-formation="${f.id}" data-team="${team}" aria-label="Remove ${team} formation ${f.id + 1}">×</button></div>`).join('')}<button type="button" data-add-formation="${team}" ${roster.length === 5 ? 'disabled' : ''}>+ Add formation</button><small>Share divides troops of the same role. Right number: soldiers. Check the box to hold as a rear reserve.</small>`;
   }
   $<HTMLInputElement>('seed').value = String(config.seed);
   $<HTMLSelectElement>('terrain').value = config.terrain;
@@ -398,9 +400,11 @@ worker.onmessage = (event: MessageEvent<FromWorker>) => {
       data.buffer,
     ]);
     $('loading').hidden = true;
+    renderer?.setFormations(data.summary.formations);
     updateSummary(data.summary);
   } else if (data.kind === 'status') {
     running = data.running;
+    renderer?.setFormations(data.summary.formations);
     updateSummary(data.summary);
   } else if (data.kind === 'export') downloadReplay(data.replay);
   else if (data.kind === 'progress') {
@@ -436,6 +440,7 @@ worker.onerror = () => {
 try {
   renderer = new Battlefield($('viewport'));
   renderer.onSelect = selectUnit;
+  renderer.onFormation = (team, id) => commands.selectFormation(team, id);
   renderer.onPlace = (x, z) => commands.place(x, z);
   renderer.onContext = (lost) => {
     if (lost) {
@@ -470,6 +475,9 @@ $('battle-form').addEventListener('click', (event) => {
     toast((error as Error).message);
   }
 });
+$('try-tactics').addEventListener('click', () =>
+  deploy(SCENARIOS.find((s) => s.id === 'hammer')!.config),
+);
 $('battle-form').addEventListener('submit', (e) => e.preventDefault());
 $('battle-form').addEventListener('change', (event) => {
   try {
@@ -632,7 +640,7 @@ document.addEventListener('visibilitychange', () => {
 });
 setInterval(() => {
   if (renderer) {
-    $('fps').textContent = `${renderer.fps} fps`;
+    $('fps').textContent = running ? `${renderer.fps} fps` : 'Paused';
     $('diag-draws').textContent = String(renderer.renderer.info.render.calls);
   }
 }, 1000);
@@ -660,6 +668,9 @@ Object.defineProperty(window, 'battleLab', {
     },
     get content() {
       return CONTENT_HASH;
+    },
+    get renderFrames() {
+      return renderer?.renderer.info.render.frame ?? 0;
     },
     get running() {
       return running;

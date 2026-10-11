@@ -1,3 +1,7 @@
+import { FormationOverlay } from './formation-overlay';
+import type { BattleSummary } from '../sim/battle';
+import type { Group } from '../sim/orders';
+import type { Team } from '../content/catalog';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { SCALE, UNITS, obstaclesFor, type BattleConfig } from '../content/catalog';
@@ -15,6 +19,8 @@ export class Battlefield {
   readonly camera: THREE.OrthographicCamera;
   readonly controls: OrbitControls;
   private kits: Kit[] = [];
+  private formationOverlay: FormationOverlay;
+  onFormation: (team: Team, id: number) => void = () => {};
   private terrain = new THREE.Group();
   private material = new THREE.MeshStandardMaterial({
     vertexColors: true,
@@ -89,6 +95,9 @@ export class Battlefield {
       'Isometric battlefield. Drag to pan, scroll to zoom, click a soldier to inspect.',
     );
     this.container.appendChild(this.renderer.domElement);
+    this.formationOverlay = new FormationOverlay(this.scene, container, (team, id) =>
+      this.onFormation(team, id),
+    );
     this.camera = new THREE.OrthographicCamera(-40, 40, 30, -30, 0.1, 400);
     this.camera.position.set(-45, 60, 62);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -207,6 +216,7 @@ export class Battlefield {
       if (p) {
         this.destination.visible = true;
         this.destination.position.set(p.x, 0.07, p.z);
+        this.dirty = true;
       }
     });
     this.aura = new THREE.Mesh(
@@ -240,6 +250,7 @@ export class Battlefield {
     this.animate(0);
   }
   private resize(): void {
+    this.dirty = true;
     const w = this.container.clientWidth,
       h = this.container.clientHeight;
     this.renderer.setSize(w, h);
@@ -374,6 +385,7 @@ export class Battlefield {
     this.overview();
   }
   snapshot(data: Int32Array, running: boolean): void {
+    const firstSnapshot = !this.current.length;
     const now = performance.now();
     this.interval = Math.max(16, Math.min(150, now - this.receivedAt));
     this.receivedAt = now;
@@ -387,6 +399,7 @@ export class Battlefield {
     }
     this.running = running;
     this.dirty = true;
+    if (firstSnapshot) this.overview();
     this.assignKits();
   }
   private assignKits(): void {
@@ -427,6 +440,14 @@ export class Battlefield {
     this.camera.position.copy(this.controls.target).add(offset);
     this.controls.update();
   }
+  setFormations(forms: BattleSummary['formations']): void {
+    this.formationOverlay.setFormations(forms);
+    this.dirty = true;
+  }
+  setCommandSelection(team: Team, group: Group): void {
+    this.formationOverlay.selection(team, group);
+    this.dirty = true;
+  }
   setRunning(running: boolean): void {
     this.running = running;
     this.dirty = true;
@@ -444,6 +465,47 @@ export class Battlefield {
     this.camera.zoom = this.count > 900 ? 0.78 : this.count > 400 ? 1.0 : 1.65;
     this.camera.updateProjectionMatrix();
     this.controls.update();
+    if (this.current.length) {
+      let minX = Infinity,
+        maxX = -Infinity,
+        minZ = Infinity,
+        maxZ = -Infinity;
+      for (let i = 0; i < this.count; i++) {
+        const b = 3 + i * UNIT_STRIDE;
+        if (this.current[b + 4] >= State.Dead) continue;
+        minX = Math.min(minX, this.current[b] / SCALE);
+        maxX = Math.max(maxX, this.current[b] / SCALE);
+        minZ = Math.min(minZ, this.current[b + 1] / SCALE);
+        maxZ = Math.max(maxZ, this.current[b + 1] / SCALE);
+      }
+      if (Number.isFinite(minX)) {
+        const x = (minX + maxX) / 2,
+          z = (minZ + maxZ) / 2;
+        this.controls.target.set(x, 0, z);
+        this.camera.position.set(x - 45, 60, z + 62);
+        this.camera.zoom = 1;
+        this.camera.updateProjectionMatrix();
+        this.controls.update();
+        this.camera.updateMatrixWorld();
+        let extentX = 0.1,
+          extentY = 0.1;
+        const point = new THREE.Vector3();
+        for (let i = 0; i < this.count; i++) {
+          const b = 3 + i * UNIT_STRIDE;
+          if (this.current[b + 4] >= State.Dead) continue;
+          point.set(this.current[b] / SCALE, 2, this.current[b + 1] / SCALE).project(this.camera);
+          extentX = Math.max(extentX, Math.abs(point.x));
+          extentY = Math.max(extentY, Math.abs(point.y));
+        }
+        this.camera.zoom = THREE.MathUtils.clamp(
+          Math.min(0.84 / extentX, 0.66 / extentY),
+          0.55,
+          2.2,
+        );
+        this.camera.updateProjectionMatrix();
+      }
+    }
+    this.dirty = true;
   }
   focus(id: number): void {
     if (id < 0 || !this.current.length) return;
@@ -462,6 +524,7 @@ export class Battlefield {
   }
   setPlacement(active: boolean): void {
     this.placing = active;
+    this.dirty = true;
     this.destination.visible = false;
     this.renderer.domElement.style.cursor = active ? 'crosshair' : '';
   }
@@ -508,12 +571,14 @@ export class Battlefield {
   }
   private animate = (time: number): void => {
     this.frame = requestAnimationFrame(this.animate);
-    this.frames++;
     if (time - this.fpsAt >= 1000) {
       this.fps = Math.round((this.frames * 1000) / (time - this.fpsAt));
       this.frames = 0;
       this.fpsAt = time;
     }
+    this.controls.update();
+    if (!this.running && !this.dirty) return;
+    this.frames++;
     const delta = Math.min(100, time - this.lastFrame);
     this.lastFrame = time;
     void delta;
@@ -742,13 +807,20 @@ export class Battlefield {
       }
       this.projectiles.instanceMatrix.needsUpdate = true;
     }
-    this.controls.update();
+    if (this.follow) this.controls.update();
+    this.formationOverlay.update(
+      this.current,
+      this.camera,
+      this.container.clientWidth,
+      this.container.clientHeight,
+    );
     this.renderer.render(this.scene, this.camera);
   };
   dispose(): void {
     cancelAnimationFrame(this.frame);
     this.observer.disconnect();
     this.controls.dispose();
+    this.formationOverlay.dispose();
     this.clearTerrain();
     for (const kit of this.kits)
       for (const mesh of Object.values(kit.meshes)) {

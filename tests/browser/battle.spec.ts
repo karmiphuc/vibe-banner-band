@@ -4,7 +4,9 @@ import { DEFAULT_CONFIG } from '../../src/content/catalog';
 import type { BattleSummary } from '../../src/sim/battle';
 import { readdirSync } from 'node:fs';
 
-type LabWindow = Window & { battleLab: { summary: BattleSummary | null; running: boolean } };
+type LabWindow = Window & {
+  battleLab: { summary: BattleSummary | null; running: boolean; renderFrames: number };
+};
 test('deploy, inspect, pause, step, export/import and verify the worker against headless state', async ({
   page,
 }) => {
@@ -117,7 +119,7 @@ test('worker keeps stepping when snapshot buffers are exhausted and ignores stal
             resolve({ tick: m.summary.tick, snapshots });
           }
         };
-        worker.postMessage({ kind: 'init', session: 77, protocol: 3, config });
+        worker.postMessage({ kind: 'init', session: 77, protocol: 4, config });
       });
     },
     {
@@ -255,4 +257,48 @@ test('five editable formations command independently and round-trip their deploy
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: 'artifacts/local/five-formations-mobile.png', fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+});
+
+test('reserve encounter exposes selectable formations, facing, frontage and replayed flank routes', async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('./');
+  await expect(page.locator('#loading')).toBeHidden();
+  await page.locator('#try-tactics').click();
+  await expect(page.locator('#roman-standing')).toHaveText('180');
+  await page.waitForTimeout(1000);
+  const idleFrames = await page.evaluate(
+    () => (window as unknown as LabWindow).battleLab.renderFrames,
+  );
+  await page.waitForTimeout(600);
+  expect(await page.evaluate(() => (window as unknown as LabWindow).battleLab.renderFrames)).toBe(
+    idleFrames,
+  );
+  await expect(page.getByLabel('romans formation 3 reserve', { exact: true })).toBeChecked();
+  await page.getByRole('button', { name: 'Select Roman formation 3', exact: true }).click();
+  await expect(page.locator('#command-group')).toHaveValue('2');
+  await page.locator('#command-facing').selectOption('2');
+  await expect(page.locator('#order-ack')).toContainText('Order 1');
+  await page.locator('#command-files').fill('6');
+  await page.locator('#command-files').press('Tab');
+  await expect(page.locator('#order-ack')).toContainText('Order 2');
+  await page.locator('#flank-left').click();
+  await expect(page.locator('#order-ack')).toContainText('Order 3');
+  const state = await page.evaluate(() => (window as unknown as LabWindow).battleLab.summary!);
+  const formation = state.formations.find((f) => f.team === 0 && f.id === 2)!;
+  expect(formation.movement).toBe('flank-left');
+  expect(formation.route).toHaveLength(1);
+  expect(formation.heading).toBe(2);
+  expect(formation.files).toBe(6);
+  await page.screenshot({ path: 'artifacts/local/tactics4-orders.png' });
+  const download = page.waitForEvent('download');
+  await page.locator('#export').click();
+  await page.locator('#replay-file').setInputFiles((await (await download).path())!);
+  await expect(page.locator('#battle-status')).toHaveText('REPLAY VERIFIED');
+  expect(await page.evaluate(() => (window as unknown as LabWindow).battleLab.summary!.hash)).toBe(
+    state.hash,
+  );
+  expect(errors).toEqual([]);
 });

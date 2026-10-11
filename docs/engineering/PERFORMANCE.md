@@ -1,6 +1,8 @@
 # Performance targets and measurement
 
-Current PoC 0.3: [headless evidence](../evidence/battle-lab-v3-headless.json) records p95 1.186/4.847/10.042 ms at 100/500/1,000 per side with two formations per army; five formations measured 0.7/4.205/9.661 ms. Full roster configurations are retained in the evidence. Rules and battle trajectories changed; this is not a controlled regression comparison.
+Current PoC 0.4: [headless evidence](../evidence/battle-lab-v4-headless.json) records p95 2.372/5.83/15.908 ms at 100/500/1,000 per side with two formations per army, and 0.964/5.519/12.329 ms with five. These are single-run CPU diagnostics with full roster/seed/hardware metadata, not browser frame-rate qualification. Paused presentation now renders on changes rather than continuously redrawing an unchanged scene.
+
+Historical PoC 0.3: [headless evidence](../evidence/battle-lab-v3-headless.json) records p95 1.186/4.847/10.042 ms at 100/500/1,000 per side with two formations per army; five formations measured 0.7/4.205/9.661 ms. Full roster configurations are retained in the evidence. Rules and battle trajectories changed; this is not a controlled regression comparison.
 
 Historical PoC 0.2: [new-rule headless evidence](../evidence/battle-lab-v2-headless.json) records p95 1.167/4.717/10.778 ms at 100/500/1,000 per side with two formations per army; five formations measured 0.7/4.205/9.661 ms. Full roster configurations are retained in the evidence. This is a single 600-tick diagnostic with changed rules/workload, not a controlled speedup claim or browser benchmark. Near/crowd recipe geometry counts are in the [asset report](../evidence/model-recipes-v2.json).
 

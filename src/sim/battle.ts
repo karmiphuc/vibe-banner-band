@@ -12,6 +12,7 @@ import {
   type Team,
 } from '../content/catalog';
 import { clamp, distance2, hashText, hashWords, isqrt, normalize, Random } from './math';
+import { HEADINGS, rotatedSlot } from './formation-math';
 import { turnToward, inFront } from './combat-math';
 import {
   MAX_ORDERS,
@@ -31,7 +32,7 @@ export const enum State {
   Escaped,
 }
 export const STATE_NAMES = ['Ready', 'Attacking', 'Recovering', 'Routing', 'Fallen', 'Escaped'];
-export const UNIT_STRIDE = 20;
+export const UNIT_STRIDE = 21;
 export const PROJECTILE_STRIDE = 7;
 export const MAX_PROJECTILES = 2048;
 export const MAX_TICKS = TICK_RATE * 180;
@@ -101,7 +102,7 @@ export interface BattleSummary {
   maxCell: number;
   rallies: [number, number];
   events: BattleEvent[];
-  formations: (FormationState & { standing: number; total: number })[];
+  formations: (FormationState & { standing: number; total: number; cohesion: number })[];
   orders: RecordedOrder[];
 }
 export interface Checkpoint {
@@ -251,7 +252,15 @@ export class Battle {
           team,
           id: entry.id,
           role: entry.role,
-          movement: entry.role === 'infantry' && army.doctrine === 'charge' ? 'charge' : 'advance',
+          movement: entry.reserve
+            ? 'hold'
+            : entry.role === 'infantry' && army.doctrine === 'charge'
+              ? 'charge'
+              : 'advance',
+          heading: team === 0 ? 0 : 4,
+          files: 2,
+          strength: 0,
+          route: [],
           formation:
             entry.role === 'ranged'
               ? 'loose'
@@ -281,7 +290,7 @@ export class Battle {
         }
       }
     }
-    for (let i = 0; i < this.formations.length; i++) this.arrange(i);
+    this.deployFormations();
     this.log('Armies deployed. Commanders will lead autonomously.', -1);
     this.rebuildGrid();
   }
@@ -303,22 +312,88 @@ export class Battle {
       }
     f.x = x ?? (ids.length ? Math.trunc(cx / ids.length) : f.x);
     f.z = z ?? (ids.length ? Math.trunc(cz / ids.length) : f.z);
-    const columns = Math.max(2, isqrt(ids.length * 2)),
-      rows = Math.ceil(ids.length / columns),
-      spacing = f.formation === 'loose' ? 2300 : f.formation === 'shieldwall' ? 1100 : 1450;
-    for (let k = 0; k < ids.length; k++) {
-      const id = ids[k];
-      this.slotX[id] =
-        (f.team === 0 ? -1 : 1) *
-        (Math.floor(k / columns) * spacing - Math.trunc(((rows - 1) * spacing) / 2));
-      this.slotZ[id] = (k % columns) * spacing - Math.trunc(((columns - 1) * spacing) / 2);
-      if (UNITS[this.type[id]].role === 'commander') {
-        this.slotZ[id] = 0;
-        this.slotX[id] =
-          (f.team === 0 ? -1 : 1) * (Math.trunc(((rows - 1) * spacing) / 2) + 2 * spacing);
+    const spacing = f.formation === 'loose' ? 2300 : f.formation === 'shieldwall' ? 1100 : 1450;
+    const regular = ids.filter((id) => UNITS[this.type[id]].role !== 'commander');
+    const maxDimension = Math.floor((80 * SCALE) / spacing);
+    f.files = clamp(
+      f.files,
+      Math.max(2, Math.ceil(regular.length / maxDimension)),
+      Math.min(64, maxDimension),
+    );
+    f.strength = ids.length;
+    const rows = Math.ceil(regular.length / f.files);
+    for (let k = 0; k < regular.length; k++) {
+      const depth = Math.floor(k / f.files) * spacing - Math.trunc(((rows - 1) * spacing) / 2);
+      const lateral =
+        (k % f.files) * spacing -
+        Math.trunc(((Math.min(f.files, regular.length) - 1) * spacing) / 2);
+      [this.slotX[regular[k]], this.slotZ[regular[k]]] = rotatedSlot(depth, lateral, f.heading);
+    }
+    for (const id of ids)
+      if (UNITS[this.type[id]].role === 'commander')
+        [this.slotX[id], this.slotZ[id]] = rotatedSlot(
+          Math.trunc(((rows - 1) * spacing) / 2) + 2 * spacing,
+          0,
+          f.heading,
+        );
+  }
+  private deployFormations(): void {
+    for (const team of [0, 1] as const) {
+      const army = team === 0 ? this.config.romans : this.config.gauls;
+      const roster = formationRoster(army);
+      let front = 13 * SCALE;
+      for (const echelon of [0, 1, 2]) {
+        const entries = roster.filter(
+          (f) => (f.reserve ? 2 : f.role === 'ranged' ? 1 : 0) === echelon,
+        );
+        const total = entries.reduce((s, f) => s + f.count, 0);
+        const width = Math.min(100 * SCALE, Math.max(14 * SCALE, isqrt(army.count) * 3100));
+        const layouts = entries.map((entry) => {
+          const index = this.formations.findIndex((f) => f.team === team && f.id === entry.id),
+            f = this.formations[index];
+          const spacing =
+            f.formation === 'loose' ? 2300 : f.formation === 'shieldwall' ? 1100 : 1450;
+          f.files = Math.max(
+            2,
+            Math.floor(
+              ((width - (entries.length - 1) * 3 * SCALE) * entry.count) /
+                Math.max(1, total) /
+                spacing,
+            ),
+          );
+          if (entry.reserve) f.files = Math.min(f.files, Math.max(2, isqrt(entry.count * 2)));
+          this.arrange(index, 0, 0);
+          let extentX = 0,
+            extentZ = 0;
+          for (let id = 0; id < this.count; id++)
+            if (this.formationId[id] === index) {
+              extentX = Math.max(extentX, Math.abs(this.slotX[id]));
+              extentZ = Math.max(extentZ, Math.abs(this.slotZ[id]));
+            }
+          return { index, extentX, extentZ };
+        });
+        let cursor = -Math.trunc(layouts.reduce((s, l) => s + 2 * l.extentZ + 3 * SCALE, 0) / 2);
+        let depth = 0;
+        for (const l of layouts) {
+          const f = this.formations[l.index];
+          f.x = (team === 0 ? -1 : 1) * (front + l.extentX);
+          f.z = cursor + l.extentZ;
+          cursor += 2 * l.extentZ + 3 * SCALE;
+          depth = Math.max(depth, 2 * l.extentX);
+          this.fitFormation(l.index);
+          for (let id = 0; id < this.count; id++)
+            if (this.formationId[id] === l.index) {
+              this.x[id] = f.x + this.slotX[id];
+              this.z[id] = f.z + this.slotZ[id];
+              this.homeZ[id] = this.z[id];
+              this.avoidTerrain(id);
+            }
+        }
+        if (entries.length) front += depth + 4 * SCALE;
       }
     }
   }
+
   private fitFormation(index: number): void {
     const f = this.formations[index];
     let minX = 0,
@@ -360,15 +435,84 @@ export class Battle {
       else if (order.kind === 'formation') {
         f.formation = order.formation;
         this.arrange(index, f.x, f.z);
+      } else if (order.kind === 'face' || order.kind === 'frontage') {
+        if (order.kind === 'face') f.heading = order.heading;
+        else f.files = order.files;
+        this.arrange(index, f.x, f.z);
       } else {
         f.movement = order.kind;
+        f.route = [];
         this.arrange(
           index,
           order.x === undefined ? undefined : order.x + f.x - originX,
           order.z === undefined ? undefined : order.z + f.z - originZ,
         );
-        if (order.kind === 'fallback')
-          f.x = clamp(f.x + (f.team === 0 ? -8 : 8) * SCALE, -50 * SCALE, 50 * SCALE);
+        if (order.kind === 'flank-left' || order.kind === 'flank-right') {
+          const opponents = this.formations
+            .filter((other) => other.team !== f.team)
+            .map((formation) => ({ formation, x: 0, z: 0, n: 0 }));
+          for (let id = 0; id < this.count; id++)
+            if (this.active(id) && this.state[id] !== State.Routing) {
+              const other = opponents.find((o) => o.formation === this.formationOf(id));
+              if (other) {
+                other.x += this.x[id];
+                other.z += this.z[id];
+                other.n++;
+              }
+            }
+          for (const other of opponents)
+            if (other.n) {
+              other.x = Math.trunc(other.x / other.n);
+              other.z = Math.trunc(other.z / other.n);
+            }
+          const nearest = opponents
+            .filter((o) => o.n)
+            .sort(
+              (a, b) =>
+                distance2(a.x, a.z, f.x, f.z) - distance2(b.x, b.z, f.x, f.z) ||
+                a.formation.id - b.formation.id,
+            )[0];
+          const target = nearest?.formation,
+            n = nearest?.n ?? 0;
+          let ex = (nearest?.x ?? 0) * n,
+            ez = (nearest?.z ?? 0) * n;
+          if (n) {
+            ex = Math.trunc(ex / n);
+            ez = Math.trunc(ez / n);
+            const [hx, hz] = normalize(ex - f.x, ez - f.z, SCALE);
+            const side = order.kind === 'flank-left' ? -1 : 1;
+            let extent = 0,
+              own = 0;
+            for (let id = 0; id < this.count; id++)
+              if (this.active(id) && this.state[id] !== State.Routing) {
+                if (this.formationOf(id) === target)
+                  extent = Math.max(
+                    extent,
+                    Math.abs(
+                      Math.trunc((-(this.x[id] - ex) * hz + (this.z[id] - ez) * hx) / SCALE),
+                    ),
+                  );
+                if (this.formationOf(id) === f)
+                  own = Math.max(own, Math.abs(this.slotX[id]) + Math.abs(this.slotZ[id]));
+              }
+            const clearance = Math.min(35 * SCALE, extent + own + 5 * SCALE);
+            const laneX = Math.trunc((-hz * side * clearance) / SCALE),
+              laneZ = Math.trunc((hx * side * clearance) / SCALE);
+            f.route = [
+              {
+                x: clamp(ex + laneX + hx * 2, -50 * SCALE, 50 * SCALE),
+                z: clamp(ez + laneZ + hz * 2, -50 * SCALE, 50 * SCALE),
+              },
+            ];
+            f.x += laneX;
+            f.z += laneZ;
+          }
+        }
+        if (order.kind === 'fallback') {
+          const [hx, hz] = HEADINGS[f.heading];
+          f.x -= 8 * hx;
+          f.z -= 8 * hz;
+        }
       }
       if (order.kind !== 'fire') this.fitFormation(index);
       for (let i = 0; i < this.count; i++)
@@ -430,6 +574,123 @@ export class Battle {
     this.z[id] = clamp(this.z[id], -LIMIT, LIMIT);
   }
 
+  private advanceFormations(): void {
+    const stats = this.formations.map(() => ({
+      n: 0,
+      x: 0,
+      z: 0,
+      error: 0,
+      contact: 0,
+      nearest: Infinity,
+      ammunition: 0,
+      speed: 1000,
+    }));
+    for (let i = 0; i < this.count; i++)
+      if (this.active(i) && this.state[i] !== State.Routing) {
+        const index = this.formationId[i],
+          s = stats[index],
+          f = this.formations[index];
+        s.n++;
+        s.ammunition += this.ammo[i];
+        s.x += this.x[i];
+        s.z += this.z[i];
+        s.error += isqrt(distance2(this.x[i], this.z[i], f.x + this.slotX[i], f.z + this.slotZ[i]));
+        s.speed = Math.min(s.speed, UNITS[this.type[i]].speed);
+        const t = this.target[i];
+        if (t >= 0 && this.active(t))
+          s.nearest = Math.min(
+            s.nearest,
+            isqrt(distance2(this.x[i], this.z[i], this.x[t], this.z[t])),
+          );
+        if (
+          t >= 0 &&
+          this.active(t) &&
+          distance2(this.x[i], this.z[i], this.x[t], this.z[t]) <
+            Math.min(
+              1800,
+              (UNITS[this.type[i]].role === 'skirmisher' ? 1500 : UNITS[this.type[i]].reach) - 150,
+            ) **
+              2
+        )
+          s.contact++;
+      }
+    stats.forEach((s) => {
+      if (s.n) {
+        s.x = Math.trunc(s.x / s.n);
+        s.z = Math.trunc(s.z / s.n);
+      }
+    });
+    for (let index = 0; index < this.formations.length; index++) {
+      const f = this.formations[index],
+        s = stats[index];
+      if (!s.n) continue;
+      if (this.tick % 30 === 0 && s.n !== f.strength) this.arrange(index, f.x, f.z);
+      if (f.movement === 'flank-left' || f.movement === 'flank-right') {
+        if (s.error < s.n * 2 * SCALE || (!f.route.length && s.contact > 0)) {
+          const next = f.route.shift();
+          if (next) {
+            f.x = next.x;
+            f.z = next.z;
+            this.fitFormation(index);
+          } else {
+            f.movement = 'charge';
+            this.log(
+              `${f.team === 0 ? 'Roman' : 'Gallic'} formation ${f.id + 1} completes its flank and charges.`,
+              f.team,
+            );
+          }
+        }
+        continue;
+      }
+      if (f.movement !== 'advance' || s.contact || s.error > s.n * 3 * SCALE) continue;
+      let enemy = -1,
+        best = Infinity;
+      for (let j = 0; j < stats.length; j++)
+        if (this.formations[j].team !== f.team && stats[j].n) {
+          const d = distance2(f.x, f.z, stats[j].x, stats[j].z);
+          if (d < best) {
+            best = d;
+            enemy = j;
+          }
+        }
+      if (enemy < 0) continue;
+      const other = stats[enemy];
+      const ranged = f.role === 'ranged' && f.fireAtWill && s.ammunition > 0;
+      const meleeStop = f.role === 'ranged' ? 1200 : 1500;
+      let stop = ranged ? 17 * SCALE : meleeStop;
+      const [dx, dz] = normalize(other.x - f.x, other.z - f.z, SCALE);
+      let ownFront = 0,
+        enemyFront = 0;
+      for (let i = 0; i < this.count; i++)
+        if (this.active(i) && this.state[i] !== State.Routing) {
+          if (this.formationId[i] === index)
+            ownFront = Math.max(
+              ownFront,
+              Math.trunc((this.slotX[i] * dx + this.slotZ[i] * dz) / SCALE),
+            );
+          if (this.formationId[i] === enemy)
+            enemyFront = Math.max(
+              enemyFront,
+              Math.trunc(((other.x - this.x[i]) * dx + (other.z - this.z[i]) * dz) / SCALE),
+            );
+        }
+      stop += ownFront + enemyFront;
+      const remaining =
+        !ranged && s.nearest < 8 * SCALE ? s.nearest - meleeStop : isqrt(best) - stop;
+      if (remaining <= 0) continue;
+      const speed = Math.min(
+        remaining,
+        Math.trunc((s.speed * (f.formation === 'shieldwall' ? 65 : 80)) / 100),
+      );
+      const [mx, mz] = normalize(other.x - f.x, other.z - f.z, speed);
+      f.x += mx;
+      f.z += mz;
+      this.fitFormation(index);
+      for (let i = 0; i < this.count; i++)
+        if (this.formationId[i] === index) this.homeZ[i] = f.z + this.slotZ[i];
+    }
+  }
+
   private acquire(id: number): number {
     let found = -1,
       best = Number.MAX_SAFE_INTEGER;
@@ -447,7 +708,12 @@ export class Battle {
       );
       if (distance > radius * radius) return;
       // Prefer opponents in this file until close contact; avoid the entire line seeking one victim.
-      const lateral = this.startZ[other] - this.homeZ[id];
+      const [hx, hz] = HEADINGS[formation.heading];
+      const lateral = Math.trunc(
+        (-(this.startX[other] - formation.x - this.slotX[id]) * hz +
+          (this.startZ[other] - formation.z - this.slotZ[id]) * hx) /
+          SCALE,
+      );
       const d =
         distance +
         (distance > (3 * SCALE) ** 2 && formation.movement !== 'charge'
@@ -485,6 +751,8 @@ export class Battle {
       centerX[t] = totals[t] ? Math.trunc(centerX[t] / totals[t]) : 0;
       centerZ[t] = totals[t] ? Math.trunc(centerZ[t] / totals[t]) : 0;
     }
+
+    this.advanceFormations();
 
     // Shield support is computed from the same tick-start state for both armies.
     this.support.fill(0);
@@ -547,7 +815,14 @@ export class Battle {
       const ranged =
         design.role === 'skirmisher' && this.ammo[i] > 0 && this.formationOf(i).fireAtWill;
       const reach = ranged ? design.reach : design.role === 'skirmisher' ? 1500 : design.reach;
-      const [fx, fz] = turnToward(this.facingX[i], this.facingZ[i], dx, dz);
+      const currentFormation = this.formationOf(i);
+      const [headingX, headingZ] = HEADINGS[currentFormation.heading];
+      const [fx, fz] = turnToward(
+        this.facingX[i],
+        this.facingZ[i],
+        (target >= 0 && dist < 5 * SCALE) || currentFormation.movement === 'charge' ? dx : headingX,
+        (target >= 0 && dist < 5 * SCALE) || currentFormation.movement === 'charge' ? dz : headingZ,
+      );
       if ((fx || fz) && this.state[i] !== State.Windup) {
         this.facingX[i] = fx;
         this.facingZ[i] = fz;
@@ -556,33 +831,35 @@ export class Battle {
       const formation = this.formationOf(i);
       let speed = Math.trunc(
         (design.speed *
-          (formation.movement === 'charge'
-            ? 115
-            : formation.formation === 'shieldwall'
-              ? 83
-              : 100)) /
+          (formation.movement.startsWith('flank')
+            ? 135
+            : formation.movement === 'charge'
+              ? 115
+              : formation.formation === 'shieldwall'
+                ? 83
+                : 100)) /
           100,
       );
-      const holding = formation.movement === 'hold' || formation.movement === 'fallback';
+      const holding = formation.movement !== 'charge';
       if (holding) {
         dx = formation.x + this.slotX[i] - this.x[i];
         dz = formation.z + this.slotZ[i] - this.z[i];
         const slotDistance = isqrt(dx * dx + dz * dz);
-        if (slotDistance < 120) continue;
+        if (slotDistance < 120 || (target >= 0 && dist <= reach - 90 && slotDistance < 2 * SCALE))
+          continue;
         speed = Math.min(speed, slotDistance);
         if (formation.movement === 'fallback') speed = Math.trunc((speed * 3) / 4);
       } else if (ranged && target >= 0 && dist < 6 * SCALE && Math.abs(this.x[i]) < 50 * SCALE) {
         dx = -dx;
         dz = -dz;
       } else if (target >= 0 && dist <= reach - (ranged ? 1000 : 90)) continue;
-      if (!holding && formation.movement !== 'charge' && Math.abs(dx) > 4 * SCALE)
-        dz = Math.trunc((this.homeZ[i] - this.z[i]) * 2);
+
       // A charge needs a sustained advance; retreating skirmishers never earn impact damage.
       if (
         formation.movement === 'charge' &&
         !ranged &&
         this.state[i] === State.Ready &&
-        (team === 0 ? dx > 0 : dx < 0)
+        dx * this.facingX[i] + dz * this.facingZ[i] > 0
       )
         this.momentum[i] = Math.min(60, this.momentum[i] + 1);
       else this.momentum[i] = Math.max(0, this.momentum[i] - 2);
@@ -659,6 +936,7 @@ export class Battle {
             } // At capacity the shot is deferred to the next action; ammo is retained.
           } else if (
             !ranged &&
+            this.clearMelee(i, target) &&
             inFront(
               this.facingX[i],
               this.facingZ[i],
@@ -752,6 +1030,24 @@ export class Battle {
         this.winner,
       );
     }
+  }
+
+  /** A short weapon cannot pass through another standing soldier. */
+  private clearMelee(source: number, target: number): boolean {
+    const dx = this.x[target] - this.x[source],
+      dz = this.z[target] - this.z[source];
+    const length2 = dx * dx + dz * dz;
+    let clear = true;
+    this.grid.query(this.x[source], this.z[source], 2300, (id) => {
+      if (!clear || id === source || id === target || !this.active(id)) return;
+      const ox = this.x[id] - this.x[source],
+        oz = this.z[id] - this.z[source];
+      const projection = ox * dx + oz * dz;
+      if (projection <= 0 || projection >= length2) return;
+      const cross = ox * dz - oz * dx;
+      if (cross * cross < 300 ** 2 * length2) clear = false;
+    });
+    return clear;
   }
 
   private hit(
@@ -948,12 +1244,26 @@ export class Battle {
   }
   summary(): BattleSummary {
     const [romans, gauls] = this.stats();
-    const formations = this.formations.map((f) => ({ ...f, standing: 0, total: 0 }));
+    const formations = this.formations.map((f) => ({
+      ...f,
+      route: f.route.map((p) => ({ ...p })),
+      standing: 0,
+      total: 0,
+      cohesion: 0,
+    }));
     for (let i = 0; i < this.count; i++) {
       const f = formations[this.formationId[i]];
       f.total++;
-      if (this.active(i) && this.state[i] !== State.Routing) f.standing++;
+      if (this.active(i) && this.state[i] !== State.Routing) {
+        f.standing++;
+        f.cohesion += Math.min(
+          4 * SCALE,
+          isqrt(distance2(this.x[i], this.z[i], f.x + this.slotX[i], f.z + this.slotZ[i])),
+        );
+      }
     }
+    for (const f of formations)
+      f.cohesion = f.standing ? 100 - Math.trunc((f.cohesion * 100) / (f.standing * 4 * SCALE)) : 0;
     return {
       tick: this.tick,
       hash: this.hash(),
@@ -998,6 +1308,7 @@ export class Battle {
           this.shieldHp[i],
           this.stagger[i],
           Number(this.ammo[i] > 0 && this.formationOf(i).fireAtWill),
+          this.formationOf(i).id,
         ],
         base,
       );
@@ -1027,7 +1338,7 @@ export class Battle {
       commanderLost: [...this.commanderLost],
       winner: this.winner,
       events: this.events.map((e) => ({ ...e })),
-      formations: this.formations.map((f) => ({ ...f })),
+      formations: this.formations.map((f) => ({ ...f, route: f.route.map((p) => ({ ...p })) })),
       orders: structuredClone(this.orders),
     };
   }
@@ -1050,7 +1361,10 @@ export class Battle {
     battle.commanderLost = [...checkpoint.commanderLost];
     battle.winner = checkpoint.winner;
     battle.events = checkpoint.events.map((e) => ({ ...e }));
-    battle.formations = checkpoint.formations.map((f) => ({ ...f }));
+    battle.formations = checkpoint.formations.map((f) => ({
+      ...f,
+      route: f.route.map((p) => ({ ...p })),
+    }));
     battle.orders = structuredClone(checkpoint.orders);
     battle.rebuildGrid();
     return battle;

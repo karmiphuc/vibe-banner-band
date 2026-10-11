@@ -7,6 +7,36 @@ export interface Scenario {
 }
 export const SCENARIOS: readonly Scenario[] = [
   {
+    id: 'hammer',
+    name: 'The held reserve',
+    description:
+      '180 Romans · 220 Gauls. Hold the main line; send Roman formation 3 around the flank, then commit it. The reserve starts behind the javelineers.',
+    config: {
+      seed: 19241,
+      terrain: 'meadow',
+      romans: {
+        count: 180,
+        skirmishers: 20,
+        doctrine: 'shieldwall',
+        formations: [
+          { id: 0, role: 'infantry', weight: 3 },
+          { id: 1, role: 'ranged', weight: 1 },
+          { id: 2, role: 'infantry', weight: 1, reserve: true },
+        ],
+      },
+      gauls: {
+        count: 220,
+        skirmishers: 15,
+        doctrine: 'charge',
+        formations: [
+          { id: 0, role: 'infantry', weight: 3 },
+          { id: 1, role: 'ranged', weight: 1 },
+          { id: 2, role: 'infantry', weight: 1 },
+        ],
+      },
+    },
+  },
+  {
     id: 'frontier',
     name: 'The frontier',
     description: '80 Romans · 100 Gauls. A shield line meets a warband charge.',

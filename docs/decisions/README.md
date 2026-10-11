@@ -14,3 +14,5 @@
 Statuses describe planning commitments, not implementation completion. Add an ADR for changes to these boundaries, authoritative numeric formats, runtime animation strategy, executable mods, multiplayer, or persisted compatibility.
 
 Template: context; decision and status; considered alternatives; consequences; validation gate; conditions for revisiting; links to affected contracts. Preserve superseded decisions with a link to the replacement instead of rewriting history.
+
+- [0007: Cohesive formation motion](0007-cohesive-formation-motion.md)

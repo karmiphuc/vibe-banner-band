@@ -10,8 +10,9 @@ export class CommandPanel {
     private root: HTMLElement,
     private issue: (order: Order) => void,
     private placement: (active: boolean) => void,
+    private selectedChanged: (team: Team, group: Group) => void = () => {},
   ) {
-    root.innerHTML = `<div class="command-heading"><span>FORMATION ORDERS</span><small id="order-ack">Choose an army and formation. Commanders fight autonomously.</small></div><div class="command-row"><label class="sr-only" for="command-team">Command army</label><select id="command-team"><option value="0">Romans</option><option value="1">Gauls</option></select><label class="sr-only" for="command-group">Command group</label><select id="command-group"><option value="all">0 · All troops</option></select><div class="movement-orders">${(['advance', 'hold', 'charge', 'fallback'] as const).map((m, i) => `<button type="button" data-order="${m}" aria-pressed="false" title="${['V', 'H', 'C', 'B'][i]}">${['Advance', 'Hold here', 'Charge', 'Fall back'][i]}<kbd>${['V', 'H', 'C', 'B'][i]}</kbd></button>`).join('')}</div><button id="place-order" type="button" aria-pressed="false">Place line ↗</button></div><div class="command-row command-secondary"><label for="command-formation">Formation</label><select id="command-formation"><option value="line">Line</option><option value="shieldwall">Shield wall</option><option value="loose">Loose</option><option value="" disabled>Mixed formations</option></select><button id="fire-order" type="button" aria-pressed="false">Hold fire</button><span id="formation-status">—</span></div>`;
+    root.innerHTML = `<div class="command-heading"><span>FORMATION ORDERS</span><small id="order-ack">Choose an army and formation. Commanders fight autonomously.</small></div><div class="command-row"><label class="sr-only" for="command-team">Command army</label><select id="command-team"><option value="0">Romans</option><option value="1">Gauls</option></select><label class="sr-only" for="command-group">Command group</label><select id="command-group"><option value="all">0 · All troops</option></select><div class="movement-orders">${(['advance', 'hold', 'charge', 'fallback'] as const).map((m, i) => `<button type="button" data-order="${m}" aria-pressed="false" title="${['V', 'H', 'C', 'B'][i]}">${['Advance', 'Hold here', 'Charge', 'Fall back'][i]}<kbd>${['V', 'H', 'C', 'B'][i]}</kbd></button>`).join('')}</div><button id="place-order" type="button" aria-pressed="false">Place line ↗</button></div><div class="command-row command-secondary"><label for="command-formation">Spacing</label><select id="command-formation"><option value="line">Line</option><option value="shieldwall">Shield wall</option><option value="loose">Loose</option><option value="" disabled>Mixed formations</option></select><button id="fire-order" type="button" aria-pressed="false">Hold fire</button><label for="command-facing">Face</label><select id="command-facing">${['E', 'SE', 'S', 'SW', 'W', 'NW', 'N', 'NE'].map((name, i) => `<option value="${i}">${name}</option>`).join('')}<option value="" disabled>Mixed</option></select><label for="command-files">Files</label><input id="command-files" aria-label="Formation frontage in files" type="number" min="2" max="64" value="8"/><button type="button" id="flank-left">Flank left ↶</button><button type="button" id="flank-right">Flank right ↷</button><span id="formation-status">—</span></div>`;
     this.el<HTMLSelectElement>('command-team').addEventListener('change', () => {
       this.cancelPlacement();
       this.paint();
@@ -36,6 +37,22 @@ export class CommandPanel {
         formation: this.el<HTMLSelectElement>('command-formation').value as Formation,
       }),
     );
+    this.el<HTMLSelectElement>('command-facing').addEventListener('change', () =>
+      this.issue({
+        ...this.selection(),
+        kind: 'face',
+        heading: Number(this.el<HTMLSelectElement>('command-facing').value),
+      }),
+    );
+    this.el<HTMLInputElement>('command-files').addEventListener('change', () =>
+      this.issue({
+        ...this.selection(),
+        kind: 'frontage',
+        files: Number(this.el<HTMLInputElement>('command-files').value),
+      }),
+    );
+    for (const kind of ['flank-left', 'flank-right'] as const)
+      this.el(kind).addEventListener('click', () => this.move(kind));
     this.el('fire-order').addEventListener('click', () => {
       const selected = this.selected();
       this.issue({
@@ -65,6 +82,12 @@ export class CommandPanel {
       ) ?? []
     );
   }
+  selectFormation(team: Team, id: number): void {
+    this.el<HTMLSelectElement>('command-team').value = String(team);
+    this.paint();
+    this.el<HTMLSelectElement>('command-group').value = String(id);
+    this.cancelPlacement();
+  }
   private move(kind: Movement): void {
     if (!this.available) return;
     this.cancelPlacement();
@@ -81,6 +104,7 @@ export class CommandPanel {
     this.cancelPlacement();
   }
   update(summary: BattleSummary | null, replaying: boolean): void {
+    const fresh = !this.summary && !!summary;
     this.summary = summary;
     this.available = !!summary && summary.winner === null && !replaying;
     if (!this.available && this.armed) {
@@ -88,6 +112,7 @@ export class CommandPanel {
       this.placement(false);
     }
     this.paint();
+    if (fresh && summary) this.selectFormation(0, summary.formations.find((f) => f.team === 0)!.id);
   }
   private paint(): void {
     const select = this.el<HTMLSelectElement>('command-group'),
@@ -112,10 +137,18 @@ export class CommandPanel {
     select.options[select.options.length - 1].textContent = '0 · All troops';
 
     this.root
-      .querySelectorAll<HTMLButtonElement | HTMLSelectElement>('button,select')
+      .querySelectorAll<
+        HTMLButtonElement | HTMLSelectElement | HTMLInputElement
+      >('button,select,input')
       .forEach((e) => (e.disabled = !this.available));
     const selected = this.selected(),
       first = selected[0];
+    const selection = this.selection();
+    this.selectedChanged(selection.team, selection.group);
+    this.el<HTMLSelectElement>('command-facing').value =
+      first && selected.every((f) => f.heading === first.heading) ? String(first.heading) : '';
+    if (document.activeElement !== this.el('command-files'))
+      this.el<HTMLInputElement>('command-files').value = first ? String(first.files) : '8';
     this.root
       .querySelectorAll<HTMLButtonElement>('[data-order]')
       .forEach((b) =>
@@ -132,7 +165,7 @@ export class CommandPanel {
     this.el('fire-order').textContent = firing ? 'Hold fire' : 'Fire at will';
     this.el('fire-order').setAttribute('aria-pressed', String(!firing));
     this.el('formation-status').textContent = first
-      ? `${selected.every((f) => f.movement === first.movement) ? first.movement : 'mixed orders'} · ${selected.every((f) => f.fireAtWill === first.fireAtWill) ? (first.fireAtWill ? 'weapons free' : 'missiles held') : 'mixed fire discipline'}`
+      ? `${selected.every((f) => f.movement === first.movement) ? first.movement : 'mixed orders'} · ${selected.length === 1 && first.movement !== 'charge' ? `${first.cohesion}% in position · ` : ''} ${selected.every((f) => f.fireAtWill === first.fireAtWill) ? (first.fireAtWill ? 'weapons free' : 'missiles held') : 'mixed fire discipline'}`
       : '—';
     const last = this.summary?.orders.at(-1);
     this.el('order-ack').textContent = this.armed

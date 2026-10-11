@@ -1,4 +1,4 @@
-export const SIM_VERSION = 'battle-lab-3';
+export const SIM_VERSION = 'battle-lab-4';
 export const TICK_RATE = 30;
 export const SCALE = 1024;
 export const MAX_ARMY = 1000;
@@ -10,6 +10,7 @@ export interface FormationSpec {
   id: number;
   role: FormationRole;
   weight: number;
+  reserve?: boolean;
 }
 export const DEFAULT_FORMATIONS: FormationSpec[] = [
   { id: 0, role: 'infantry', weight: 1 },
@@ -214,7 +215,10 @@ export function validateConfig(input: unknown): BattleConfig {
         const v = f as Record<string, unknown>;
         if (v.role !== 'infantry' && v.role !== 'ranged')
           throw Error('Unsupported formation role.');
+        if (v.reserve !== undefined && typeof v.reserve !== 'boolean')
+          throw Error('Invalid reserve flag.');
         return {
+          reserve: v.reserve === true,
           id: integer(v.id, 0, 4, 'Formation ID'),
           role: v.role,
           weight: integer(v.weight, 1, 100, 'Formation share'),

@@ -4,7 +4,7 @@ Status: implemented experimental vertical slice, 2026-10-11. It tests architectu
 
 [Play on GitHub Pages](https://karmiphuc.github.io/vibe-banner-band/). Static build is published from the repository `gh-pages` branch; see [deployment details](engineering/DEPLOYMENT.md).
 
-See [combat proof of concept 0.3](REFINEMENT_03.md) for the newest controls, combat rules, model workshop and verification.
+See [ranked combat proof of concept 0.4](REFINEMENT_04.md) for the newest controls, combat rules, model workshop and verification.
 
 ## Run and test
 
@@ -77,3 +77,7 @@ The core uses `src/sim` and `src/content`; renderer and browser ownership stay i
 - Pause/step/replay work is implemented; worker-crash checkpoint recovery, public save migration and robust WebGL recovery require further testing/implementation. Context loss pauses the battle but is not a certified recovery feature.
 
 See [review notes](REVIEW.md), [evidence](evidence/battle-lab-headless.json) and [ADR 0005](decisions/0005-custom-battle-slice.md).
+
+## Ranked combat (0.4)
+
+Choose **Try the reserve & flank battle** to exercise ranked movement, held reserves, facing/frontage and two-leg flank orders. Click formation labels on the field to select them. See the [play guide and explicit navigation limits](REFINEMENT_04.md).
