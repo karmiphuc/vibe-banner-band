@@ -4,9 +4,9 @@ A browser-first, isometric historical sandbox in development: command formations
 
 **Status: playable Roman–Gallic custom-battle experiment, 2026-10-11.** Configure armies, watch AI commanders and troops fight, inspect original equipment-bearing models, and verify deterministic replays. Campaign, production character assets, and full device qualification remain planned.
 
-[Planned Pages URL](https://karmiphuc.github.io/vibe-banner-band/) · [Controls, capabilities and limits](docs/CUSTOM_BATTLE.md) · [Double-check findings](docs/REVIEW.md)
+[Play the battle laboratory](https://karmiphuc.github.io/vibe-banner-band/) · [Controls, capabilities and limits](docs/CUSTOM_BATTLE.md) · [Double-check findings](docs/REVIEW.md)
 
-The static preview is committed to `gh-pages`. Repository Pages activation is pending: the connected integration returned HTTP 403 when enabling it. In GitHub **Settings → Pages**, select **Deploy from a branch**, `gh-pages`, `/ (root)`. Local play works with the commands below.
+The live experimental preview is deployed from `gh-pages`; source changes remain in the feature PR. Local play works with the commands below.
 
 ## Start here
 

@@ -2,7 +2,7 @@
 
 Status: implemented experimental vertical slice, 2026-10-11. It tests architecture and combat with **early original articulated models**, not production rigged humanoids. No campaign or direct player-character control is implemented. It does not complete the full M0–M4 roadmap gates.
 
-Static build is available on the repository `gh-pages` branch. Hosted access awaits repository Pages activation; see [deployment status](engineering/DEPLOYMENT.md).
+[Play on GitHub Pages](https://karmiphuc.github.io/vibe-banner-band/). Static build is published from the repository `gh-pages` branch; see [deployment details](engineering/DEPLOYMENT.md).
 
 ## Run and test
 
