@@ -1,0 +1,11 @@
+{
+  "status": "illustrative-not-runtime-content",
+  "schemaVersion": 1,
+  "tickRate": 30,
+  "rigs": [{"id": "rig.humanoid.v1", "qualification": "planned"}],
+  "assets": [{"id": "asset.spear.ash.v1", "rig": "rig.humanoid.v1", "qualification": "planned", "sockets": ["grip_primary", "tip"]}],
+  "animations": [{"id": "clip.spear_thrust.v1", "rig": "rig.humanoid.v1", "qualification": "planned"}],
+  "equipment": [{"id": "equipment.spear.ash.v1", "slot": "main_hand", "grip": "one_hand", "tags": ["spear"], "asset": "asset.spear.ash.v1", "abilities": ["ability.spear_thrust.v1"]}],
+  "abilities": [{"id": "ability.spear_thrust.v1", "requiresEquipmentTag": "spear", "staminaCost": 12, "windupTicks": 9, "activeTicks": 3, "recoveryTicks": 12, "maxTargets": 1, "animation": "clip.spear_thrust.v1", "requiredSockets": ["grip_primary", "tip"]}],
+  "units": [{"id": "unit.militia_spearman.v1", "rig": "rig.humanoid.v1", "equipment": ["equipment.spear.ash.v1"], "abilities": ["ability.spear_thrust.v1"]}]
+}

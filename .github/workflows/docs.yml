@@ -1,0 +1,13 @@
+name: Documentation checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  docs:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Check documentation and illustrative content
+        run: python3 tools/check_docs.py
