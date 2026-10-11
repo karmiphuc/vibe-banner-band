@@ -2,7 +2,7 @@
 
 Status: the experimental custom battle builds to `dist/` with Vite base `/vibe-banner-band/`. Preview publication uses the `gh-pages` branch with `.nojekyll`; source remains reviewable in its feature PR. GitHub Pages serves only static client files. The production release gates below remain future requirements.
 
-To update the preview, run all runtime checks, build from the reviewed source revision, then publish only `dist/`, license and source-revision metadata to `gh-pages`. Never overwrite source history. GitHub Pages is configured to deploy that branch root. No service worker or offline cache is shipped yet.
+To update the preview, run all runtime checks, build from the reviewed source revision, then publish only `dist/`, license and source-revision metadata to `gh-pages`. Never overwrite source history. The build is pushed to that branch, but Pages activation is pending: the integration returned HTTP 403 (`Resource not accessible by integration`) when creating the Pages site. A repository administrator must select Settings → Pages → Deploy from a branch → `gh-pages` → `/ (root)`. The intended URL is https://karmiphuc.github.io/vibe-banner-band/. No service worker or offline cache is shipped yet.
 
 ## Static delivery
 
