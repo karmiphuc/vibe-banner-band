@@ -1,3 +1,3 @@
-Roman-Gallic combat proof of concept 0.3
-Source: https://github.com/karmiphuc/vibe-banner-band/tree/ea4cbc29c10f5eb1560e9098a41fdba66a94a0ec
+Roman-Gallic combat proof of concept 0.4
+Source: https://github.com/karmiphuc/vibe-banner-band/tree/017d0bb87f044f857e9f9e6e42c224114347e33e
 License: GNU GPL v3; see LICENSE and source dependency notices.
