@@ -1,4 +1,4 @@
 Source: https://github.com/karmiphuc/vibe-banner-band
 Branch: feat/roman-gaul-custom-battle
-Commit: 7dc039c7c07377140cfd8d5664f8484f85f74c29
-Version: 0.6.0
+Commit: f42e38a9b8282b1d7451d22bc354b66d22474ef9
+Version: 0.7.0
