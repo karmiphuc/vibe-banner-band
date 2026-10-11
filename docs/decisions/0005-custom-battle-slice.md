@@ -19,3 +19,7 @@ The user can evaluate an actual loop, equipped models, commander behavior, deter
 ## Gate and next work
 
 [Custom battle](../CUSTOM_BATTLE.md) lists actual capabilities and limitations. Keep repeatable replay/browser tests passing; collect device evidence before capacity promises. Next deepen formation/pathfinding behavior, add content schema validation, qualify deforming character/animation assets and test on Firefox/Safari. Revisit architecture using measured bottlenecks, not concept images.
+
+## Refinement 0.2
+
+[PoC 0.2](../REFINEMENT_02.md) advances the same bounded experiment: formation-aware local targeting, spatial shield support, one-use charge impact, committed windups, version-2 replay rules/protocol, near/crowd geometry, and an isolated model workshop. This does not promote the experiment to full navigation or production-rig qualification.

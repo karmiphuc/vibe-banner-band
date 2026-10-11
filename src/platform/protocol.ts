@@ -2,7 +2,7 @@ import type { BattleConfig } from '../content/catalog';
 import type { BattleSummary } from '../sim/battle';
 import type { Replay } from '../sim/replay';
 
-export const PROTOCOL_VERSION = 1;
+export const PROTOCOL_VERSION = 2;
 export type ToWorker =
   | { kind: 'init'; session: number; protocol: number; config: BattleConfig }
   | { kind: 'play' | 'pause' | 'step' | 'export'; session: number }

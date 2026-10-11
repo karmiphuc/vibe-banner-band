@@ -1,6 +1,6 @@
 # Reproducible asset production
 
-Status: production pipeline planned; [equipment example](../../tools/assets/README.md) is the only executed asset experiment. No production humanoid, approved rig library, or animation compiler is included.
+Status: production pipeline planned; [equipment example](../../tools/assets/README.md) and [Roman–Gallic articulated recipes](ROMAN_GAUL_RECIPES.md) are executed experiments. No production humanoid, approved rig library, or animation compiler is included.
 
 ## Goal and limit
 

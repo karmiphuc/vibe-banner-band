@@ -190,3 +190,72 @@ test('upper-capacity fixture advances all 2,000 soldiers without invalid state',
     assert(Number.isInteger(b.z[i]));
   }
 });
+
+test('shield support counts only nearby standing heavy allies and disappears when the line breaks', () => {
+  const b = new Battle(config(4));
+  for (let i = 0; i < b.count; i++) {
+    b.x[i] = (i < 4 ? -40 : 40) * SCALE;
+    b.z[i] = (i % 4) * 8 * SCALE;
+  }
+  b.x[0] = -20 * SCALE;
+  b.z[0] = 0;
+  b.x[1] = -20 * SCALE;
+  b.z[1] = 1400;
+  b.step();
+  assert.equal(b.support[0], 1);
+  b.state[1] = State.Routing;
+  b.step();
+  assert.equal(b.support[0], 0);
+});
+test('a sustained charge adds bounded impact damage once, then consumes momentum', () => {
+  const make = (momentum: number) => {
+    const b = new Battle(config(2));
+    b.x[0] = -600;
+    b.z[0] = 0;
+    b.x[2] = 600;
+    b.z[2] = 0;
+    b.x[1] = -40 * SCALE;
+    b.x[3] = 40 * SCALE;
+    b.z[1] = b.z[3] = 0;
+    b.stamina[2] = 0;
+    b.state[2] = State.Windup;
+    b.timer[2] = 20;
+    b.state[0] = State.Windup;
+    b.timer[0] = 1;
+    b.target[0] = 2;
+    b.momentum[0] = momentum;
+    b.step();
+    return b;
+  };
+  const ordinary = make(0),
+    charge = make(60);
+  assert.equal(ordinary.hp[2] - charge.hp[2], 10);
+  assert.equal(charge.momentum[0], 0);
+  assert.equal(charge.state[0], State.Recovery);
+});
+test('disciplined troops preserve deployment files during the unopposed advance', () => {
+  const c = config(50);
+  c.romans.doctrine = 'shieldwall';
+  c.romans.skirmishers = 0;
+  c.gauls.skirmishers = 0;
+  const b = new Battle(c);
+  const initial = Array.from(b.z);
+  advance(b, 50);
+  for (let i = 0; i < 49; i++) assert(Math.abs(b.z[i] - initial[i]) < 200, `file drift for ${i}`);
+});
+
+test('windup commits to its opponent even when another enemy moves closer', () => {
+  const b = new Battle(config(3));
+  b.x[0] = 0;
+  b.z[0] = 0;
+  b.x[3] = 1400;
+  b.z[3] = 0;
+  b.x[4] = 1000;
+  b.z[4] = 0;
+  b.state[0] = State.Windup;
+  b.timer[0] = 7;
+  b.target[0] = 3;
+  b.step();
+  assert.equal(b.target[0], 3);
+  assert.equal(b.state[0], State.Windup);
+});

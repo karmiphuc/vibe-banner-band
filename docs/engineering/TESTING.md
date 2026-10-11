@@ -2,7 +2,7 @@
 
 ## Current checks
 
-The [custom battle](../CUSTOM_BATTLE.md) has 13 headless/model tests and three production-build Chromium tests, including worker backpressure and headless/worker replay agreement. `runtime.yml` runs boundaries, tests, typecheck/build and browser tests. Firefox/Safari and real-device GPU performance remain open.
+The [custom battle](../CUSTOM_BATTLE.md) has 18 headless/model tests and four production-build Chromium tests, including worker backpressure and headless/worker replay agreement. `runtime.yml` runs boundaries, tests, typecheck/build and browser tests. Firefox/Safari and real-device GPU performance remain open.
 
 `python3 tools/check_docs.py` checks local Markdown file links, JSON syntax and limited reference/timing integrity in the illustrative catalog. The documentation workflow runs it on pushes and pull requests. It does not validate a game engine, external URL availability, asset quality, or the full future schema.
 

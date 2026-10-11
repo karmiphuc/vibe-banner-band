@@ -21,7 +21,7 @@ export const enum State {
   Escaped,
 }
 export const STATE_NAMES = ['Ready', 'Attacking', 'Recovering', 'Routing', 'Fallen', 'Escaped'];
-export const UNIT_STRIDE = 13;
+export const UNIT_STRIDE = 17;
 export const PROJECTILE_STRIDE = 7;
 export const MAX_PROJECTILES = 2048;
 export const MAX_TICKS = TICK_RATE * 180;
@@ -45,6 +45,9 @@ const FIELDS = [
   'hits',
   'kills',
   'actionSerial',
+  'momentum',
+  'support',
+  'blocks',
 ] as const;
 type Field = (typeof FIELDS)[number];
 export interface BattleEvent {
@@ -121,6 +124,9 @@ export class Battle {
   readonly hits: Int32Array;
   readonly kills: Int32Array;
   readonly actionSerial: Int32Array;
+  readonly momentum: Int32Array;
+  readonly support: Int32Array;
+  readonly blocks: Int32Array;
   tick = 0;
   winner: Team | -1 | null = null;
   projectiles: Projectile[] = [];
@@ -159,6 +165,9 @@ export class Battle {
     this.hits = new Int32Array(this.count);
     this.kills = new Int32Array(this.count);
     this.actionSerial = new Int32Array(this.count);
+    this.momentum = new Int32Array(this.count);
+    this.support = new Int32Array(this.count);
+    this.blocks = new Int32Array(this.count);
     this.pending = new Int32Array(this.count);
     this.credit = new Int32Array(this.count);
     this.startX = new Int32Array(this.count);
@@ -194,6 +203,8 @@ export class Battle {
       // Commander is behind the center of the formation, not stranded at its last file.
       this.z[this.leaders[team]] = 0;
       this.homeZ[this.leaders[team]] = 0;
+      this.x[this.leaders[team]] =
+        (team === 0 ? -1 : 1) * (13 * SCALE + Math.ceil(army.count / columns) * 1420 + 1000);
       offset += army.count;
     }
     this.log('Armies deployed. Commanders will lead autonomously.', -1);
@@ -231,12 +242,25 @@ export class Battle {
 
   private acquire(id: number): number {
     let found = -1,
-      best = 25 * SCALE * 25 * SCALE;
+      best = Number.MAX_SAFE_INTEGER;
     const team = this.team(id);
-    this.grid.query(this.startX[id], this.startZ[id], 25 * SCALE, (other) => {
+    const army = team === 0 ? this.config.romans : this.config.gauls;
+    const radius = this.ammo[id] > 0 ? 22 * SCALE : 8 * SCALE;
+    this.grid.query(this.startX[id], this.startZ[id], radius, (other) => {
       this.candidates++;
       if (this.team(other) === team || this.state[other] === State.Routing) return;
-      const d = distance2(this.startX[id], this.startZ[id], this.startX[other], this.startZ[other]);
+      const distance = distance2(
+        this.startX[id],
+        this.startZ[id],
+        this.startX[other],
+        this.startZ[other],
+      );
+      if (distance > radius * radius) return;
+      // Prefer opponents in this file until close contact; avoid the entire line seeking one victim.
+      const lateral = this.startZ[other] - this.homeZ[id];
+      const d =
+        distance +
+        (distance > (3 * SCALE) ** 2 && army.doctrine !== 'charge' ? lateral * lateral * 2 : 0);
       if (d < best || (d === best && other < found)) {
         best = d;
         found = other;
@@ -268,6 +292,26 @@ export class Battle {
       centerZ[t] = totals[t] ? Math.trunc(centerZ[t] / totals[t]) : 0;
     }
 
+    // Shield support is computed from the same tick-start state for both armies.
+    this.support.fill(0);
+    for (let i = 0; i < this.count; i++) {
+      if (
+        !this.active(i) ||
+        this.state[i] === State.Routing ||
+        UNITS[this.type[i]].role === 'skirmisher'
+      )
+        continue;
+      this.grid.query(this.x[i], this.z[i], 1900, (j) => {
+        if (
+          i !== j &&
+          this.team(i) === this.team(j) &&
+          this.state[j] !== State.Routing &&
+          UNITS[this.type[j]].role !== 'skirmisher' &&
+          distance2(this.x[i], this.z[i], this.x[j], this.z[j]) <= 1900 ** 2
+        )
+          this.support[i] = Math.min(2, this.support[i] + 1);
+      });
+    }
     // Intent reads a tick-start position snapshot, independent of earlier movement writes.
     for (let i = 0; i < this.count; i++) {
       if (!this.active(i)) continue;
@@ -277,6 +321,7 @@ export class Battle {
         design = UNITS[this.type[i]];
       if (this.tick % 6 === i % 6) this.stamina[i] = Math.min(100, this.stamina[i] + 2);
       if (this.state[i] === State.Routing) {
+        this.momentum[i] = 0;
         this.x[i] += team === 0 ? -115 : 115;
         this.facingX[i] = team === 0 ? -SCALE : SCALE;
         this.facingZ[i] = 0;
@@ -286,10 +331,11 @@ export class Battle {
       }
       let target = this.target[i];
       if (
-        target < 0 ||
-        !this.active(target) ||
-        this.state[target] === State.Routing ||
-        this.tick % 12 === i % 12
+        this.state[i] !== State.Windup &&
+        (target < 0 ||
+          !this.active(target) ||
+          this.state[target] === State.Routing ||
+          this.tick % 12 === i % 12)
       )
         target = this.target[i] = this.acquire(i);
       let dx = target >= 0 ? this.startX[target] - this.startX[i] : centerX[enemy] - this.startX[i];
@@ -316,7 +362,17 @@ export class Battle {
         dx = -dx;
         dz = -dz;
       } else if (target >= 0 && dist <= reach - (ranged ? 1000 : 90)) continue;
-      if (target < 0 && Math.abs(dx) > 12 * SCALE) dz = Math.trunc((this.homeZ[i] - this.z[i]) / 2);
+      if (Math.abs(dx) > (army.doctrine === 'charge' ? 8 : 4) * SCALE)
+        dz = Math.trunc((this.homeZ[i] - this.z[i]) * 2);
+      // A charge needs a sustained advance; retreating skirmishers never earn impact damage.
+      if (
+        army.doctrine === 'charge' &&
+        !ranged &&
+        this.state[i] === State.Ready &&
+        (team === 0 ? dx > 0 : dx < 0)
+      )
+        this.momentum[i] = Math.min(60, this.momentum[i] + 1);
+      else this.momentum[i] = Math.max(0, this.momentum[i] - 2);
       // Deterministic local tangent around two static rock outcrops. No flow-field claim.
       for (const o of this.obstacles) {
         const ox = this.x[i] - o.x,
@@ -391,8 +447,9 @@ export class Battle {
             distance2(this.x[i], this.z[i], this.x[target], this.z[target]) <=
             (design.role === 'skirmisher' ? 1650 : design.reach + 200) ** 2
           )
-            this.hit(i, target, design.damage);
+            this.hit(i, target, design.damage + Math.trunc(this.momentum[i] / 6));
         }
+        this.momentum[i] = 0;
         this.state[i] = State.Recovery;
         this.timer[i] = design.recovery;
       } else if (this.state[i] === State.Recovery && this.timer[i] === 0)
@@ -474,10 +531,12 @@ export class Battle {
       front &&
       this.stamina[target] >= 5 &&
       this.state[target] !== State.Routing &&
-      this.rng.below(100) < design.shield + (doctrine === 'shieldwall' ? 20 : 0)
+      this.rng.below(100) <
+        design.shield + (doctrine === 'shieldwall' ? this.support[target] * 10 : 0)
     ) {
       damage = Math.max(1, Math.trunc(damage / 4));
       this.stamina[target] -= 5;
+      this.blocks[target]++;
     }
     this.pending[target] += damage;
     if (this.credit[target] < 0) this.credit[target] = source;
@@ -662,6 +721,10 @@ export class Battle {
           this.stamina[i],
           this.kills[i],
           this.buff[i],
+          this.momentum[i],
+          this.support[i],
+          this.blocks[i],
+          this.actionSerial[i],
         ],
         base,
       );

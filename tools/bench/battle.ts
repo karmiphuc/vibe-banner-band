@@ -1,7 +1,7 @@
 import { performance } from 'node:perf_hooks';
 import { cpus, platform, arch } from 'node:os';
 import { Battle } from '../../src/sim/battle';
-import { DEFAULT_CONFIG } from '../../src/content/catalog';
+import { DEFAULT_CONFIG, SIM_VERSION } from '../../src/content/catalog';
 
 const results = [];
 for (const count of [100, 500, 1000]) {
@@ -34,6 +34,7 @@ for (const count of [100, 500, 1000]) {
 console.log(
   JSON.stringify(
     {
+      version: SIM_VERSION,
       runtime: process.version,
       platform: platform(),
       arch: arch(),

@@ -1,0 +1,50 @@
+{
+  "version": "battle-lab-2",
+  "runtime": "v24.19.0",
+  "platform": "linux",
+  "arch": "x64",
+  "cpu": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+  "seed": 7541,
+  "terrain": "meadow",
+  "results": [
+    {
+      "perSide": 100,
+      "ticks": 600,
+      "p50ms": 0.459,
+      "p95ms": 1.167,
+      "p99ms": 1.567,
+      "hash": "47c553c7",
+      "standing": [
+        47,
+        22
+      ],
+      "note": "Headless simulation only, one run, 30-tick warm-up. Not a browser/rendering or real-device qualification."
+    },
+    {
+      "perSide": 500,
+      "ticks": 600,
+      "p50ms": 3.226,
+      "p95ms": 4.717,
+      "p99ms": 6.484,
+      "hash": "807c96e0",
+      "standing": [
+        287,
+        251
+      ],
+      "note": "Headless simulation only, one run, 30-tick warm-up. Not a browser/rendering or real-device qualification."
+    },
+    {
+      "perSide": 1000,
+      "ticks": 600,
+      "p50ms": 7.792,
+      "p95ms": 10.778,
+      "p99ms": 13.871,
+      "hash": "e63a06ab",
+      "standing": [
+        682,
+        616
+      ],
+      "note": "Headless simulation only, one run, 30-tick warm-up. Not a browser/rendering or real-device qualification."
+    }
+  ]
+}

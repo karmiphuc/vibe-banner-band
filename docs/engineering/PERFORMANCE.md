@@ -1,6 +1,8 @@
 # Performance targets and measurement
 
-Status: [one-run headless battle evidence](../evidence/battle-lab-headless.json) now exists. On the recorded Xeon/Node environment, p95 tick times were 1.050 ms at 100/side, 6.659 ms at 500/side and 26.351 ms at 1,000/side. The largest run had a 34.628 ms p99, above the 33.3 ms tick budget. These are simulation diagnostics, not browser FPS or device qualification. Targets below remain engineering budgets to test.
+Current PoC 0.2: [new-rule headless evidence](../evidence/battle-lab-v2-headless.json) records p95 1.167/4.717/10.778 ms at 100/500/1,000 per side. This is a single 600-tick diagnostic with changed rules/workload, not a controlled speedup claim or browser benchmark. Near/crowd recipe geometry counts are in the [asset report](../evidence/model-recipes-v2.json).
+
+Historical PoC 0.1: [one-run headless battle evidence](../evidence/battle-lab-headless.json) now exists. On the recorded Xeon/Node environment, p95 tick times were 1.050 ms at 100/side, 6.659 ms at 500/side and 26.351 ms at 1,000/side. The largest run had a 34.628 ms p99, above the 33.3 ms tick budget. These are simulation diagnostics, not browser FPS or device qualification. Targets below remain engineering budgets to test.
 
 ## Workload definition
 

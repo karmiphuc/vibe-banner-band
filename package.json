@@ -1,6 +1,6 @@
 {
   "name": "vibe-banner-band",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -13,7 +13,8 @@
     "test": "tsx --test tests/*.test.ts",
     "test:browser": "playwright test",
     "bench": "tsx tools/bench/battle.ts",
-    "check:boundaries": "node tools/check-boundaries.mjs"
+    "check:boundaries": "node tools/check-boundaries.mjs",
+    "assets:report": "tsx tools/assets/report-models.ts"
   },
   "dependencies": {
     "three": "0.186.1"

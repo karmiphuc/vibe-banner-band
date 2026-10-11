@@ -1,4 +1,6 @@
 import './style.css';
+import { SCENARIOS } from './content/scenarios';
+import { drawMinimap } from './render/minimap';
 import {
   DEFAULT_CONFIG,
   SIM_VERSION,
@@ -48,10 +50,11 @@ const armyForm = (
 </section>`;
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-<header class="topbar"><a class="brand" href="./" aria-label="Banner Band home"><span class="brand-symbol">${icon('flag')}</span><span>BANNER<span class="brand-slash">/</span>BAND</span></a><div class="page-title">CUSTOM BATTLE <span class="title-divider">/</span> <span>THE GALLIC FRONTIER</span></div><a class="build-tag" href="https://github.com/karmiphuc/vibe-banner-band" target="_blank" rel="noopener" title="Source code and project documentation"><i></i> COMBAT LAB <b>0.1 ↗</b></a></header>
+<header class="topbar"><a class="brand" href="./" aria-label="Banner Band home"><span class="brand-symbol">${icon('flag')}</span><span>BANNER<span class="brand-slash">/</span>BAND</span></a><div class="page-title">CUSTOM BATTLE <span class="title-divider">/</span> <span>THE GALLIC FRONTIER</span></div><a class="build-tag" href="https://github.com/karmiphuc/vibe-banner-band" target="_blank" rel="noopener" title="Source code and project documentation"><i></i> PROOF OF CONCEPT <b>0.2 ↗</b></a></header>
 <main class="workspace">
   <aside class="setup-panel"><div class="panel-intro"><span class="eyebrow">01 / BATTLE SETUP</span><h1>Set the field.</h1><p>Build two armies. Watch their commanders lead.</p></div>
   <form id="battle-form"><fieldset id="setup-fields"><legend class="sr-only">Battle configuration</legend>
+    <section class="scenario-picker"><label for="scenario">CHOOSE AN ENCOUNTER</label><select id="scenario">${SCENARIOS.map((s) => `<option value="${s.id}">${s.name}</option>`).join('')}<option value="custom">Custom battle</option></select><p id="scenario-detail">${SCENARIOS[0].description}</p></section>
     ${armyForm('romans', 'Roman Republic', 'Discipline. Armor. Resolve.', 'roman')}
     ${armyForm('gauls', 'Gallic warband', 'Momentum. Reach. Ferocity.', 'gaul')}
     <section class="world-settings"><div class="field"><label for="terrain">Battlefield</label><select id="terrain"><option value="meadow">Open meadow</option><option value="crossroads">Old crossroads</option><option value="rocky-pass">Rocky passage</option></select></div><div class="field seed-field"><label for="seed">World seed</label><input id="seed" type="number" min="0" max="4294967295" step="1" value="7541" /><button type="button" id="new-seed" aria-label="Use next seed" title="Use next seed">↻</button></div></section>
@@ -63,8 +66,11 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <div class="battle-top"><div class="battle-location"><span class="eyebrow">02 / LIVE FIELD</span><strong id="location">Open meadow</strong></div><div class="live-controls"><span id="battle-status" class="status-badge">DEPLOYMENT</span><button id="reset" class="icon-button" title="Reset same seed" aria-label="Reset battle">${icon('reset')}</button><button id="step" class="icon-button" title="Advance one simulation tick" aria-label="Step one tick">${icon('step')}</button><div class="speed-control" aria-label="Simulation speed"><button data-speed="1" class="active" aria-pressed="true">1×</button><button data-speed="2" aria-pressed="false">2×</button><button data-speed="4" aria-pressed="false">4×</button></div></div></div>
     <div class="field-viewport" id="viewport">
       <div class="army-score"><div class="score roman"><span class="score-label">ROMANS</span><strong id="roman-standing">80</strong><span id="roman-losses">0 fallen</span><div class="strength-bar"><i id="roman-bar"></i></div></div><div class="score-center"><span>VS</span><strong id="clock">00:00</strong></div><div class="score gaul"><span class="score-label">GAULS</span><strong id="gaul-standing">100</strong><span id="gaul-losses">0 fallen</span><div class="strength-bar"><i id="gaul-bar"></i></div></div></div>
+      <div class="observer-toolbar" aria-label="Observer tools"><button id="tactical" aria-pressed="false">${icon('shield')}<span>Tactical</span></button><button id="follow" aria-pressed="false">${icon('flag')}<span>Follow</span></button><button id="rotate" title="Rotate camera 90 degrees" aria-label="Rotate camera">↻</button><button id="fullscreen" title="Expand battlefield" aria-label="Expand battlefield">${icon('expand')}</button></div>
+      <div class="field-phase"><span id="phase-label">DEPLOYMENT</span><span id="phase-description">Two armies. One field.</span></div>
+      <div class="minimap-wrap"><canvas id="minimap" width="180" height="140" aria-label="Battle overview. Romans in terracotta, Gauls in teal. Selected unit circled."></canvas><span>FIELD OVERVIEW <b>N ↑</b></span></div>
       <div class="viewport-note" id="viewport-note"><span class="note-dot"></span>Armies ready. Begin battle to release the commanders.</div>
-      <div class="result-card" id="result" hidden><span class="eyebrow">BATTLE CONCLUDED</span><h2 id="result-title"></h2><p id="result-detail"></p><button id="result-replay">${icon('reset')}Run this battle again</button></div>
+      <div class="result-card" id="result" hidden><span class="eyebrow">BATTLE CONCLUDED</span><h2 id="result-title"></h2><p id="result-detail"></p><div id="result-stats" class="result-stats"></div><button id="result-replay">${icon('reset')}Run this battle again</button></div>
       <div class="camera-tools"><button id="zoom-in" class="icon-button" aria-label="Zoom in" title="Zoom in">${icon('plus')}</button><button id="zoom-out" class="icon-button" aria-label="Zoom out" title="Zoom out">${icon('minus')}</button><button id="overview" class="icon-button" aria-label="Fit battlefield" title="Fit battlefield">${icon('expand')}</button></div>
       <div class="compass"><span>N</span><svg viewBox="0 0 50 50" aria-hidden="true"><path d="M25 5 32 29 25 25 18 29Z" fill="currentColor"/><path d="M25 45 18 21 25 25 32 21Z" fill="currentColor" opacity=".3"/></svg><small>ISOMETRIC</small></div>
       <div class="camera-hint">DRAG TO PAN <span>·</span> SCROLL TO ZOOM <span>·</span> CLICK TO INSPECT</div>
@@ -81,9 +87,12 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <div class="unit-stat"><div><span>Morale</span><strong id="unit-morale"></strong></div><div class="meter morale"><i id="morale-meter"></i></div></div>
     <div class="unit-stat"><div><span>Stamina</span><strong id="unit-stamina"></strong></div><div class="meter stamina"><i id="stamina-meter"></i></div></div>
     <div class="unit-facts"><div><span>Armor</span><strong id="unit-armor"></strong></div><div><span>Damage</span><strong id="unit-damage"></strong></div><div><span>Ammo</span><strong id="unit-ammo"></strong></div><div><span>Kills</span><strong id="unit-kills"></strong></div></div>
+    <div class="combat-readout"><div><span>Shield support</span><b id="unit-support">—</b></div><div><span>Charge impact</span><b id="unit-impact">—</b></div><div><span>Shield blocks</span><b id="unit-blocks">0</b></div></div>
     <section class="equipment"><h3>EQUIPMENT</h3><ul id="unit-equipment"></ul></section>
     <section class="ability"><span>${icon('flag')}</span><div><h3 id="unit-ability"></h3><p id="ability-detail"></p></div></section>
+    <button id="open-workshop" class="secondary workshop-launch">Open model workshop ↗</button>
     <button id="focus-unit" class="secondary">Inspect model ${icon('expand')}</button>
+    <details class="event-history"><summary>Battle chronicle</summary><ol id="event-list"></ol></details>
     <div class="unit-library"><h3>UNIT DESIGNS</h3><div>${UNITS.map((u, i) => `<button data-unit-type="${i}" title="Inspect ${u.name}"><i class="${i < 3 ? 'roman' : 'gaul'}"></i>${u.name}${icon('chevron')}</button>`).join('')}</div></div>
     <details class="diagnostics"><summary>Diagnostics <span id="fps">— fps</span></summary><dl><dt>Simulation tick</dt><dd id="diag-tick">0</dd><dt>Worker tick cost</dt><dd id="diag-cost">—</dd><dt>State fingerprint</dt><dd id="diag-hash">—</dd><dt>Draw calls</dt><dd id="diag-draws">—</dd><dt>Projectiles</dt><dd id="diag-projectiles">0</dd><dt>Largest spatial cell</dt><dd id="diag-cell">—</dd></dl><p>Measured on your device. This prototype is not a qualified 2,000-unit performance result.</p></details>
   </aside>
@@ -132,6 +141,10 @@ function writeConfig(): void {
   }
   $<HTMLInputElement>('seed').value = String(config.seed);
   $<HTMLSelectElement>('terrain').value = config.terrain;
+  const preset = SCENARIOS.find((s) => JSON.stringify(s.config) === JSON.stringify(config));
+  $<HTMLSelectElement>('scenario').value = preset?.id ?? 'custom';
+  $('scenario-detail').textContent =
+    preset?.description ?? 'Your army sizes, doctrines, terrain and seed.';
   updateRoster();
 }
 function updateRoster(): void {
@@ -162,6 +175,7 @@ function deploy(newConfig: BattleConfig = config): void {
   speed = 1;
   selected = config.romans.count - 1;
   writeConfig();
+  $('viewport').classList.remove('inspecting');
   renderer?.configure(config);
   renderer?.select(selected);
   $('result').hidden = true;
@@ -200,6 +214,7 @@ function updateControls(): void {
       : 'Changes redeploy the armies. Both commanders are autonomous.';
   $('viewport-note').hidden = (summary?.tick ?? 0) > 0;
   renderer?.setRunning(running);
+  $('follow').setAttribute('aria-pressed', String(renderer?.isFollowing ?? false));
 }
 function updateSummary(s: BattleSummary): void {
   summary = s;
@@ -234,6 +249,50 @@ function updateSummary(s: BattleSummary): void {
     $('result-detail').textContent =
       `${s.romans.fallen + s.gauls.fallen} fallen · ${s.romans.routing + s.gauls.routing + s.romans.escaped + s.gauls.escaped} routed · ${seconds}s of battle`;
   }
+  if (lastData.length) {
+    let fighting = 0;
+    for (let i = 0; i < lastData[1]; i++)
+      if (lastData[3 + i * UNIT_STRIDE + 4] === 1 && lastData[3 + i * UNIT_STRIDE + 9] === 0)
+        fighting++;
+    const routed = s.romans.routing + s.gauls.routing;
+    const phase =
+      s.winner !== null
+        ? 'CONCLUDED'
+        : routed > Math.max(5, (s.romans.standing + s.gauls.standing) * 0.15)
+          ? 'LINES BREAKING'
+          : fighting > 0
+            ? 'CLOSE COMBAT'
+            : s.projectiles > 0
+              ? 'JAVELIN EXCHANGE'
+              : s.tick
+                ? 'ADVANCING'
+                : 'DEPLOYMENT';
+    $('phase-label').textContent = phase;
+    $('phase-description').textContent =
+      phase === 'CLOSE COMBAT'
+        ? 'Shields, stamina and leadership decide the line.'
+        : phase === 'LINES BREAKING'
+          ? 'Morale collapses. Watch troops leave the field.'
+          : phase === 'JAVELIN EXCHANGE'
+            ? 'Finite ammunition. Watch the ranged screen.'
+            : phase === 'ADVANCING'
+              ? 'Disciplined files against a gathering charge.'
+              : 'Inspect the commanders. Choose your experiment.';
+    drawMinimap($<HTMLCanvasElement>('minimap'), lastData, config, selected);
+  }
+  $('event-list').replaceChildren(
+    ...s.events
+      .slice(-8)
+      .reverse()
+      .map((e) => {
+        const li = document.createElement('li');
+        li.textContent = `${(e.tick / 30).toFixed(1)}s · ${e.text}`;
+        return li;
+      }),
+  );
+  if (s.winner !== null)
+    $('result-stats').innerHTML =
+      `<div><b>Romans</b><span>${s.romans.standing} standing</span><span>${s.romans.damage} damage dealt</span><span>${s.rallies[0]} rallies</span></div><div><b>Gauls</b><span>${s.gauls.standing} standing</span><span>${s.gauls.damage} damage dealt</span><span>${s.rallies[1]} war cries</span></div>`;
   updateControls();
   updateInspector();
 }
@@ -264,6 +323,9 @@ function updateInspector(): void {
   $('unit-damage').textContent = String(design.damage);
   $('unit-ammo').textContent = design.role === 'skirmisher' ? String(lastData[b + 9]) : '—';
   $('unit-kills').textContent = String(lastData[b + 11]);
+  $('unit-support').textContent = `${lastData[b + 14]} nearby allies`;
+  $('unit-impact').textContent = `+${Math.trunc(lastData[b + 13] / 6)} damage`;
+  $('unit-blocks').textContent = String(lastData[b + 15]);
   $('unit-equipment').replaceChildren(
     ...design.equipment.map((name) => {
       const li = document.createElement('li');
@@ -355,9 +417,13 @@ try {
 }
 
 $('battle-form').addEventListener('submit', (e) => e.preventDefault());
-$('battle-form').addEventListener('change', () => {
+$('battle-form').addEventListener('change', (event) => {
   try {
-    deploy(readConfig());
+    const scenario =
+      (event.target as HTMLElement).id === 'scenario'
+        ? SCENARIOS.find((s) => s.id === $<HTMLSelectElement>('scenario').value)
+        : null;
+    deploy(scenario?.config ?? readConfig());
   } catch (error) {
     toast((error as Error).message);
   }
@@ -401,16 +467,44 @@ document.querySelectorAll<HTMLButtonElement>('[data-speed]').forEach((button) =>
     });
   }),
 );
-$('overview').addEventListener('click', () => renderer?.overview());
+$('overview').addEventListener('click', () => {
+  renderer?.overview();
+  $('viewport').classList.remove('inspecting');
+});
+$('tactical').addEventListener('click', () => {
+  const on = $('tactical').getAttribute('aria-pressed') !== 'true';
+  $('tactical').setAttribute('aria-pressed', String(on));
+  renderer?.setTactical(on);
+});
+$('follow').addEventListener('click', () => {
+  if (renderer?.isFollowing) renderer.overview();
+  else renderer?.followSelected();
+  $('follow').setAttribute('aria-pressed', String(renderer?.isFollowing));
+});
+$('rotate').addEventListener('click', () => renderer?.rotateView());
+$('fullscreen').addEventListener('click', async () => {
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else await document.querySelector('.battle-panel')?.requestFullscreen();
+  } catch {
+    toast('Full-screen mode is unavailable in this browser.');
+  }
+});
 $('zoom-in').addEventListener('click', () => renderer?.zoomBy(1.3));
 $('zoom-out').addEventListener('click', () => renderer?.zoomBy(1 / 1.3));
 $('inspect-roman').addEventListener('click', () => selectUnit(config.romans.count - 1));
 $('inspect-gaul').addEventListener('click', () =>
   selectUnit(config.romans.count + config.gauls.count - 1),
 );
+$('open-workshop').addEventListener('click', async () => {
+  send({ kind: 'pause', session });
+  const { openWorkshop } = await import('./render/workshop');
+  openWorkshop(lastData.length ? lastData[3 + selected * UNIT_STRIDE + 8] : 2);
+});
 $('focus-unit').addEventListener('click', () => {
   send({ kind: 'pause', session });
   renderer?.focus(selected);
+  $('viewport').classList.add('inspecting');
 });
 document.querySelectorAll<HTMLButtonElement>('[data-unit-type]').forEach((button) =>
   button.addEventListener('click', () => {
@@ -428,6 +522,7 @@ document.querySelectorAll<HTMLButtonElement>('[data-unit-type]').forEach((button
     send({ kind: 'pause', session });
     selectUnit(found);
     renderer?.focus(found);
+    $('viewport').classList.add('inspecting');
   }),
 );
 $('export').addEventListener('click', () => send({ kind: 'export', session }));

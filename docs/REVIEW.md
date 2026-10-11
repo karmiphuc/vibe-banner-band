@@ -26,3 +26,7 @@ Date: 2026-10-11. Scope: inspect the planning baseline, implement an experiment 
 Headless tests cover arithmetic vectors, deterministic re-execution, checkpoint continuation, conservation, lethal trades, commander/morale behavior, outcrop exclusion, swept projectiles and invalid inputs. Model tests compare generated positions/colors between repeated builds. Browser tests exercise real worker transfer/replay behavior, headless/browser hash agreement, setup, model inspection, pause/step and responsive layout.
 
 Performance evidence is explicitly a one-run headless diagnostic under a recorded Node/Linux CPU configuration. It is not the three-run device/browser qualification in the broader plan. A successful build or screenshot does not close the larger roadmap gates.
+
+## Proof-of-concept refinement review
+
+See [0.2 refinement](REFINEMENT_02.md). Added a regression fixture for rear-rank commander overlap, corrected that deployment defect, committed targets during windup, made shield support spatial, and exposed actual geometry tiers in a disposable inspection workshop. New simulation fields are included in replay/checkpoint identity; old rule versions are rejected.

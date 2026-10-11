@@ -1,4 +1,4 @@
-export const SIM_VERSION = 'battle-lab-1';
+export const SIM_VERSION = 'battle-lab-2';
 export const TICK_RATE = 30;
 export const SCALE = 1024;
 export const MAX_ARMY = 1000;

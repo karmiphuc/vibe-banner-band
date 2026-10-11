@@ -1,6 +1,6 @@
 # Presentation and crowd rendering
 
-Status: proposed Three.js implementation; no render benchmark exists yet. The [engine ADR](../decisions/0001-browser-engine.md) defines the Godot alternative and decision gate.
+Status: [proof-of-concept Three.js rendering](../REFINEMENT_02.md) implements instanced rigid articulation, near/crowd geometry tiers and camera culling. The production skinned-crowd plan and real-device rendering qualification below remain open. The [engine ADR](../decisions/0001-browser-engine.md) defines the Godot alternative and decision gate.
 
 ## Scene contract
 

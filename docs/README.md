@@ -4,6 +4,7 @@ Updated 2026-10-11. All engine subsystems below are specified/planned unless a d
 
 | Document | Responsibility |
 | --- | --- |
+| [Proof of concept 0.2](REFINEMENT_02.md) | Refined combat, equipment workshop, scenarios and verification |
 | [Custom battle](CUSTOM_BATTLE.md) | Implemented controls, units, mechanics and limits |
 | [Review](REVIEW.md) | Double-check findings and validation |
 | [Roman–Gallic models](assets/ROMAN_GAUL_RECIPES.md) | Original procedural model recipes and provenance |

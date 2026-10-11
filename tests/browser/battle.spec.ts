@@ -60,13 +60,11 @@ test('custom setup, invalid import, rocky terrain and responsive layout', async 
   await page.locator('#terrain').selectOption('rocky-pass');
   await expect(page.locator('#location')).toHaveText('Rocky passage');
   await expect(page.locator('#loading')).toBeHidden();
-  await page
-    .locator('#replay-file')
-    .setInputFiles({
-      name: 'bad.json',
-      mimeType: 'application/json',
-      buffer: Buffer.from('{"version":"wrong"}'),
-    });
+  await page.locator('#replay-file').setInputFiles({
+    name: 'bad.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from('{"version":"wrong"}'),
+  });
   await expect(page.locator('#toast')).toContainText('incompatible');
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: 'artifacts/local/mobile.png', fullPage: true });
@@ -119,7 +117,7 @@ test('worker keeps stepping when snapshot buffers are exhausted and ignores stal
             resolve({ tick: m.summary.tick, snapshots });
           }
         };
-        worker.postMessage({ kind: 'init', session: 77, protocol: 1, config });
+        worker.postMessage({ kind: 'init', session: 77, protocol: 2, config });
       });
     },
     {
@@ -133,4 +131,46 @@ test('worker keeps stepping when snapshot buffers are exhausted and ignores stal
   );
   expect(result.snapshots).toBe(3);
   expect(result.tick).toBeGreaterThan(3);
+});
+
+test('scenario presets, observer tools and isolated equipment workshop', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('./');
+  await expect(page.locator('#loading')).toBeHidden();
+  await page.locator('#scenario').selectOption('pass');
+  await expect(page.locator('#roman-standing')).toHaveText('120');
+  await expect(page.locator('#gaul-standing')).toHaveText('180');
+  await expect(page.locator('#location')).toHaveText('Rocky passage');
+  await page.locator('#tactical').click();
+  await expect(page.locator('#tactical')).toHaveAttribute('aria-pressed', 'true');
+  await page.locator('#rotate').click();
+  await page.locator('#follow').click();
+  await expect(page.locator('#follow')).toHaveAttribute('aria-pressed', 'true');
+  await page.locator('#overview').click();
+  const map = await page.locator('#minimap').boundingBox();
+  expect(map!.height).toBeGreaterThan(80);
+  await page.locator('#open-workshop').click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.locator('#workshop-turntable').uncheck();
+  await page.screenshot({ path: 'artifacts/local/workshop-roman.png' });
+  await page.locator('#workshop-unit').selectOption('4');
+  await page.locator('#workshop-pose').selectOption('guard');
+  await page.locator('#workshop-sidearm').check();
+  const full = Number(
+    (await page.locator('#workshop-metrics').innerText()).replaceAll(',', '').split(' ')[0],
+  );
+  await page.locator('#workshop-lod').check();
+  const low = Number(
+    (await page.locator('#workshop-metrics').innerText()).replaceAll(',', '').split(' ')[0],
+  );
+  expect(low).toBeLessThan(full * 0.35);
+  await page.locator('#workshop-unit').selectOption('5');
+  await page.locator('#workshop-lod').uncheck();
+  await page.screenshot({ path: 'artifacts/local/workshop-gaul.png' });
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.locator('#open-workshop').click();
+  await page.getByRole('button', { name: 'Close model workshop' }).click();
+  expect(errors).toEqual([]);
 });

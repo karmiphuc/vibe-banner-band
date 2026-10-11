@@ -36,3 +36,18 @@ test('all six original articulated recipes have repeatable finite geometry and e
   }
   assert.equal(signatures.size, 6);
 });
+
+test('crowd LOD reduces geometry while keeping every articulated equipment part', async () => {
+  const { createCrowdModel } = await import('../src/render/unit-models');
+  for (let type = 0; type < 6; type++)
+    for (const sidearm of [false, true]) {
+      const near = createUnitModel(type, sidearm),
+        far = createCrowdModel(type, sidearm);
+      assert.deepEqual(Object.keys(far.parts), Object.keys(near.parts));
+      const vertices = (model: typeof near) =>
+        Object.values(model.parts).reduce((sum, g) => sum + g.getAttribute('position').count, 0);
+      assert(vertices(far) < vertices(near) * 0.35);
+      for (const geometry of [...Object.values(near.parts), ...Object.values(far.parts)])
+        geometry.dispose();
+    }
+});
