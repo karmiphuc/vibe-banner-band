@@ -132,7 +132,19 @@
         "docs/PRODUCT.md",
         "docs/ROADMAP.md",
         "docs/decisions/README.md"
-      ]
+      ],
+      "documented_validation": {
+        "source": {
+          "path": "tools/assets/evidence/repeat-build.json",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "7535e544396bb820116134347c39aea3242d792826090c987467a5e521a7b77a"
+        },
+        "blender_version": "4.3.2",
+        "repeat_geometry_manifest_match": true,
+        "repeat_glb_binary_match": true,
+        "interpretation": "Two narrow equipment research builds; no generated humanoid, animation, engine import or production qualification. Not a model-token or session-duration trace.",
+        "new_execution_during_ledger_audit": false
+      }
     },
     {
       "phase": "0.1",
@@ -185,7 +197,18 @@
       ],
       "followup_commits": [
         "a6f072307f167dafac80df837203e3b0e4c9ce9b"
-      ]
+      ],
+      "documented_validation": {
+        "headless_model_tests": 18,
+        "browser_scenarios": 4,
+        "source": {
+          "path": "docs/REFINEMENT_02.md",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "60ffd1bb75b458115d61dfbc21b748f457d34c46a028a1ff8ae39ffbe66d74c0"
+        },
+        "interpretation": "Documented test coverage; no original test-output log recovered in this audit.",
+        "new_execution_during_ledger_audit": false
+      }
     },
     {
       "phase": "0.3",
@@ -210,7 +233,18 @@
       "evidence": [
         "docs/REFINEMENT_03.md",
         "docs/evidence/battle-lab-v3-headless.json"
-      ]
+      ],
+      "documented_validation": {
+        "headless_model_tests": 31,
+        "browser_scenarios": 6,
+        "source": {
+          "path": "docs/REFINEMENT_03.md",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "467c4ee5c86f0a0c02162fb7efe34e2a6dd75e3597ff27d8ad643fc1351b0497"
+        },
+        "interpretation": "Documented test coverage; no original test-output log recovered in this audit.",
+        "new_execution_during_ledger_audit": false
+      }
     },
     {
       "phase": "0.4",
@@ -235,7 +269,18 @@
       "evidence": [
         "docs/REFINEMENT_04.md",
         "docs/evidence/battle-lab-v4-headless.json"
-      ]
+      ],
+      "documented_validation": {
+        "headless_model_tests": 39,
+        "browser_scenarios": 7,
+        "source": {
+          "path": "docs/REFINEMENT_04.md",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "b9604bf01efa2369807c7dd3e2772af7f39b95fe1c7e888385b8269cb69c0421"
+        },
+        "interpretation": "Documented test coverage; no original test-output log recovered in this audit.",
+        "new_execution_during_ledger_audit": false
+      }
     },
     {
       "phase": "0.5",
@@ -263,7 +308,18 @@
         "b9cf581c5b937310d67f775c96b3a6c7f2f0aea8",
         "77a5c20e7f661f92a409db59e50054d7b056707f"
       ],
-      "prompt_attribution_note": "No separate initiating message is visible for 0.5. It is attributed to continuation of the 0.4 request and earlier combined-arms requirements. Zero means no newly assigned visible prompt, not proof that no other prompt existed."
+      "prompt_attribution_note": "No separate initiating message is visible for 0.5. It is attributed to continuation of the 0.4 request and earlier combined-arms requirements. Zero means no newly assigned visible prompt, not proof that no other prompt existed.",
+      "documented_validation": {
+        "headless_model_tests": 47,
+        "browser_scenarios": 10,
+        "source": {
+          "path": "docs/evidence/validation-v5.json",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "ddd5b2bf6015c534f88fd73a9ef679e18e131370b30afad9ca37f5c67dee2049"
+        },
+        "interpretation": "Headless tests passed; seven existing browser regressions passed in a full run and three combined-arms scenarios passed in final targeted runs. Do not describe this as one final full-suite run.",
+        "new_execution_during_ledger_audit": false
+      }
     },
     {
       "phase": "0.6",
@@ -288,7 +344,18 @@
       "evidence": [
         "docs/REFINEMENT_06.md",
         "docs/evidence/validation-v6.json"
-      ]
+      ],
+      "documented_validation": {
+        "headless_model_tests": 53,
+        "browser_scenarios": 11,
+        "source": {
+          "path": "docs/evidence/validation-v6.json",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "d7dab8663f5a46e93b8efd4617480d0d0f062a237d10b23174125cd27669ef29"
+        },
+        "interpretation": "Full suites passed; the mounted-tactics scenario was rerun after final refinements.",
+        "new_execution_during_ledger_audit": false
+      }
     },
     {
       "phase": "0.7",
@@ -316,7 +383,18 @@
         "docs/assets/BATTLE_STANDARDS.md",
         "docs/decisions/0010-carried-banner-equipment.md"
       ],
-      "review_note": "Visible review identified clipped mounted-standard preview framing and weak equipment readability at battlefield scale. Framing was corrected; readability and rigid animation remain open. These examples are not a complete self-review count. The user correction about equippable banners is not counted as self-review."
+      "review_note": "Visible review identified clipped mounted-standard preview framing and weak equipment readability at battlefield scale. Framing was corrected; readability and rigid animation remain open. These examples are not a complete self-review count. The user correction about equippable banners is not counted as self-review.",
+      "documented_validation": {
+        "headless_model_tests": 56,
+        "browser_scenarios": 12,
+        "source": {
+          "path": "docs/assets/BATTLE_STANDARDS.md",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "bc78c83dfa94a470a97427e7e980fdac8e5527daa90cd9d18a74167465642f17"
+        },
+        "interpretation": "Full suites passed; after the final workshop-camera adjustment, the equipment browser scenario passed again. Corroborated by visible tool-result summaries; original temporary logs are no longer available.",
+        "new_execution_during_ledger_audit": false
+      }
     }
   ],
   "totals": {
@@ -348,5 +426,161 @@
   },
   "privacy": {
     "policy": "Public summary only. No raw transcripts, environment-variable names or values, credentials, secrets, internal URLs, or private session identifiers are included."
+  },
+  "trace_audit": {
+    "reviewed_on_utc": "2026-10-12",
+    "scope": "Additional public evidence extracted from committed artifacts, visible tool-result summaries and the Pages checkout. This is not a private reasoning or raw conversation export.",
+    "availability": {
+      "committed_validation_and_benchmark_artifacts": "available",
+      "visible_tool_result_summaries": "partial, including final 0.7 verification",
+      "original_temporary_build_test_logs": "not present at recheck",
+      "local_codex_session_and_archive_directories": "not present in inspected standard locations",
+      "complete_model_tool_accounting_trace": "unavailable",
+      "usage_dashboard_or_invoice": "unavailable",
+      "note": "Unavailable here does not assert that provider-side records do not exist."
+    },
+    "toolchain_at_0_7": {
+      "source": {
+        "path": "package.json",
+        "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+        "sha256": "c4bc468afb1344ca648ac85f55c547f763689a1a717959a3c477f99caa08bfbf"
+      },
+      "lockfile": {
+        "path": "package-lock.json",
+        "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+        "sha256": "1beebb23efdce3d999fbe701a5ca26d94f6bcd7a4e2157a83707e66b3192ffd5"
+      },
+      "dependencies": {
+        "three": "0.186.1"
+      },
+      "development_dependencies": {
+        "@playwright/test": "1.64.0",
+        "@types/node": "26.6.5",
+        "@types/three": "0.186.0",
+        "prettier": "3.6.2",
+        "tsx": "4.23.15",
+        "typescript": "5.9.3",
+        "vite": "7.3.7"
+      },
+      "browser_evidence": "Chromium 154.0.8037.57 on Debian 13 with SwiftShader, as recorded for 0.6 and in the retained 0.7 session summary.",
+      "browser_config": {
+        "source": {
+          "path": "playwright.config.ts",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "5b4e171b3e5a1195df5c1f210dca90eedb413dbd4448493e02b671bd8be3af45"
+        },
+        "headless": true,
+        "workers": 1,
+        "viewport_width": 1440,
+        "viewport_height": 1000
+      },
+      "limitation": "Software rendering does not establish hardware-GPU frame rate or cross-browser support."
+    },
+    "selected_corrections_and_open_findings": [
+      {
+        "phase": "0.2",
+        "finding": "Rear-rank commander deployment overlap.",
+        "origin": "documented implementation review",
+        "outcome": "Corrected with a regression fixture.",
+        "source": {
+          "path": "docs/REVIEW.md",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "94735d74d35b5fc6687c96fae3ab3da62187165f7147b453dd9bea4ffe98cbf5"
+        }
+      },
+      {
+        "phase": "0.2",
+        "finding": "Commander crest did not sit correctly on the helmet mount.",
+        "origin": "recorded corrective commit; discovery method not established",
+        "outcome": "Corrected in a same-version follow-up.",
+        "fix_commit_sha": "a6f072307f167dafac80df837203e3b0e4c9ce9b"
+      },
+      {
+        "phase": "0.4",
+        "finding": "Opposing disciplined lines could stop outside weapon range.",
+        "origin": "documented regression fixture",
+        "outcome": "Approach deadlock corrected.",
+        "source": {
+          "path": "docs/REVIEW.md",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "94735d74d35b5fc6687c96fae3ab3da62187165f7147b453dd9bea4ffe98cbf5"
+        }
+      },
+      {
+        "phase": "0.5",
+        "finding": "Mounted noble presentation did not match its armored loadout.",
+        "origin": "recorded corrective commit; discovery method not established",
+        "outcome": "Model/loadout mismatch corrected in a same-version follow-up.",
+        "fix_commit_sha": "77a5c20e7f661f92a409db59e50054d7b056707f"
+      },
+      {
+        "phase": "0.7",
+        "finding": "Initial banner work interpreted equippable items as floating interface markers.",
+        "origin": "user correction, not self-review",
+        "outcome": "Discarded the marker replacement and implemented carried equipment.",
+        "source_basis": "Visible user clarification and assistant progress summary; final equipment contract corroborates the shipped behavior.",
+        "source": {
+          "path": "docs/assets/BATTLE_STANDARDS.md",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "bc78c83dfa94a470a97427e7e980fdac8e5527daa90cd9d18a74167465642f17"
+        }
+      },
+      {
+        "phase": "0.7",
+        "finding": "Mounted-standard finial was clipped in the workshop preview.",
+        "origin": "visible screenshot review and documented correction",
+        "outcome": "Camera framing adjusted; equipment browser scenario rerun passed.",
+        "source": {
+          "path": "docs/assets/BATTLE_STANDARDS.md",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "bc78c83dfa94a470a97427e7e980fdac8e5527daa90cd9d18a74167465642f17"
+        }
+      },
+      {
+        "phase": "0.7",
+        "finding": "Equipment remains difficult to read at battlefield scale; rigid animation and immediate stowing remain conspicuous.",
+        "origin": "visible screenshot review and documented limitations",
+        "outcome": "Still open; not a successful visual acceptance gate.",
+        "source": {
+          "path": "docs/assets/BATTLE_STANDARDS.md",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "bc78c83dfa94a470a97427e7e980fdac8e5527daa90cd9d18a74167465642f17"
+        }
+      }
+    ],
+    "finding_accounting_note": "This is a non-exhaustive, mixed-origin register. It includes user feedback and corrective commits whose discovery method is unknown. Do not treat its length as self-review count, infer all fixes from it, or replace the null phase totals.",
+    "published_artifacts": {
+      "pages_commit_sha": "88150a1c63f7bf119f7f3f978a05fa0ed44bcefd",
+      "source_commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+      "source_marker": {
+        "path": "SOURCE.txt",
+        "sha256": "956e7d20356cf416d15f67c8fd94ba5602af09f9d51c695f6e248f71368ce63d"
+      },
+      "screenshots": [
+        {
+          "path": "previews/equipment-roman-aquila-march.png",
+          "sha256": "185d301278c73ad4814150c338c29a9579ccd4e7cb02c6be8a9f2de394bdce6e",
+          "kind": "already published game screenshot"
+        },
+        {
+          "path": "previews/equipment-gaul-horse-attack.png",
+          "sha256": "c71be9c91efdd5f8c2567143f40f85857917c55199689077a7297003ff50d5df",
+          "kind": "already published game screenshot"
+        },
+        {
+          "path": "previews/equipped-banners-battlefield.png",
+          "sha256": "4a065df922c689bd27857571c2cdfeedc57cac42e96052d1fa94658f1ca66729",
+          "kind": "already published game screenshot"
+        }
+      ],
+      "verification_scope": "Checksums calculated from the retained Pages checkout during this audit. Prior visible tool output reports the live source marker, index and release assets matching the build. No fresh network/deployment verification was performed for this audit."
+    },
+    "comparison_caveats": [
+      "Test counts are coverage/result summaries, not independent quality scores or counts of agent self-review.",
+      "Committed headless benchmark artifacts permit scenario-specific comparisons only; changing rules, fixtures or machine load prevents naive release-to-release speed claims.",
+      "Evidence SHA-256 values identify the exact source bytes used for this retrospective summary; they do not independently certify the reported results.",
+      "Discarded floating-marker screenshots and third-party reference images were not promoted as evidence of the shipped equipment.",
+      "No model ID, reasoning effort, token count, call count, session boundary or billing value was recovered in this recheck."
+    ]
   }
 }
