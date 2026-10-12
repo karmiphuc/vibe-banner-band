@@ -1,0 +1,36 @@
+{
+  "version": "0.6.0",
+  "date": "2026-10-11",
+  "simulation": "battle-lab-6",
+  "protocol": 6,
+  "node": "v24.19.0",
+  "chromium": "154.0.8037.57 (Debian 13; SwiftShader)",
+  "headlessTests": 53,
+  "browserTests": 11,
+  "testRuns": [
+    "All 53 headless/model tests passed on final source",
+    "Full 11-scenario Chromium run passed; mounted-tactics scenario rerun after final role validation and target-reacquisition refinements",
+    "Production TypeScript/Vite build, authoritative boundaries and local documentation checks passed"
+  ],
+  "coverage": [
+    "Filled skein slot uniqueness and frontage",
+    "Cavalry flank commitment, withdrawal, reassembly and repetition",
+    "Opposite horse-archer circling and threat-triggered feint withdrawal",
+    "Ammunition/mount exhaustion and no-target fallback",
+    "Atomic mixed-role order rejection and manual cancellation",
+    "Checkpoint isolation and replay continuation",
+    "720 active ticks: headless/worker mounted-tactics hash agreement",
+    "5000-soldier browser deployment and single-step smoke"
+  ],
+  "visualReview": [
+    "Selected cavalry destination outline and route",
+    "Mounted formation phase labels",
+    "Role-specific controls and selected tactic state"
+  ],
+  "limitations": [
+    "Headless timing does not qualify browser FPS",
+    "No Firefox/Safari or hardware GPU qualification",
+    "Eight-way group orbits and existing local terrain routing",
+    "No strategic target scoring or infantry/cavalry coordination"
+  ]
+}

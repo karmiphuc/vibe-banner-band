@@ -1,0 +1,264 @@
+import { BANNERS, type BannerSlot } from '../content/banners';
+import { supportsTactic, type TacticKind } from '../sim/tactics';
+import { ROLE_LABELS } from '../content/catalog';
+import type { BattleSummary } from '../sim/battle';
+import type { Formation, Group, Movement, Order } from '../sim/orders';
+import type { Team } from '../content/catalog';
+
+export class CommandPanel {
+  private summary: BattleSummary | null = null;
+  private armed = false;
+  private available = false;
+  constructor(
+    private root: HTMLElement,
+    private issue: (order: Order) => void,
+    private placement: (active: boolean) => void,
+    private selectedChanged: (team: Team, group: Group) => void = () => {},
+  ) {
+    root.innerHTML = `<div class="command-heading"><span>FORMATION ORDERS</span><small id="order-ack">Choose an army and formation. Commanders fight autonomously.</small></div><div class="command-row"><label class="sr-only" for="command-team">Command army</label><select id="command-team"><option value="0">Romans</option><option value="1">Gauls</option></select><label class="sr-only" for="command-group">Command group</label><select id="command-group"><option value="all">0 · All troops</option></select><div class="movement-orders">${(['advance', 'hold', 'charge', 'fallback', 'skirmish', 'brace'] as const).map((m, i) => `<button type="button" data-order="${m}" aria-pressed="false" title="${['V', 'H', 'C', 'B', '', ''][i]}">${['Advance', 'Hold here', 'Charge', 'Fall back', 'Skirmish', 'Brace'][i]}<kbd>${['V', 'H', 'C', 'B', '', ''][i]}</kbd></button>`).join('')}</div><button id="place-order" type="button" aria-pressed="false">Place line ↗</button></div><div class="command-row command-secondary"><label for="command-formation">Layout</label><select id="command-formation"><option value="line">Line</option><option value="shieldwall">Shield wall</option><option value="loose">Loose</option><option value="skein">Skein / wedge</option><option value="" disabled>Mixed formations</option></select><button id="fire-order" type="button" aria-pressed="false">Hold fire</button><label for="command-facing">Face</label><select id="command-facing">${['E', 'SE', 'S', 'SW', 'W', 'NW', 'N', 'NE'].map((name, i) => `<option value="${i}">${name}</option>`).join('')}<option value="" disabled>Mixed</option></select><label for="command-files">Files</label><input id="command-files" aria-label="Formation frontage in files" type="number" min="2" max="64" value="8"/><button type="button" id="flank-left">Flank left ↶</button><button type="button" id="flank-right">Flank right ↷</button></div><div class="command-row command-secondary"><label for="command-banner">Banner equipment</label><select id="command-banner"><option value="none">No banner</option>${Object.entries(
+      BANNERS,
+    )
+      .map(([id, b]) => `<option value="${id}">${b.name}</option>`)
+      .join(
+        '',
+      )}<option value="" disabled>Mixed banners</option></select><span id="banner-bearer"></span></div><div class="command-row command-secondary"><span>Mounted tactics</span>${(['flank-left', 'flank-right', 'skein-charge', 'circle-left', 'circle-right', 'feint', 'none'] as const).map((t, i) => `<button type="button" data-tactic="${t}" aria-pressed="false">${['Flank left + charge', 'Flank right + charge', 'Skein charge', 'Circle left', 'Circle right', 'Feint & evade', 'Cancel tactic'][i]}</button>`).join('')}<span id="formation-status">—</span></div>`;
+    this.el<HTMLSelectElement>('command-team').addEventListener('change', () => {
+      this.cancelPlacement();
+      this.paint();
+    });
+    this.el<HTMLSelectElement>('command-group').addEventListener('change', () => {
+      this.cancelPlacement();
+      this.paint();
+    });
+    root
+      .querySelectorAll<HTMLButtonElement>('[data-order]')
+      .forEach((b) => b.addEventListener('click', () => this.move(b.dataset.order as Movement)));
+    root.querySelectorAll<HTMLButtonElement>('[data-tactic]').forEach((b) =>
+      b.addEventListener('click', () => {
+        this.cancelPlacement();
+        this.issue({ ...this.selection(), kind: 'tactic', tactic: b.dataset.tactic as TacticKind });
+      }),
+    );
+    this.el<HTMLSelectElement>('command-banner').addEventListener('change', () =>
+      this.issue({
+        ...this.selection(),
+        kind: 'banner',
+        item: this.el<HTMLSelectElement>('command-banner').value as BannerSlot,
+      }),
+    );
+    this.el('place-order').addEventListener('click', () => {
+      if (!this.available) return;
+      this.armed = !this.armed;
+      this.placement(this.armed);
+      this.paint();
+    });
+    this.el<HTMLSelectElement>('command-formation').addEventListener('change', () =>
+      this.issue({
+        ...this.selection(),
+        kind: 'formation',
+        formation: this.el<HTMLSelectElement>('command-formation').value as Formation,
+      }),
+    );
+    this.el<HTMLSelectElement>('command-facing').addEventListener('change', () =>
+      this.issue({
+        ...this.selection(),
+        kind: 'face',
+        heading: Number(this.el<HTMLSelectElement>('command-facing').value),
+      }),
+    );
+    this.el<HTMLInputElement>('command-files').addEventListener('change', () =>
+      this.issue({
+        ...this.selection(),
+        kind: 'frontage',
+        files: Number(this.el<HTMLInputElement>('command-files').value),
+      }),
+    );
+    for (const kind of ['flank-left', 'flank-right'] as const)
+      this.el(kind).addEventListener('click', () => this.move(kind));
+    this.el('fire-order').addEventListener('click', () => {
+      const selected = this.selected();
+      this.issue({
+        ...this.selection(),
+        kind: 'fire',
+        enabled: !selected.every((f) => f.fireAtWill),
+      });
+    });
+  }
+  private el<T extends HTMLElement = HTMLElement>(id: string): T {
+    return this.root.querySelector<T>(`#${id}`)!;
+  }
+  private selection(): { team: Team; group: Group } {
+    return {
+      team: Number(this.el<HTMLSelectElement>('command-team').value) as Team,
+      group:
+        this.el<HTMLSelectElement>('command-group').value === 'all'
+          ? 'all'
+          : Number(this.el<HTMLSelectElement>('command-group').value),
+    };
+  }
+  private selected() {
+    const { team, group } = this.selection();
+    return (
+      this.summary?.formations.filter(
+        (f) => f.team === team && (group === 'all' || f.id === group),
+      ) ?? []
+    );
+  }
+  selectFormation(team: Team, id: number): void {
+    this.el<HTMLSelectElement>('command-team').value = String(team);
+    this.paint();
+    this.el<HTMLSelectElement>('command-group').value = String(id);
+    this.cancelPlacement();
+  }
+  private move(kind: Movement): void {
+    if (!this.available) return;
+    this.cancelPlacement();
+    this.issue({ ...this.selection(), kind });
+  }
+  cancelPlacement(): void {
+    this.armed = false;
+    this.placement(false);
+    this.paint();
+  }
+  place(x: number, z: number): void {
+    if (!this.armed || !this.available) return;
+    this.issue({ ...this.selection(), kind: 'hold', x, z });
+    this.cancelPlacement();
+  }
+  update(summary: BattleSummary | null, replaying: boolean): void {
+    const fresh = !this.summary && !!summary;
+    this.summary = summary;
+    this.available = !!summary && summary.winner === null && !replaying;
+    if (!this.available && this.armed) {
+      this.armed = false;
+      this.placement(false);
+    }
+    this.paint();
+    if (fresh && summary) this.selectFormation(0, summary.formations.find((f) => f.team === 0)!.id);
+  }
+  private paint(): void {
+    const select = this.el<HTMLSelectElement>('command-group'),
+      previous = select.value;
+    const team = Number(this.el<HTMLSelectElement>('command-team').value);
+    const formations = (this.summary?.formations ?? []).filter((f) => f.team === team);
+    const keys = formations.map((f) => String(f.id)).concat('all');
+    if (
+      Array.from(select.options)
+        .map((o) => o.value)
+        .join(',') !== keys.join(',')
+    ) {
+      select.replaceChildren(...keys.map((key) => new Option('', key)));
+      select.value = previous;
+      if (!select.value) select.value = 'all';
+    }
+    formations.forEach(
+      (f, i) =>
+        (select.options[i].textContent =
+          `${f.id + 1} · ${ROLE_LABELS[f.role]} · ${f.standing}/${f.total}`),
+    );
+    select.options[select.options.length - 1].textContent = '0 · All troops';
+
+    this.root
+      .querySelectorAll<
+        HTMLButtonElement | HTMLSelectElement | HTMLInputElement
+      >('button,select,input')
+      .forEach((e) => (e.disabled = !this.available));
+    const selected = this.selected(),
+      first = selected[0];
+    this.root.querySelectorAll<HTMLButtonElement>('[data-tactic]').forEach((b) => {
+      const kind = b.dataset.tactic as TacticKind;
+      b.disabled =
+        !this.available || !selected.length || selected.some((f) => !supportsTactic(kind, f.role));
+      b.title = b.disabled
+        ? 'Select a cavalry or horse-archer formation for its matching tactics.'
+        : 'Repeating formation maneuver. A manual movement or layout order cancels it.';
+      b.setAttribute(
+        'aria-pressed',
+        String(selected.length > 0 && selected.every((f) => (f.tactic?.kind ?? 'none') === kind)),
+      );
+    });
+    const bannerSelect = this.el<HTMLSelectElement>('command-banner');
+    for (const option of bannerSelect.options) {
+      if (option.value && option.value !== 'none')
+        option.hidden =
+          BANNERS[option.value as keyof typeof BANNERS].team !== this.selection().team;
+    }
+    bannerSelect.disabled = !this.available || (this.summary?.tick ?? 0) > 0;
+    bannerSelect.value =
+      first && selected.every((f) => f.bannerItem === first.bannerItem)
+        ? (first.bannerItem ?? 'none')
+        : '';
+    this.el('banner-bearer').textContent =
+      selected.length === 1 && first?.bannerItem !== 'none' && (first?.bannerBearer ?? -1) >= 0
+        ? `Bearer #${first!.bannerBearer! + 1} · equip before battle`
+        : 'Equip before battle';
+    const selection = this.selection();
+    this.selectedChanged(selection.team, selection.group);
+    this.el<HTMLSelectElement>('command-facing').value =
+      first && selected.every((f) => f.heading === first.heading) ? String(first.heading) : '';
+    if (document.activeElement !== this.el('command-files'))
+      this.el<HTMLInputElement>('command-files').value = first ? String(first.files) : '8';
+    this.root
+      .querySelectorAll<HTMLButtonElement>('[data-order]')
+      .forEach((b) =>
+        b.setAttribute(
+          'aria-pressed',
+          String(selected.length > 0 && selected.every((f) => f.movement === b.dataset.order)),
+        ),
+      );
+    this.el('place-order').setAttribute('aria-pressed', String(this.armed));
+    this.el('place-order').textContent = this.armed ? 'Click field · Esc cancels' : 'Place line ↗';
+    this.el<HTMLSelectElement>('command-formation').querySelector<HTMLOptionElement>(
+      '[value="skein"]',
+    )!.disabled = selected.some((f) => f.role !== 'cavalry');
+    this.el<HTMLSelectElement>('command-formation').value =
+      first && selected.every((f) => f.formation === first.formation) ? first.formation : '';
+    const firing = selected.every((f) => f.fireAtWill);
+    this.el('fire-order').textContent = firing ? 'Hold fire' : 'Fire at will';
+    this.el('fire-order').setAttribute('aria-pressed', String(!firing));
+    this.el('formation-status').textContent = first
+      ? `${selected.length === 1 && first.tactic ? `${first.tactic.kind} / ${first.tactic.phase} · cycle ${first.tactic.cycle} · ` : ''}${selected.every((f) => f.movement === first.movement) ? first.movement : 'mixed orders'} · ${selected.length === 1 && first.movement !== 'charge' ? `${first.cohesion}% in position · ` : ''} ${selected.every((f) => f.fireAtWill === first.fireAtWill) ? (first.fireAtWill ? 'weapons free' : 'missiles held') : 'mixed fire discipline'}`
+      : '—';
+    const last = this.summary?.orders.at(-1);
+    this.el('order-ack').textContent = this.armed
+      ? 'Click a ground position for the selected formation.'
+      : last
+        ? `Order ${last.sequence} acknowledged at ${(last.tick / 30).toFixed(1)}s · ${last.order.team === 0 ? 'Roman' : 'Gallic'} ${last.order.group === 'all' ? 'all formations' : `formation ${last.order.group + 1}`}: ${last.order.kind}`
+        : 'Choose an army and formation. Commanders fight autonomously.';
+  }
+  handleKey(event: KeyboardEvent): boolean {
+    if (event.code === 'Escape' && this.armed) {
+      this.cancelPlacement();
+      return true;
+    }
+    if (
+      !this.available ||
+      event.repeat ||
+      document.querySelector('dialog[open]') ||
+      ['INPUT', 'SELECT', 'TEXTAREA'].includes((event.target as HTMLElement).tagName)
+    )
+      return false;
+    const groups: Record<string, Group> = { '1': 0, '2': 1, '3': 2, '4': 3, '5': 4, '0': 'all' };
+    if (
+      groups[event.key] !== undefined &&
+      Array.from(this.el<HTMLSelectElement>('command-group').options).some(
+        (o) => o.value === String(groups[event.key]),
+      )
+    ) {
+      this.el<HTMLSelectElement>('command-group').value = String(groups[event.key]);
+      this.cancelPlacement();
+      return true;
+    }
+    const movement: Record<string, Movement> = {
+      v: 'advance',
+      h: 'hold',
+      c: 'charge',
+      b: 'fallback',
+    };
+    if (movement[event.key.toLowerCase()]) {
+      this.move(movement[event.key.toLowerCase()]);
+      return true;
+    }
+    return false;
+  }
+}

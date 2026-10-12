@@ -1,6 +1,12 @@
 # Performance targets and measurement
 
-Status: no game benchmark exists. Targets below are engineering budgets to test, not achieved results. Equipment repeat-build evidence is not a crowd benchmark.
+Current PoC 0.4: [headless evidence](../evidence/battle-lab-v4-headless.json) records p95 2.372/5.83/15.908 ms at 100/500/1,000 per side with two formations per army, and 0.964/5.519/12.329 ms with five. These are single-run CPU diagnostics with full roster/seed/hardware metadata, not browser frame-rate qualification. Paused presentation now renders on changes rather than continuously redrawing an unchanged scene.
+
+Historical PoC 0.3: [headless evidence](../evidence/battle-lab-v3-headless.json) records p95 1.186/4.847/10.042 ms at 100/500/1,000 per side with two formations per army; five formations measured 0.7/4.205/9.661 ms. Full roster configurations are retained in the evidence. Rules and battle trajectories changed; this is not a controlled regression comparison.
+
+Historical PoC 0.2: [new-rule headless evidence](../evidence/battle-lab-v2-headless.json) records p95 1.167/4.717/10.778 ms at 100/500/1,000 per side with two formations per army; five formations measured 0.7/4.205/9.661 ms. Full roster configurations are retained in the evidence. This is a single 600-tick diagnostic with changed rules/workload, not a controlled speedup claim or browser benchmark. Near/crowd recipe geometry counts are in the [asset report](../evidence/model-recipes-v2.json).
+
+Historical PoC 0.1: [one-run headless battle evidence](../evidence/battle-lab-headless.json) now exists. On the recorded Xeon/Node environment, p95 tick times were 1.050 ms at 100/side, 6.659 ms at 500/side and 26.351 ms at 1,000/side. The largest run had a 34.628 ms p99, above the 33.3 ms tick budget. These are simulation diagnostics, not browser FPS or device qualification. Targets below remain engineering budgets to test.
 
 ## Workload definition
 
@@ -57,3 +63,7 @@ Benchmark renderer-only, simulation-only and integrated workloads to localize bo
 Eliminate global scans and allocation churn → bound/correct dense queries and navigation → batch compatible meshes/materials → optimize animation/attachments → LOD/culling/overdraw → measured Wasm/GPU presentation experiments. Never change target count, AI rules or collision correctness silently to improve a chart.
 
 Publish a supported-device table only after the gate passes. If it fails, record measured limit and reason; revisit implementation or explicitly revise product scope through an ADR.
+
+## Combined-arms capacity experiment (0.5)
+
+[The refinement report](../REFINEMENT_05.md) and [raw Node measurements](../evidence/battle-lab-v5-headless.json) cover 600, 2,000 and 5,000 soldiers with all five roles over 1,500 ticks. The maximum tier is approximately at the 33.3 ms tick budget at p95, with p99 spikes above budget on the measured shared cloud CPU. No 5,000-soldier real-time or browser FPS qualification is claimed. The Chromium maximum-capacity check proves deployment and stepping only; SwiftShader requires a longer startup/step allowance than small encounters.

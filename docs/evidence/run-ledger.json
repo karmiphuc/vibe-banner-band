@@ -1,0 +1,586 @@
+{
+  "schema_version": 1,
+  "recorded_on_utc": "2026-10-12",
+  "scope": {
+    "repository": "https://github.com/karmiphuc/vibe-banner-band",
+    "source_branch": "feat/roman-gaul-custom-battle",
+    "through_commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+    "description": "Retrospective summary of planning and releases 0.1–0.7; excludes the subsequent ledger-writing task.",
+    "completeness": "Partial reconstruction from visible conversation, retained session summary, repository history and committed evidence; not an exported session accounting record."
+  },
+  "agent": {
+    "product_name": "OpenAI Codex",
+    "exact_model_id": null,
+    "reasoning_effort": null,
+    "harness": {
+      "name": "Codex cloud-managed session",
+      "version": null,
+      "installed_cli": {
+        "name": "Codex CLI",
+        "version": "0.159.2",
+        "observed_on_utc": "2026-10-12",
+        "source": "codex --version"
+      }
+    },
+    "evidence_note": "The session identifies the product as Codex. Exact serving model ID and reasoning effort are not exposed in the available metadata. The installed CLI version is observable now, but does not prove the historical orchestrating harness/version or per-phase configuration."
+  },
+  "environment": {
+    "cpu": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+    "os": "Linux",
+    "node_version": "v24.19.0",
+    "current_observation": {
+      "observed_on_utc": "2026-10-12",
+      "distribution": "Debian GNU/Linux 13 (trixie)",
+      "kernel": "6.18.44",
+      "architecture": "x86_64",
+      "visible_logical_cpus": 5
+    },
+    "sources": [
+      "lscpu",
+      "uname -srm",
+      "/etc/os-release",
+      "node --version",
+      "docs/evidence/battle-lab-headless.json",
+      "docs/evidence/battle-lab-v2-headless.json",
+      "docs/evidence/battle-lab-v3-headless.json",
+      "docs/evidence/battle-lab-v4-headless.json",
+      "docs/evidence/battle-lab-v5-headless.json",
+      "docs/evidence/battle-lab-v6-mounted-tactics.json",
+      "docs/evidence/validation-v6.json"
+    ],
+    "coverage_note": "Committed 0.1–0.6 headless evidence records this CPU, Linux and Node version; 0.6 browser evidence also identifies Debian 13. The retained 0.7 session summary records Node v24.19.0 and Chromium on Debian 13. Current inspection corroborates the machine description but is not a historical fingerprint for every phase; planning runtime details are unverified."
+  },
+  "brief_provenance": [
+    {
+      "path": "docs/PRODUCT.md",
+      "provenance": "agent",
+      "user_supplied": "The user supplied the isometric open-world Warband/Bannerlord inspiration, browser and GitHub Pages delivery, and 100–1,000 units per side target.",
+      "introduced_in_commit_sha": "11bdc6b7b02ee4bce91d8e89ecb1395b7e69ff51"
+    },
+    {
+      "path": "AGENTS.md",
+      "provenance": "agent",
+      "user_supplied": "The user requested a robust, extensible, scalable codebase and deterministic mechanics/assets; the agent drafted the repository rules.",
+      "introduced_in_commit_sha": "11bdc6b7b02ee4bce91d8e89ecb1395b7e69ff51"
+    },
+    {
+      "path": "docs/ROADMAP.md",
+      "provenance": "agent",
+      "user_supplied": "The user requested research and a documented implementation plan; the agent supplied milestones, sequencing and acceptance gates.",
+      "introduced_in_commit_sha": "11bdc6b7b02ee4bce91d8e89ecb1395b7e69ff51"
+    },
+    {
+      "path": "docs/decisions/0001-browser-engine.md",
+      "provenance": "agent",
+      "user_supplied": "The user expressed interest in Godot and Three.js; the agent proposed the Three.js baseline and comparison gate.",
+      "introduced_in_commit_sha": "11bdc6b7b02ee4bce91d8e89ecb1395b7e69ff51"
+    },
+    {
+      "path": "docs/decisions/0002-deterministic-core.md",
+      "provenance": "agent",
+      "user_supplied": "The user explicitly prioritized deterministic mechanics; the agent chose numeric, scheduling, worker and replay contracts.",
+      "introduced_in_commit_sha": "11bdc6b7b02ee4bce91d8e89ecb1395b7e69ff51"
+    },
+    {
+      "path": "docs/decisions/0003-content-and-assets.md",
+      "provenance": "agent",
+      "user_supplied": "The user requested repeatable detailed models, equipment, skills and an asset-generation workflow; the agent specified compilation and quality gates.",
+      "introduced_in_commit_sha": "11bdc6b7b02ee4bce91d8e89ecb1395b7e69ff51"
+    },
+    {
+      "path": "docs/decisions/0004-world-and-hosting.md",
+      "provenance": "agent",
+      "user_supplied": "The user requested an open-world game playable on the web and hostable on GitHub Pages; the agent proposed campaign/tactical separation and local persistence.",
+      "introduced_in_commit_sha": "11bdc6b7b02ee4bce91d8e89ecb1395b7e69ff51"
+    }
+  ],
+  "methodology": {
+    "provenance": "Provenance refers to authorship of the committed document text, not ownership of the product idea. All listed documents were introduced by the agent in the planning commit; the initial repository contained only LICENSE. User requirements are attributed separately. No user-authored document text is visible.",
+    "release_commits": "Each release commit is the source commit introducing its package.json version, not a Pages publication commit. Known later same-version fixes are listed separately.",
+    "session_times": "No reliable per-phase session start/end timestamps are available. All started_utc and ended_utc fields are null. Git commit dates, benchmark timestamps and file modification times are not substituted for session boundaries.",
+    "prompt_counts": "Counts cover visible task-bearing user messages assigned once to the most relevant phase. They include the incomplete planning message and exclude environment-only messages and this ledger request. Phase attribution is reconstructed, especially 0.4–0.5; counts are not certified complete session totals. Prompt summaries are paraphrases.",
+    "review_counts": "No complete finding/fix register or full event log is available for any phase. Counts are null rather than inferred from test totals, commits, documentation bullet counts or selected remembered corrections.",
+    "unknowns": "Null means unavailable or unverified, never zero. Totals remain null whenever any constituent phase value is unknown. No token, duration or cost estimates are made."
+  },
+  "phases": [
+    {
+      "phase": "planning",
+      "commit_sha": "11bdc6b7b02ee4bce91d8e89ecb1395b7e69ff51",
+      "started_utc": null,
+      "ended_utc": null,
+      "user_prompts": 6,
+      "prompt_summaries": [
+        "Research an isometric open-world Warband/Bannerlord-inspired browser game, hosted on GitHub Pages, targeting 100–1,000 units per side.",
+        "Express interest in Godot and Three.js.",
+        "Prioritize visuals, assets and design directions.",
+        "Send an incomplete message, followed by a clarification in the next message.",
+        "Prioritize deterministic mechanics, reproducible designs and an asset-generation skill for detailed equipped units and abilities.",
+        "Document the research and plan in this repository for a robust, extensible and scalable engine and codebase."
+      ],
+      "tokens": {
+        "input": null,
+        "cached_input": null,
+        "cache_write": null,
+        "output": null,
+        "reasoning_output": null
+      },
+      "model_calls": null,
+      "tool_calls": null,
+      "self_review_findings": null,
+      "fixed_in_release": null,
+      "evidence": [
+        "docs/PRODUCT.md",
+        "docs/ROADMAP.md",
+        "docs/decisions/README.md"
+      ],
+      "documented_validation": {
+        "source": {
+          "path": "tools/assets/evidence/repeat-build.json",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "7535e544396bb820116134347c39aea3242d792826090c987467a5e521a7b77a"
+        },
+        "blender_version": "4.3.2",
+        "repeat_geometry_manifest_match": true,
+        "repeat_glb_binary_match": true,
+        "interpretation": "Two narrow equipment research builds; no generated humanoid, animation, engine import or production qualification. Not a model-token or session-duration trace.",
+        "new_execution_during_ledger_audit": false
+      }
+    },
+    {
+      "phase": "0.1",
+      "commit_sha": "4059df0f3093bded835d4dd3e9d42ff76b2337f3",
+      "started_utc": null,
+      "ended_utc": null,
+      "user_prompts": 1,
+      "prompt_summaries": [
+        "Double-check the plan and implement a custom combat experiment with an autonomous hero/lord and initial Roman versus Gallic units."
+      ],
+      "tokens": {
+        "input": null,
+        "cached_input": null,
+        "cache_write": null,
+        "output": null,
+        "reasoning_output": null
+      },
+      "model_calls": null,
+      "tool_calls": null,
+      "self_review_findings": null,
+      "fixed_in_release": null,
+      "evidence": [
+        "docs/REVIEW.md",
+        "docs/evidence/battle-lab-headless.json"
+      ]
+    },
+    {
+      "phase": "0.2",
+      "commit_sha": "eea8b7bca101b456fe5072640a212831c5c012a5",
+      "started_utc": null,
+      "ended_utc": null,
+      "user_prompts": 1,
+      "prompt_summaries": [
+        "Treat the implementation as a proof of concept and substantially refine it."
+      ],
+      "tokens": {
+        "input": null,
+        "cached_input": null,
+        "cache_write": null,
+        "output": null,
+        "reasoning_output": null
+      },
+      "model_calls": null,
+      "tool_calls": null,
+      "self_review_findings": null,
+      "fixed_in_release": null,
+      "evidence": [
+        "docs/REFINEMENT_02.md",
+        "docs/evidence/battle-lab-v2-headless.json"
+      ],
+      "followup_commits": [
+        "a6f072307f167dafac80df837203e3b0e4c9ce9b"
+      ],
+      "documented_validation": {
+        "headless_model_tests": 18,
+        "browser_scenarios": 4,
+        "source": {
+          "path": "docs/REFINEMENT_02.md",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "60ffd1bb75b458115d61dfbc21b748f457d34c46a028a1ff8ae39ffbe66d74c0"
+        },
+        "interpretation": "Documented test coverage; no original test-output log recovered in this audit.",
+        "new_execution_during_ledger_audit": false
+      }
+    },
+    {
+      "phase": "0.3",
+      "commit_sha": "ea4cbc29c10f5eb1560e9098a41fdba66a94a0ec",
+      "started_utc": null,
+      "ended_utc": null,
+      "user_prompts": 1,
+      "prompt_summaries": [
+        "Support up to five formations with room for future cavalry, siege engines and horse archers."
+      ],
+      "tokens": {
+        "input": null,
+        "cached_input": null,
+        "cache_write": null,
+        "output": null,
+        "reasoning_output": null
+      },
+      "model_calls": null,
+      "tool_calls": null,
+      "self_review_findings": null,
+      "fixed_in_release": null,
+      "evidence": [
+        "docs/REFINEMENT_03.md",
+        "docs/evidence/battle-lab-v3-headless.json"
+      ],
+      "documented_validation": {
+        "headless_model_tests": 31,
+        "browser_scenarios": 6,
+        "source": {
+          "path": "docs/REFINEMENT_03.md",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "467c4ee5c86f0a0c02162fb7efe34e2a6dd75e3597ff27d8ad643fc1351b0497"
+        },
+        "interpretation": "Documented test coverage; no original test-output log recovered in this audit.",
+        "new_execution_during_ledger_audit": false
+      }
+    },
+    {
+      "phase": "0.4",
+      "commit_sha": "017d0bb87f044f857e9f9e6e42c224114347e33e",
+      "started_utc": null,
+      "ended_utc": null,
+      "user_prompts": 1,
+      "prompt_summaries": [
+        "Continue improving the disappointing demo toward the requested Bannerlord-inspired experience."
+      ],
+      "tokens": {
+        "input": null,
+        "cached_input": null,
+        "cache_write": null,
+        "output": null,
+        "reasoning_output": null
+      },
+      "model_calls": null,
+      "tool_calls": null,
+      "self_review_findings": null,
+      "fixed_in_release": null,
+      "evidence": [
+        "docs/REFINEMENT_04.md",
+        "docs/evidence/battle-lab-v4-headless.json"
+      ],
+      "documented_validation": {
+        "headless_model_tests": 39,
+        "browser_scenarios": 7,
+        "source": {
+          "path": "docs/REFINEMENT_04.md",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "b9604bf01efa2369807c7dd3e2772af7f39b95fe1c7e888385b8269cb69c0421"
+        },
+        "interpretation": "Documented test coverage; no original test-output log recovered in this audit.",
+        "new_execution_during_ledger_audit": false
+      }
+    },
+    {
+      "phase": "0.5",
+      "commit_sha": "0ff12ac01df0b61a9d7711da4c40d6479916ad5f",
+      "started_utc": null,
+      "ended_utc": null,
+      "user_prompts": 0,
+      "prompt_summaries": [],
+      "tokens": {
+        "input": null,
+        "cached_input": null,
+        "cache_write": null,
+        "output": null,
+        "reasoning_output": null
+      },
+      "model_calls": null,
+      "tool_calls": null,
+      "self_review_findings": null,
+      "fixed_in_release": null,
+      "evidence": [
+        "docs/REFINEMENT_05.md",
+        "docs/evidence/validation-v5.json"
+      ],
+      "followup_commits": [
+        "b9cf581c5b937310d67f775c96b3a6c7f2f0aea8",
+        "77a5c20e7f661f92a409db59e50054d7b056707f"
+      ],
+      "prompt_attribution_note": "No separate initiating message is visible for 0.5. It is attributed to continuation of the 0.4 request and earlier combined-arms requirements. Zero means no newly assigned visible prompt, not proof that no other prompt existed.",
+      "documented_validation": {
+        "headless_model_tests": 47,
+        "browser_scenarios": 10,
+        "source": {
+          "path": "docs/evidence/validation-v5.json",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "ddd5b2bf6015c534f88fd73a9ef679e18e131370b30afad9ca37f5c67dee2049"
+        },
+        "interpretation": "Headless tests passed; seven existing browser regressions passed in a full run and three combined-arms scenarios passed in final targeted runs. Do not describe this as one final full-suite run.",
+        "new_execution_during_ledger_audit": false
+      }
+    },
+    {
+      "phase": "0.6",
+      "commit_sha": "7dc039c7c07377140cfd8d5664f8484f85f74c29",
+      "started_utc": null,
+      "ended_utc": null,
+      "user_prompts": 1,
+      "prompt_summaries": [
+        "Implement dynamic formation tactics such as cavalry flanking and skein charges, plus horse-archer feints and circling skirmishes."
+      ],
+      "tokens": {
+        "input": null,
+        "cached_input": null,
+        "cache_write": null,
+        "output": null,
+        "reasoning_output": null
+      },
+      "model_calls": null,
+      "tool_calls": null,
+      "self_review_findings": null,
+      "fixed_in_release": null,
+      "evidence": [
+        "docs/REFINEMENT_06.md",
+        "docs/evidence/validation-v6.json"
+      ],
+      "documented_validation": {
+        "headless_model_tests": 53,
+        "browser_scenarios": 11,
+        "source": {
+          "path": "docs/evidence/validation-v6.json",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "d7dab8663f5a46e93b8efd4617480d0d0f062a237d10b23174125cd27669ef29"
+        },
+        "interpretation": "Full suites passed; the mounted-tactics scenario was rerun after final refinements.",
+        "new_execution_during_ledger_audit": false
+      }
+    },
+    {
+      "phase": "0.7",
+      "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+      "started_utc": null,
+      "ended_utc": null,
+      "user_prompts": 3,
+      "prompt_summaries": [
+        "Remove floating name boxes, use Roman eagles and banners, and study Bannerlord faction banners.",
+        "Clarify that the request concerns equippable banner items.",
+        "Criticize the gap from Total War and Bannerlord and state an intention to continue with another agent."
+      ],
+      "tokens": {
+        "input": null,
+        "cached_input": null,
+        "cache_write": null,
+        "output": null,
+        "reasoning_output": null
+      },
+      "model_calls": null,
+      "tool_calls": null,
+      "self_review_findings": null,
+      "fixed_in_release": null,
+      "evidence": [
+        "docs/assets/BATTLE_STANDARDS.md",
+        "docs/decisions/0010-carried-banner-equipment.md"
+      ],
+      "review_note": "Visible review identified clipped mounted-standard preview framing and weak equipment readability at battlefield scale. Framing was corrected; readability and rigid animation remain open. These examples are not a complete self-review count. The user correction about equippable banners is not counted as self-review.",
+      "documented_validation": {
+        "headless_model_tests": 56,
+        "browser_scenarios": 12,
+        "source": {
+          "path": "docs/assets/BATTLE_STANDARDS.md",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "bc78c83dfa94a470a97427e7e980fdac8e5527daa90cd9d18a74167465642f17"
+        },
+        "interpretation": "Full suites passed; after the final workshop-camera adjustment, the equipment browser scenario passed again. Corroborated by visible tool-result summaries; original temporary logs are no longer available.",
+        "new_execution_during_ledger_audit": false
+      }
+    }
+  ],
+  "totals": {
+    "input": null,
+    "cached_input": null,
+    "cache_write": null,
+    "output": null,
+    "reasoning_output": null
+  },
+  "billing": {
+    "usd": null,
+    "source": null,
+    "note": "No invoice, gateway charge record or usage-linked price record is available. No list-price estimate was calculated."
+  },
+  "token_source": {
+    "source": null,
+    "status": "unavailable",
+    "phases_with_none": [
+      "planning",
+      "0.1",
+      "0.2",
+      "0.3",
+      "0.4",
+      "0.5",
+      "0.6",
+      "0.7"
+    ],
+    "note": "No session token/call accounting logs or usage dashboard were available to this task. Standard local Codex session/archive directories were absent, and no usage connector was exposed. Visible messages and retained summaries do not contain token counters. Input, cached input, cache write, output and reasoning output are therefore null for every phase and total; model/tool call counts are likewise unavailable. Tests and Git history cannot supply these metrics."
+  },
+  "privacy": {
+    "policy": "Public summary only. No raw transcripts, environment-variable names or values, credentials, secrets, internal URLs, or private session identifiers are included."
+  },
+  "trace_audit": {
+    "reviewed_on_utc": "2026-10-12",
+    "scope": "Additional public evidence extracted from committed artifacts, visible tool-result summaries and the Pages checkout. This is not a private reasoning or raw conversation export.",
+    "availability": {
+      "committed_validation_and_benchmark_artifacts": "available",
+      "visible_tool_result_summaries": "partial, including final 0.7 verification",
+      "original_temporary_build_test_logs": "not present at recheck",
+      "local_codex_session_and_archive_directories": "not present in inspected standard locations",
+      "complete_model_tool_accounting_trace": "unavailable",
+      "usage_dashboard_or_invoice": "unavailable",
+      "note": "Unavailable here does not assert that provider-side records do not exist."
+    },
+    "toolchain_at_0_7": {
+      "source": {
+        "path": "package.json",
+        "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+        "sha256": "c4bc468afb1344ca648ac85f55c547f763689a1a717959a3c477f99caa08bfbf"
+      },
+      "lockfile": {
+        "path": "package-lock.json",
+        "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+        "sha256": "1beebb23efdce3d999fbe701a5ca26d94f6bcd7a4e2157a83707e66b3192ffd5"
+      },
+      "dependencies": {
+        "three": "0.186.1"
+      },
+      "development_dependencies": {
+        "@playwright/test": "1.64.0",
+        "@types/node": "26.6.5",
+        "@types/three": "0.186.0",
+        "prettier": "3.6.2",
+        "tsx": "4.23.15",
+        "typescript": "5.9.3",
+        "vite": "7.3.7"
+      },
+      "browser_evidence": "Chromium 154.0.8037.57 on Debian 13 with SwiftShader, as recorded for 0.6 and in the retained 0.7 session summary.",
+      "browser_config": {
+        "source": {
+          "path": "playwright.config.ts",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "5b4e171b3e5a1195df5c1f210dca90eedb413dbd4448493e02b671bd8be3af45"
+        },
+        "headless": true,
+        "workers": 1,
+        "viewport_width": 1440,
+        "viewport_height": 1000
+      },
+      "limitation": "Software rendering does not establish hardware-GPU frame rate or cross-browser support."
+    },
+    "selected_corrections_and_open_findings": [
+      {
+        "phase": "0.2",
+        "finding": "Rear-rank commander deployment overlap.",
+        "origin": "documented implementation review",
+        "outcome": "Corrected with a regression fixture.",
+        "source": {
+          "path": "docs/REVIEW.md",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "94735d74d35b5fc6687c96fae3ab3da62187165f7147b453dd9bea4ffe98cbf5"
+        }
+      },
+      {
+        "phase": "0.2",
+        "finding": "Commander crest did not sit correctly on the helmet mount.",
+        "origin": "recorded corrective commit; discovery method not established",
+        "outcome": "Corrected in a same-version follow-up.",
+        "fix_commit_sha": "a6f072307f167dafac80df837203e3b0e4c9ce9b"
+      },
+      {
+        "phase": "0.4",
+        "finding": "Opposing disciplined lines could stop outside weapon range.",
+        "origin": "documented regression fixture",
+        "outcome": "Approach deadlock corrected.",
+        "source": {
+          "path": "docs/REVIEW.md",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "94735d74d35b5fc6687c96fae3ab3da62187165f7147b453dd9bea4ffe98cbf5"
+        }
+      },
+      {
+        "phase": "0.5",
+        "finding": "Mounted noble presentation did not match its armored loadout.",
+        "origin": "recorded corrective commit; discovery method not established",
+        "outcome": "Model/loadout mismatch corrected in a same-version follow-up.",
+        "fix_commit_sha": "77a5c20e7f661f92a409db59e50054d7b056707f"
+      },
+      {
+        "phase": "0.7",
+        "finding": "Initial banner work interpreted equippable items as floating interface markers.",
+        "origin": "user correction, not self-review",
+        "outcome": "Discarded the marker replacement and implemented carried equipment.",
+        "source_basis": "Visible user clarification and assistant progress summary; final equipment contract corroborates the shipped behavior.",
+        "source": {
+          "path": "docs/assets/BATTLE_STANDARDS.md",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "bc78c83dfa94a470a97427e7e980fdac8e5527daa90cd9d18a74167465642f17"
+        }
+      },
+      {
+        "phase": "0.7",
+        "finding": "Mounted-standard finial was clipped in the workshop preview.",
+        "origin": "visible screenshot review and documented correction",
+        "outcome": "Camera framing adjusted; equipment browser scenario rerun passed.",
+        "source": {
+          "path": "docs/assets/BATTLE_STANDARDS.md",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "bc78c83dfa94a470a97427e7e980fdac8e5527daa90cd9d18a74167465642f17"
+        }
+      },
+      {
+        "phase": "0.7",
+        "finding": "Equipment remains difficult to read at battlefield scale; rigid animation and immediate stowing remain conspicuous.",
+        "origin": "visible screenshot review and documented limitations",
+        "outcome": "Still open; not a successful visual acceptance gate.",
+        "source": {
+          "path": "docs/assets/BATTLE_STANDARDS.md",
+          "commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+          "sha256": "bc78c83dfa94a470a97427e7e980fdac8e5527daa90cd9d18a74167465642f17"
+        }
+      }
+    ],
+    "finding_accounting_note": "This is a non-exhaustive, mixed-origin register. It includes user feedback and corrective commits whose discovery method is unknown. Do not treat its length as self-review count, infer all fixes from it, or replace the null phase totals.",
+    "published_artifacts": {
+      "pages_commit_sha": "88150a1c63f7bf119f7f3f978a05fa0ed44bcefd",
+      "source_commit_sha": "f42e38a9b8282b1d7451d22bc354b66d22474ef9",
+      "source_marker": {
+        "path": "SOURCE.txt",
+        "sha256": "956e7d20356cf416d15f67c8fd94ba5602af09f9d51c695f6e248f71368ce63d"
+      },
+      "screenshots": [
+        {
+          "path": "previews/equipment-roman-aquila-march.png",
+          "sha256": "185d301278c73ad4814150c338c29a9579ccd4e7cb02c6be8a9f2de394bdce6e",
+          "kind": "already published game screenshot"
+        },
+        {
+          "path": "previews/equipment-gaul-horse-attack.png",
+          "sha256": "c71be9c91efdd5f8c2567143f40f85857917c55199689077a7297003ff50d5df",
+          "kind": "already published game screenshot"
+        },
+        {
+          "path": "previews/equipped-banners-battlefield.png",
+          "sha256": "4a065df922c689bd27857571c2cdfeedc57cac42e96052d1fa94658f1ca66729",
+          "kind": "already published game screenshot"
+        }
+      ],
+      "verification_scope": "Checksums calculated from the retained Pages checkout during this audit. Prior visible tool output reports the live source marker, index and release assets matching the build. No fresh network/deployment verification was performed for this audit."
+    },
+    "comparison_caveats": [
+      "Test counts are coverage/result summaries, not independent quality scores or counts of agent self-review.",
+      "Committed headless benchmark artifacts permit scenario-specific comparisons only; changing rules, fixtures or machine load prevents naive release-to-release speed claims.",
+      "Evidence SHA-256 values identify the exact source bytes used for this retrospective summary; they do not independently certify the reported results.",
+      "Discarded floating-marker screenshots and third-party reference images were not promoted as evidence of the shipped equipment.",
+      "No model ID, reasoning effort, token count, call count, session boundary or billing value was recovered in this recheck."
+    ]
+  }
+}

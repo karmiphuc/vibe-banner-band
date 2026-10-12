@@ -1,6 +1,6 @@
 # Implementation roadmap
 
-Updated 2026-10-11. **All engine milestones are unstarted.** Completed planning artifacts: subsystem contracts, ADRs, reusable asset skill, documentation checks, and a narrow Blender equipment experiment. No milestone is complete because its plan exists.
+Updated 2026-10-11. **M0–M3 have partial experimental implementation; no full milestone gate is complete.** See [custom battle](CUSTOM_BATTLE.md) and [ADR 0005](decisions/0005-custom-battle-slice.md). Completed planning artifacts: subsystem contracts, ADRs, reusable asset skill, documentation checks, and a narrow Blender equipment experiment. No milestone is complete because its plan exists.
 
 Schedule by evidence and dependencies rather than promised calendar dates; team capacity and source-art availability are unknown. One implemented vertical slice is more valuable than scaffolding every package. Task IDs below can become repository issues later; they are not existing GitHub issues.
 
@@ -117,3 +117,7 @@ More regions/troops/equipment using proven contracts; deeper economy/diplomacy/p
 ## First implementation batch
 
 ENG-001, ENG-002, ART-001 and PERF-001 establish the toolchain and renderer/asset feasibility. Then SIM-001/003/005 and DATA-001 establish replay and content identities before combat code expands. Every implementation PR should name its task ID, contract, exit evidence and remaining blockers.
+
+## Combined-arms experiment, 2026-10-11
+
+[PoC 0.5](REFINEMENT_05.md) implements mounted actors, horse archers, crewed ballistae, five role-based formations, expanded terrain/ford routing and a 5,000-soldier capacity option. Headless replay and browser checks exercise the extension. This does not complete campaign, production assets or performance gates. Next combat priorities are formation-aware global navigation, independent engine footprints/crew stations, mounted attack and bow animation, mounted target evaluation budgets, then device-qualified performance. Preserve the pure simulation boundary while improving those systems; do not introduce a second renderer or general-purpose framework to address them.

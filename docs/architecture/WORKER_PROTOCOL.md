@@ -37,3 +37,15 @@ Worker owns tick scheduling; elapsed time requests stepping but is never read in
 Stale session messages; duplicate/late commands; wrong protocol/content hash; detached buffers; main-thread stalls; pool exhaustion; event overflow; pause during loading; save during active attack; worker termination/restart. Snapshot loss/reordering must not affect replay state. Include real transferable-buffer browser tests, not only mocked `postMessage`.
 
 Reference: [MDN transferable objects](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects).
+
+## Packed layout introduced in PoC protocol 5
+
+The current experiment has a three-buffer pool. Packed Int32 header: tick, actor count, projectile count. Actor stride 29 preserves original 0–20 fields and appends mount HP, pace, mount corpse X/Z, mount death tick, engine ID, terrain height and target ID. Projectile stride 10 appends height, kind and vertical velocity to the previous seven fields. The projectile tail is followed by an engine count and 14 integers per engine: ID, X, Z, heading, HP, ammo, cooldown, shot serial, surviving crew count, team, deployment ticks, terrain height, aim X/Z. See [ADR 0008](../decisions/0008-combined-arms-and-terrain.md). Proposed envelopes above remain future work; the implemented schema is in `src/platform/protocol.ts`.
+
+## Mounted tactics compatibility (0.6)
+
+The current experiment uses protocol **6**, simulation **battle-lab-6**. Formation summaries include optional authoritative tactical phase state. Validated `tactic` orders select mounted behaviors or cancel them; incompatible role selections reject atomically. Packed soldier/projectile/engine strides remain unchanged. See [mounted tactics](../REFINEMENT_06.md).
+
+## Equipment compatibility (0.7)
+
+Current protocol **7**, simulation **battle-lab-7**. Formation summaries carry stable banner item and bearer IDs; equipment commands are valid only before the first simulation tick. Packed snapshots retain their existing strides. See [carried banner equipment](../assets/BATTLE_STANDARDS.md).

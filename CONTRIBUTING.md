@@ -13,7 +13,7 @@ Use [ROADMAP.md](docs/ROADMAP.md). The first runtime work establishes a headless
 5. New assets have source, license, revision, hashes, and validation evidence.
 6. Performance-sensitive changes include before/after evidence using the same scenario and machine.
 
-For planning changes, run `python3 tools/check_docs.py`. For future runtime code, the exact pinned toolchain and commands must be established in M0, then recorded here; no package-manager setup is currently implied.
+For planning changes, run `python3 tools/check_docs.py`. Runtime uses Node 24.19.0 and the npm lockfile. Run `npm ci`, `npm run check:boundaries`, `npm test`, `npm run build`, and `npm run test:browser` (install Chromium with `npx playwright install chromium` first). Use `npm run bench` for simulation changes; preserve measurement context. The existing custom battle is an experimental slice, not completion of every milestone.
 
 ## Decision process
 

@@ -1,6 +1,6 @@
 # Repository instructions
 
-Read README.md, docs/README.md, and the applicable subsystem contract before editing. This repository currently contains plans and an equipment experiment, not a completed engine.
+Read README.md, docs/README.md, and the applicable subsystem contract before editing. This repository currently contains plans, a playable experimental custom battle and equipment experiments, not a completed engine. See docs/CUSTOM_BATTLE.md for implemented scope.
 
 ## Engineering rules
 

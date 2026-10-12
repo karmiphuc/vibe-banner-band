@@ -1,0 +1,137 @@
+{
+  "recipe": "rome-gaul-articulated-2",
+  "runtime": "v24.19.0",
+  "source": "src/render/unit-models.ts",
+  "license": "Repository GPL v3; geometry authored in this repository",
+  "coverage": "Exact local position/normal/color bytes and joint transforms, pinned toolchain. Not pixel, animation or production-rig qualification.",
+  "models": [
+    {
+      "unit": "roman.legionary.v1",
+      "sidearm": false,
+      "lod": "near",
+      "sha256": "7f64d2668c32f26c04d1ed9ae5d6506caf77dcd55b9e87def821c950f111dd54",
+      "triangles": 4628,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.legionary.v1",
+      "sidearm": false,
+      "lod": "crowd",
+      "sha256": "04d44682ded0c7a6115fd8ce7c48416e43b602effe62237c1dfa4be03c1842c9",
+      "triangles": 292,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.auxiliary.v1",
+      "sidearm": false,
+      "lod": "near",
+      "sha256": "0b7e643a760892751428861a77dde37f8596c5fea5584bcae7de837b7b882ed1",
+      "triangles": 3236,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.auxiliary.v1",
+      "sidearm": false,
+      "lod": "crowd",
+      "sha256": "6876e40d3c9f171877e565f7c363136ea70e057e685858ea53840a92a19fa13d",
+      "triangles": 312,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.auxiliary.v1",
+      "sidearm": true,
+      "lod": "near",
+      "sha256": "5881aed66284222078116a25b047e24f97808b9fba2627c1027889a249e6fdcf",
+      "triangles": 3216,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.auxiliary.v1",
+      "sidearm": true,
+      "lod": "crowd",
+      "sha256": "3715cb45c9bb19dbf1acc6144e19042ec019ef83a1d453daed253e584e579a90",
+      "triangles": 312,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.legate.v1",
+      "sidearm": false,
+      "lod": "near",
+      "sha256": "a080861e7fb1361622e44532e2de930889e82e38bee302af718111f2f8e3c51e",
+      "triangles": 5166,
+      "repeatBuild": true
+    },
+    {
+      "unit": "roman.legate.v1",
+      "sidearm": false,
+      "lod": "crowd",
+      "sha256": "d80f50267fa042eefad98a593f61a949f1681cbc17b9d440b029d6762bdfc23f",
+      "triangles": 360,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.warrior.v1",
+      "sidearm": false,
+      "lod": "near",
+      "sha256": "88aa682c2c4a767970e8717950ff65cd664b65a4d643f5fa9fc178edc92616ed",
+      "triangles": 3898,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.warrior.v1",
+      "sidearm": false,
+      "lod": "crowd",
+      "sha256": "4dc18923e7b8c4b815519d9a97092d342f1543fc52439af527fb47e18a3292b0",
+      "triangles": 312,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.skirmisher.v1",
+      "sidearm": false,
+      "lod": "near",
+      "sha256": "1b92f9332ad12f27c5c784b06a00f281b8ace4097d11d0962193f62a7aca8d1d",
+      "triangles": 3990,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.skirmisher.v1",
+      "sidearm": false,
+      "lod": "crowd",
+      "sha256": "edcd9ac6c30d55d5ad02348082bac2c247811f00b9f7e4ce14856fc63e7fd7d0",
+      "triangles": 312,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.skirmisher.v1",
+      "sidearm": true,
+      "lod": "near",
+      "sha256": "c2e97c40738319b7ad5173110b5160e34d871d01372fa903507c45b240dd1343",
+      "triangles": 3970,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.skirmisher.v1",
+      "sidearm": true,
+      "lod": "crowd",
+      "sha256": "685b8ab2f9215680a354e96e8acb434a682cc5a37a1c89b4b453528a238c17e5",
+      "triangles": 312,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.warlord.v1",
+      "sidearm": false,
+      "lod": "near",
+      "sha256": "5097cce6cf2d515ec78e0a392cf1d6fb76fab75b11d32644afd54181da3314fb",
+      "triangles": 5586,
+      "repeatBuild": true
+    },
+    {
+      "unit": "gaul.warlord.v1",
+      "sidearm": false,
+      "lod": "crowd",
+      "sha256": "7d28d2f9f6c4cda346574ea127076798c13e9277c38e623cd686f061e4b5637a",
+      "triangles": 368,
+      "repeatBuild": true
+    }
+  ]
+}

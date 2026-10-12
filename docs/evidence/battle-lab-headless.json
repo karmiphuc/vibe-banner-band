@@ -1,0 +1,49 @@
+{
+  "runtime": "v24.19.0",
+  "platform": "linux",
+  "arch": "x64",
+  "cpu": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+  "seed": 7541,
+  "terrain": "meadow",
+  "results": [
+    {
+      "perSide": 100,
+      "ticks": 600,
+      "p50ms": 0.365,
+      "p95ms": 1.05,
+      "p99ms": 1.392,
+      "hash": "8d2e3c62",
+      "standing": [
+        48,
+        12
+      ],
+      "note": "Headless simulation only, one run, 30-tick warm-up. Not a browser/rendering or real-device qualification."
+    },
+    {
+      "perSide": 500,
+      "ticks": 600,
+      "p50ms": 3.428,
+      "p95ms": 6.659,
+      "p99ms": 11.462,
+      "hash": "64192796",
+      "standing": [
+        277,
+        197
+      ],
+      "note": "Headless simulation only, one run, 30-tick warm-up. Not a browser/rendering or real-device qualification."
+    },
+    {
+      "perSide": 1000,
+      "ticks": 600,
+      "p50ms": 9.998,
+      "p95ms": 26.351,
+      "p99ms": 34.628,
+      "hash": "1a887911",
+      "standing": [
+        626,
+        483
+      ],
+      "note": "Headless simulation only, one run, 30-tick warm-up. Not a browser/rendering or real-device qualification."
+    }
+  ]
+}

@@ -4,12 +4,22 @@ Updated 2026-10-11. All engine subsystems below are specified/planned unless a d
 
 | Document | Responsibility |
 | --- | --- |
+| [Carried banner equipment 0.7](assets/BATTLE_STANDARDS.md) | Equippable physical standards, bearer ownership, reference study and explicit limits |
+| [Mounted tactics 0.6](REFINEMENT_06.md) | Deterministic cavalry charge cycles, skein layout and horse-archer maneuvers |
+| [Combined arms 0.5](REFINEMENT_05.md) | Cavalry, mounted archers, crewed ballistae, 640 m terrain and 5,000-soldier capacity |
+| [Combat PoC 0.4](REFINEMENT_04.md) | Cohesive ranks, reserves, frontage/facing and visible flank routes |
+| [Combat PoC 0.3](REFINEMENT_03.md) | Tactical commands, recorded orders, directional defense and shield destruction |
+| [Proof of concept 0.2](REFINEMENT_02.md) | Refined combat, equipment workshop, scenarios and verification |
+| [Custom battle](CUSTOM_BATTLE.md) | Implemented controls, units, mechanics and limits |
+| [Review](REVIEW.md) | Double-check findings and validation |
+| [Roman–Gallic models](assets/ROMAN_GAUL_RECIPES.md) | Original procedural model recipes and provenance |
 | [Product](PRODUCT.md) | Player loop, scope, platform tiers, non-goals |
 | [Architecture](architecture/OVERVIEW.md) | Modules, dependency rules, interfaces, lifecycle |
 | [Determinism](architecture/DETERMINISM.md) | Arithmetic, tick ordering, PRNG, replay identity |
 | [Worker protocol](architecture/WORKER_PROTOCOL.md) | Ownership, commands, snapshots, recovery |
 | [Navigation](architecture/NAVIGATION.md) | Formations, flow fields, crowd contact, bounded work |
 | [Rendering](architecture/RENDERING.md) | Camera, animation, LOD, crowd batching, picking |
+| [Formation design](design/FORMATIONS.md) | Five independent formations per army; cavalry, horse archer and siege extension contracts |
 | [Combat](design/COMBAT.md) | Attacks, equipment, skills, morale, cavalry |
 | [Content](design/CONTENT.md) | IDs, schemas, extension points, compilation |
 | [Campaign and persistence](design/CAMPAIGN_AND_SAVES.md) | World scale, encounters, saves, migration |
